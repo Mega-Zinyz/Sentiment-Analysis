@@ -227,6 +227,31 @@ See [database schema](api-reference/database_schema.sql) for details.
 * [Database Schema](docs/api-reference/database_schema.sql)
 ```
 
+### Build Fails: "Unknown language"
+
+**Error**: `Could not find the language 'env', did you forget to load/include a language module?`
+
+**Cause**: Honkit's syntax highlighter (highlight.js) doesn't recognize certain language identifiers like `env`, `csv`, `gitignore`.
+
+**Solution**: Replace unsupported language identifiers in code blocks:
+
+```markdown
+<!-- Replace these -->
+```env          →  ```bash
+```csv          →  ```text  
+```gitignore    →  ```text
+```
+
+**Bulk fix for all Markdown files** (PowerShell):
+```powershell
+Get-ChildItem -Include *.md -Recurse | ForEach-Object { 
+  (Get-Content $_.FullName -Raw) -replace '```env', '```bash' `
+    -replace '```csv', '```text' `
+    -replace '```gitignore', '```text' | 
+  Set-Content $_.FullName -NoNewline 
+}
+```
+
 ### Build Fails: "Cannot find module"
 
 **Solution**: Install dependencies:
