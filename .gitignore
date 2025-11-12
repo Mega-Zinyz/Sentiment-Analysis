@@ -20,3 +20,8 @@ Thumbs.db
 # Temporary files
 temp/
 *.tmp
+
+# GitBook
+_book/
+node_modules/
+.grunt/

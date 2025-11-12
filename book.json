@@ -1,0 +1,43 @@
+{
+  "root": ".",
+  "structure": {
+    "readme": "README.md",
+    "summary": "SUMMARY.md"
+  },
+  "title": "Sentiment Analysis System",
+  "description": "Comprehensive documentation for Indonesian Sentiment Analysis application",
+  "author": "Mega-Zinyz",
+  "language": "en",
+  "gitbook": ">=3.0.0",
+  "plugins": [
+    "theme-default",
+    "anchors",
+    "search",
+    "expandable-chapters",
+    "copy-code-button",
+    "github",
+    "edit-link",
+    "-sharing"
+  ],
+  "pluginsConfig": {
+    "github": {
+      "url": "https://github.com/Mega-Zinyz/Sentiment-Analysis"
+    },
+    "edit-link": {
+      "base": "https://github.com/Mega-Zinyz/Sentiment-Analysis/edit/main",
+      "label": "Edit on GitHub"
+    },
+    "theme-default": {
+      "showLevel": true,
+      "styles": {
+        "website": "styles/website.css"
+      }
+    }
+  },
+  "links": {
+    "sidebar": {
+      "GitHub Repository": "https://github.com/Mega-Zinyz/Sentiment-Analysis",
+      "Report Issues": "https://github.com/Mega-Zinyz/Sentiment-Analysis/issues"
+    }
+  }
+}
