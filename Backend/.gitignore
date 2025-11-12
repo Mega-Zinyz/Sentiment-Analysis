@@ -1,0 +1,15 @@
+temp/
+*.log
+node_modules/
+
+# Environment variables - NEVER commit secrets!
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+
+# Uploads
+uploads/

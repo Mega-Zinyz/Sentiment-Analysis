@@ -1,0 +1,429 @@
+<div class="container">
+  <div class="header">
+    <h2>Analysis History</h2>
+    <div class="total-count" *ngIf="totalItems > 0">
+      Total: {{ totalItems }} analyses
+    </div>
+  </div>
+  
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Loading analysis history...</p>
+  </div>
+  
+  <div *ngIf="!loading && analysisHistory.length === 0" class="no-data">
+    <div class="empty-state">
+      <h3>No Analysis History</h3>
+      <p>You haven't performed any analyses yet.</p>
+    </div>
+  </div>
+  
+  <div *ngIf="!loading && analysisHistory.length > 0" class="history-container">
+    <!-- Analysis List -->
+    <div class="analysis-list">
+      <div 
+        *ngFor="let analysis of analysisHistory" 
+        class="analysis-card"
+        (click)="viewAnalysisDetails(analysis)"
+      >
+        <div class="card-header">
+          <div class="title-section">
+            <h3 class="analysis-title">
+              {{ getAnalysisTypeIcon(analysis.analysis_type) }}
+              {{ analysis.analysis_name || 'Unnamed Analysis' }}
+            </h3>
+            <div class="analysis-meta">
+              <span class="analysis-type">{{ analysis.analysis_type === 'api' ? 'API Analysis' : 'Manual Analysis' }}</span>
+              <span class="date">{{ formatDate(analysis.created_at) }}</span>
+            </div>
+          </div>
+          <div class="status-section">
+            <span 
+              class="status-badge" 
+              [style.background-color]="getStatusColor(analysis.status)"
+            >
+              {{ analysis.status }}
+            </span>
+          </div>
+        </div>
+        
+        <div class="card-content">
+          <div class="stats-row">
+            <div class="stat-item">
+              <span class="stat-label">Total Items</span>
+              <span class="stat-value">{{ analysis.total_items || 0 }}</span>
+            </div>
+            <div class="stat-item" *ngIf="analysis.sentiment_distribution">
+              <span class="stat-label">Positive</span>
+              <span class="stat-value positive">{{ getSentimentCount(analysis.sentiment_distribution, 'positive') }}</span>
+            </div>
+            <div class="stat-item" *ngIf="analysis.sentiment_distribution">
+              <span class="stat-label">Negative</span>
+              <span class="stat-value negative">{{ getSentimentCount(analysis.sentiment_distribution, 'negative') }}</span>
+            </div>
+            <div class="stat-item" *ngIf="analysis.sentiment_distribution">
+              <span class="stat-label">Neutral</span>
+              <span class="stat-value neutral">{{ getSentimentCount(analysis.sentiment_distribution, 'neutral') }}</span>
+            </div>
+          </div>
+          
+          <div class="performance-info" *ngIf="analysis.processing_time">
+            <small>Processing time: {{ (analysis.processing_time / 1000).toFixed(2) }}s</small>
+          </div>
+        </div>
+        
+        <div class="card-actions">
+          <button 
+            class="btn btn-primary"
+            (click)="$event.stopPropagation(); viewAnalysisInsights(analysis.id)"
+            title="View detailed analysis insights with charts and statistics"
+          >
+            <i class="fas fa-chart-line"></i>
+            View Insights
+          </button>
+          <button 
+            class="btn btn-outline"
+            (click)="$event.stopPropagation(); viewAnalysisDetails(analysis)"
+          >
+            <i class="fas fa-list"></i>
+            View Details
+          </button>
+          <button 
+            class="btn btn-danger"
+            (click)="$event.stopPropagation(); deleteAnalysis(analysis.id)"
+          >
+            <i class="fas fa-trash"></i>
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button 
+        class="btn btn-pagination" 
+        [disabled]="!hasPrevPage"
+        (click)="changePage(currentPage - 1)"
+      >
+        « Previous
+      </button>
+      
+      <div class="page-numbers">
+        <span 
+          *ngFor="let page of getPageNumbers()" 
+          class="page-number"
+          [class.active]="page === currentPage"
+          (click)="changePage(page)"
+        >
+          {{ page }}
+        </span>
+      </div>
+      
+      <button 
+        class="btn btn-pagination" 
+        [disabled]="!hasNextPage"
+        (click)="changePage(currentPage + 1)"
+      >
+        Next »
+      </button>
+    </div>
+  </div>
+  
+  <!-- Details Modal -->
+  <div class="modal-overlay" *ngIf="showDetails" (click)="closeDetails()">
+    <div class="modal-content modal-large" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title-section">
+          <h3>
+            <i class="fas fa-table"></i>
+            {{ selectedAnalysis?.analysis_name || 'Analysis Results' }}
+            <span class="analysis-type-badge">{{ selectedAnalysis?.analysis_type === 'api' ? 'API' : 'Manual' }}</span>
+          </h3>
+          <div class="modal-subtitle" *ngIf="selectedAnalysis">
+            <span class="meta-item">
+              <i class="fas fa-database"></i>
+              {{ selectedAnalysis.total_items | number }} items
+            </span>
+            <span class="meta-item">
+              <i class="fas fa-clock"></i>
+              {{ formatDate(selectedAnalysis.created_at) }}
+            </span>
+            <span class="meta-item status-indicator" [style.color]="getStatusColor(selectedAnalysis.status)">
+              <i class="fas fa-circle"></i>
+              {{ selectedAnalysis.status }}
+            </span>
+          </div>
+        </div>
+        <button class="close-btn" (click)="closeDetails()" title="Close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <!-- Quick Stats Summary -->
+        <div class="quick-stats" *ngIf="selectedAnalysis && analysisDetails.length > 0">
+          <div class="stat-card positive">
+            <div class="stat-icon">
+              <i class="fas fa-smile"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ getSentimentCount(selectedAnalysis.sentiment_distribution, 'positive') | number }}</div>
+              <div class="stat-label">Positive</div>
+            </div>
+          </div>
+          <div class="stat-card negative">
+            <div class="stat-icon">
+              <i class="fas fa-frown"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ getSentimentCount(selectedAnalysis.sentiment_distribution, 'negative') | number }}</div>
+              <div class="stat-label">Negative</div>
+            </div>
+          </div>
+          <div class="stat-card neutral">
+            <div class="stat-icon">
+              <i class="fas fa-meh"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ getSentimentCount(selectedAnalysis.sentiment_distribution, 'neutral') | number }}</div>
+              <div class="stat-label">Neutral</div>
+            </div>
+          </div>
+          <div class="stat-card info" *ngIf="selectedAnalysis.processing_time">
+            <div class="stat-icon">
+              <i class="fas fa-stopwatch"></i>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ (selectedAnalysis.processing_time / 1000).toFixed(1) }}s</div>
+              <div class="stat-label">Processing Time</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="details-loading" *ngIf="loadingDetails">
+          <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Loading analysis results...</p>
+            <small>Please wait while we fetch the data</small>
+          </div>
+        </div>
+        
+        <!-- Main Results Table -->
+        <div class="results-section" *ngIf="!loadingDetails && analysisDetails.length > 0">
+          <div class="section-header">
+            <h4>
+              <i class="fas fa-list-alt"></i>
+              Analysis Results
+            </h4>
+            <div class="view-actions">
+              <button class="btn btn-sm btn-outline" (click)="exportResults()" title="Export results">
+                <i class="fas fa-download"></i>
+                Export
+              </button>
+              <button class="btn btn-sm btn-outline" (click)="viewAnalysisInsights(selectedAnalysis!.id)" title="View detailed insights">
+                <i class="fas fa-chart-line"></i>
+                Insights
+              </button>
+            </div>
+          </div>
+          
+          <div class="details-table">
+          <!-- Table Controls -->
+          <div class="table-controls">
+            <div class="results-info">
+              <span class="results-count">
+                Showing {{ ((detailsPage - 1) * detailsLimit) + 1 }} - 
+                {{ Math.min(detailsPage * detailsLimit, totalResults) }} of 
+                {{ totalResults }} results
+              </span>
+            </div>
+            <div class="pagination-controls">
+              <button 
+                class="btn btn-sm" 
+                [disabled]="!hasPrevDetailsPage"
+                (click)="changeDetailsPage(detailsPage - 1)"
+                title="Previous page"
+              >
+                <i class="fas fa-chevron-left"></i> Prev
+              </button>
+              
+              <span class="page-info">
+                {{ detailsPage }} / {{ detailsTotalPages }}
+              </span>
+              
+              <button 
+                class="btn btn-sm" 
+                [disabled]="!hasNextDetailsPage"
+                (click)="changeDetailsPage(detailsPage + 1)"
+                title="Next page"
+              >
+                Next <i class="fas fa-chevron-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Enhanced Table -->
+          <div class="table-container">
+            <table class="results-table">
+              <thead>
+                <tr>
+                  <th class="row-number">#</th>
+                  <th class="text-column">Text Content</th>
+                  <th class="sentiment-column">Sentiment</th>
+                  <th class="confidence-column">Confidence</th>
+                  <th class="username-column">User</th>
+                  <th class="timestamp-column">Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let detail of analysisDetails; let i = index; trackBy: trackByFn" 
+                    class="table-row"
+                    [class.training-sample]="detail.is_training_sample">
+                  <td class="row-number">
+                    {{ ((detailsPage - 1) * detailsLimit) + i + 1 }}
+                  </td>
+                  <td class="text-cell">
+                    <div class="text-content" [title]="detail.originalText || detail.text">
+                      {{ truncateText(detail.text, 120) }}
+                    </div>
+                    <div class="original-text" *ngIf="detail.originalText && detail.originalText !== detail.text">
+                      <small class="text-muted" [title]="detail.originalText">
+                        Raw: {{ truncateText(detail.originalText, 80) }}
+                      </small>
+                    </div>
+                  </td>
+                  <td class="sentiment-cell">
+                    <div class="sentiment-wrapper">
+                      <span 
+                        class="sentiment-badge"
+                        [class]="'sentiment-' + detail.sentiment.toLowerCase()"
+                        [style.background-color]="getSentimentColor(detail.sentiment)"
+                      >
+                        <i [class]="getSentimentIcon(detail.sentiment)"></i>
+                        {{ detail.sentiment | titlecase }}
+                      </span>
+                    </div>
+                  </td>
+                  <td class="confidence-cell">
+                    <div class="confidence-wrapper">
+                      <div class="confidence-score">
+                        {{ detail.confidence ? (detail.confidence * 100).toFixed(1) + '%' : 'N/A' }}
+                      </div>
+                      <div class="confidence-bar" *ngIf="detail.confidence && detail.confidence > 0">
+                        <div 
+                          class="confidence-fill" 
+                          [style.width.%]="(detail.confidence || 0) * 100"
+                          [class]="getConfidenceClass(detail.confidence || 0)">
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="username-cell">
+                    <div class="username-info" *ngIf="detail.username; else noUsername">
+                      <i class="fab fa-twitter text-primary"></i>
+                      <span class="username-text">{{ detail.username }}</span>
+                    </div>
+                    <ng-template #noUsername>
+                      <span class="text-muted no-username">
+                        <i class="fas fa-user-slash"></i>
+                        Anonymous
+                      </span>
+                    </ng-template>
+                  </td>
+                  <td class="timestamp-cell">
+                    <div class="timestamp-info" *ngIf="detail.timestamp || detail.created_at; else noDate">
+                      <div class="date-primary">
+                        {{ formatDate((detail.timestamp || detail.created_at)!) }}
+                      </div>
+                      <div class="date-secondary" *ngIf="detail.timestamp && detail.created_at && detail.timestamp !== detail.created_at">
+                        <small class="text-muted">
+                          Processed: {{ formatDate(detail.created_at) }}
+                        </small>
+                      </div>
+                    </div>
+                    <ng-template #noDate>
+                      <span class="text-muted no-date">
+                        <i class="fas fa-clock"></i>
+                        Unknown
+                      </span>
+                    </ng-template>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Bottom Pagination -->
+          <div class="details-pagination">
+            <div class="pagination-summary">
+              Page {{ detailsPage }} of {{ detailsTotalPages }}
+              <span class="separator">|</span>
+              {{ totalResults }} total results
+            </div>
+            
+            <div class="pagination-buttons">
+              <button 
+                class="btn btn-pagination" 
+                [disabled]="!hasPrevDetailsPage"
+                (click)="changeDetailsPage(1)"
+                title="First page"
+              >
+                <i class="fas fa-angle-double-left"></i>
+              </button>
+              
+              <button 
+                class="btn btn-pagination" 
+                [disabled]="!hasPrevDetailsPage"
+                (click)="changeDetailsPage(detailsPage - 1)"
+                title="Previous page"
+              >
+                <i class="fas fa-angle-left"></i>
+              </button>
+              
+              <!-- Page numbers -->
+              <span class="page-numbers">
+                <button 
+                  *ngFor="let page of getVisiblePages()" 
+                  class="btn btn-page"
+                  [class.active]="page === detailsPage"
+                  (click)="onPageClick(page)"
+                  [disabled]="page === '...'"
+                >
+                  {{ page }}
+                </button>
+              </span>
+              
+              <button 
+                class="btn btn-pagination" 
+                [disabled]="!hasNextDetailsPage"
+                (click)="changeDetailsPage(detailsPage + 1)"
+                title="Next page"
+              >
+                <i class="fas fa-angle-right"></i>
+              </button>
+              
+              <button 
+                class="btn btn-pagination" 
+                [disabled]="!hasNextDetailsPage"
+                (click)="changeDetailsPage(detailsTotalPages)"
+                title="Last page"
+              >
+                <i class="fas fa-angle-double-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        </div>
+        
+        <div class="no-details" *ngIf="!loadingDetails && analysisDetails.length === 0">
+          <div class="empty-results">
+            <i class="fas fa-inbox empty-icon"></i>
+            <h4>No Results Found</h4>
+            <p>This analysis doesn't have any detailed results available.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,365 @@
+<div class="container">
+  <h2>Training Data</h2>
+
+  <!-- Loading & Error Messages -->
+  <div *ngIf="loading" class="loading">Loading...</div>
+  <div *ngIf="errorMsg" class="error">{{ errorMsg }}</div>
+  <div *ngIf="successMsg" class="success">{{ successMsg }}</div>
+
+  <!-- Library Selection -->
+  <div class="library-selector">
+    <div class="selector-group">
+      <select [(ngModel)]="selectedLibraryId" (change)="loadLibraryDetails()" class="library-dropdown">
+        <option [value]="null">Select training data...</option>
+        <option *ngFor="let lib of libraries" [value]="lib.id">
+          {{ lib.name }} ({{ lib.word_count }} words, {{ lib.sample_count }} samples)
+        </option>
+      </select>
+      <button (click)="showCreateLibraryDialog()" class="btn-primary">
+        + New Training Data
+      </button>
+    </div>
+
+    <div class="library-stats" *ngIf="selectedLibrary">
+      <h3>{{ selectedLibrary.name }}</h3>
+      <p class="library-description">{{ selectedLibrary.description || 'No description' }}</p>
+      <button (click)="deleteLibrary()" class="btn-danger" *ngIf="!selectedLibrary.is_default">
+        Delete Training Data
+      </button>
+    </div>
+  </div>
+
+  <!-- Sample Tweets Section -->
+  <div *ngIf="selectedLibrary" class="samples-section">
+    <h3>Sample Tweets</h3>
+    
+    <!-- Add Sample Form -->
+    <div class="add-sample-form">
+      <div class="input-group">
+        <textarea 
+          [(ngModel)]="newSampleText" 
+          placeholder="Enter a sample tweet"
+          rows="2"
+        ></textarea>
+        <select [(ngModel)]="newSampleSentiment" class="sentiment-select">
+          <option value="positive">Positive</option>
+          <option value="negative">Negative</option>
+          <option value="neutral">Neutral</option>
+        </select>
+        <button (click)="addSample()" [disabled]="!newSampleText.trim()" class="btn-primary">
+          Add Sample
+        </button>
+      </div>
+
+      <!-- CSV Import for Samples -->
+      <div class="csv-import-section">
+        <label class="file-upload-btn">
+          📁 Import CSV
+          <input type="file" accept=".csv" (change)="onSampleCsvFileSelected($event)" hidden>
+        </label>
+        <span class="csv-hint">CSV format: tweet_text,sentiment (positive/negative/neutral)</span>
+      </div>
+    </div>
+
+    <!-- Bulk Actions for Samples -->
+    <div *ngIf="selectedSamples.size > 0" class="bulk-actions">
+      <span class="selection-count">{{ selectedSamples.size }} sample(s) selected</span>
+      <button (click)="deleteSelectedSamples()" class="btn-bulk-delete">
+        🗑️ Delete Selected
+      </button>
+      <button (click)="clearSampleSelection()" class="btn-bulk-clear">
+        Clear Selection
+      </button>
+    </div>
+
+    <!-- Samples Table -->
+    <div class="samples-table-container">
+      <table class="samples-table">
+        <thead>
+          <tr>
+            <th style="width: 50px;">
+              <input type="checkbox" 
+                     [checked]="selectAllSamples" 
+                     (change)="toggleSelectAllSamplesOnPage()"
+                     title="Select all on this page">
+            </th>
+            <th style="width: 50px;">#</th>
+            <th>Tweet Text</th>
+            <th style="width: 120px;">Sentiment</th>
+            <th style="width: 100px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let sample of paginatedSamples; let i = index">
+            <!-- View Mode -->
+            <tr *ngIf="editingSampleId !== sample.id"
+                [ngClass]="{
+                  'positive-row': sample.sentiment === 'positive',
+                  'negative-row': sample.sentiment === 'negative',
+                  'neutral-row': sample.sentiment === 'neutral',
+                  'selected-row': selectedSamples.has(sample.id)
+                }">
+              <td>
+                <input type="checkbox" 
+                       [checked]="selectedSamples.has(sample.id)"
+                       (change)="toggleSampleSelection(sample.id)">
+              </td>
+              <td>{{ (samplesCurrentPage - 1) * samplesItemsPerPage + i + 1 }}</td>
+              <td>{{ sample.tweet_text }}</td>
+              <td>
+                <span class="sentiment-badge" [ngClass]="sample.sentiment">
+                  <span *ngIf="sample.sentiment === 'positive'">😊 Positive</span>
+                  <span *ngIf="sample.sentiment === 'negative'">😠 Negative</span>
+                  <span *ngIf="sample.sentiment === 'neutral'">😐 Neutral</span>
+                </span>
+              </td>
+              <td>
+                <button (click)="startEditSample(sample)" class="btn-edit-small">Edit</button>
+                <button (click)="deleteSample(sample.id)" class="btn-delete-small">Delete</button>
+              </td>
+            </tr>
+            
+            <!-- Edit Mode -->
+            <tr *ngIf="editingSampleId === sample.id" class="edit-row">
+              <td>
+                <input type="checkbox" disabled>
+              </td>
+              <td>{{ (samplesCurrentPage - 1) * samplesItemsPerPage + i + 1 }}</td>
+              <td>
+                <textarea [(ngModel)]="editSampleText" class="edit-textarea" rows="2"></textarea>
+              </td>
+              <td>
+                <select [(ngModel)]="editSampleSentiment" class="edit-select">
+                  <option value="positive">😊 Positive</option>
+                  <option value="negative">�😠 Negative</option>
+                  <option value="neutral">😐 Neutral</option>
+                </select>
+              </td>
+              <td>
+                <button (click)="updateSample(sample.id)" class="btn-save-small">Save</button>
+                <button (click)="cancelEditSample()" class="btn-cancel-small">Cancel</button>
+              </td>
+            </tr>
+          </ng-container>
+          <tr *ngIf="allSamples.length === 0">
+            <td colspan="5" class="empty-table">No sample tweets yet. Add some above or import from CSV.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Samples Pagination -->
+    <div *ngIf="samplesTotalPages > 1" class="pagination">
+      <button (click)="previousSamplesPage()" [disabled]="samplesCurrentPage === 1" class="btn-pagination">
+        ← Previous
+      </button>
+      <span class="pagination-info">
+        Page {{ samplesCurrentPage }} of {{ samplesTotalPages }} 
+        ({{ allSamples.length }} total samples)
+      </span>
+      <button (click)="nextSamplesPage()" [disabled]="samplesCurrentPage === samplesTotalPages" class="btn-pagination">
+        Next →
+      </button>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="samples-summary">
+      <div class="stat positive">
+        <span class="stat-icon">😊</span>
+        <span class="stat-label">Positive:</span>
+        <span class="stat-value">{{ samples.positive.length }}</span>
+      </div>
+      <div class="stat negative">
+        <span class="stat-icon">😠</span>
+        <span class="stat-label">Negative:</span>
+        <span class="stat-value">{{ samples.negative.length }}</span>
+      </div>
+      <div class="stat neutral">
+        <span class="stat-icon">😐</span>
+        <span class="stat-label">Neutral:</span>
+        <span class="stat-value">{{ samples.neutral.length }}</span>
+      </div>
+      <div class="stat total">
+        <span class="stat-label">Total Samples:</span>
+        <span class="stat-value">{{ allSamples.length }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Word Management Section -->
+  <div *ngIf="selectedLibrary" class="word-section">
+    <h3>Sentiment Words</h3>
+    
+    <!-- Add Words Form -->
+    <div class="add-words-form">
+      <div class="input-group">
+        <textarea 
+          [(ngModel)]="newWords" 
+          placeholder="Enter words (one per line or comma-separated)"
+          rows="3"
+        ></textarea>
+        <select [(ngModel)]="newWordSentiment" class="sentiment-select">
+          <option value="positive">Positive</option>
+          <option value="negative">Negative</option>
+          <option value="neutral">Neutral</option>
+        </select>
+        <button (click)="addWords()" [disabled]="!newWords.trim()" class="btn-primary">
+          Add Words
+        </button>
+      </div>
+      
+      <!-- CSV Import -->
+      <div class="csv-import-section">
+        <label class="file-upload-btn">
+          <input type="file" #csvFileInput (change)="onCsvFileSelected($event)" accept=".csv" hidden>
+          📁 Import CSV
+        </label>
+        <span class="csv-hint">CSV format: word,sentiment (positive/negative/neutral)</span>
+      </div>
+    </div>
+
+    <!-- Bulk Actions for Words -->
+    <div *ngIf="selectedWords.size > 0" class="bulk-actions">
+      <span class="selection-count">{{ selectedWords.size }} word(s) selected</span>
+      <button (click)="deleteSelectedWords()" class="btn-bulk-delete">
+        🗑️ Delete Selected
+      </button>
+      <button (click)="clearWordSelection()" class="btn-bulk-clear">
+        Clear Selection
+      </button>
+    </div>
+
+    <!-- Words Table -->
+    <div class="words-table-container">
+      <table class="words-table">
+        <thead>
+          <tr>
+            <th style="width: 50px;">
+              <input type="checkbox" 
+                     [checked]="selectAllWords" 
+                     (change)="toggleSelectAllWordsOnPage()"
+                     title="Select all on this page">
+            </th>
+            <th style="width: 50px;">#</th>
+            <th>Word</th>
+            <th>Sentiment</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let word of paginatedWords; let i = index">
+            <!-- View Mode -->
+            <tr *ngIf="editingWord !== word.word"
+                [class.positive-row]="word.sentiment === 'positive'"
+                [class.negative-row]="word.sentiment === 'negative'"
+                [class.neutral-row]="word.sentiment === 'neutral'"
+                [class.selected-row]="selectedWords.has(word.word)">
+              <td>
+                <input type="checkbox" 
+                       [checked]="selectedWords.has(word.word)"
+                       (change)="toggleWordSelection(word.word)">
+              </td>
+              <td>{{ (wordsCurrentPage - 1) * wordsItemsPerPage + i + 1 }}</td>
+              <td>{{ word.word }}</td>
+              <td>
+                <span class="sentiment-badge" [ngClass]="word.sentiment">
+                  <span *ngIf="word.sentiment === 'positive'">😊 Positive</span>
+                  <span *ngIf="word.sentiment === 'negative'">😠 Negative</span>
+                  <span *ngIf="word.sentiment === 'neutral'">😐 Neutral</span>
+                </span>
+              </td>
+              <td>
+                <button (click)="startEditWord(word)" class="btn-edit-small">Edit</button>
+                <button (click)="deleteWord(word.word)" class="btn-delete-small">Delete</button>
+              </td>
+            </tr>
+            
+            <!-- Edit Mode -->
+            <tr *ngIf="editingWord === word.word" class="edit-row">
+              <td>
+                <input type="checkbox" disabled>
+              </td>
+              <td>{{ (wordsCurrentPage - 1) * wordsItemsPerPage + i + 1 }}</td>
+              <td>
+                <input type="text" [(ngModel)]="editWordText" class="edit-input">
+              </td>
+              <td>
+                <select [(ngModel)]="editWordSentiment" class="edit-select">
+                  <option value="positive">😊 Positive</option>
+                  <option value="negative">😠 Negative</option>
+                  <option value="neutral">😐 Neutral</option>
+                </select>
+              </td>
+              <td>
+                <button (click)="updateWord(word.word)" class="btn-save-small">Save</button>
+                <button (click)="cancelEditWord()" class="btn-cancel-small">Cancel</button>
+              </td>
+            </tr>
+          </ng-container>
+          <tr *ngIf="!allWords.length">
+            <td colspan="5" class="empty-table">No words in this training data yet. Add words or import from CSV.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Words Pagination -->
+    <div *ngIf="wordsTotalPages > 1" class="pagination">
+      <button (click)="previousWordsPage()" [disabled]="wordsCurrentPage === 1" class="btn-pagination">
+        ← Previous
+      </button>
+      <span class="pagination-info">
+        Page {{ wordsCurrentPage }} of {{ wordsTotalPages }} 
+        ({{ allWords.length }} total words)
+      </span>
+      <button (click)="nextWordsPage()" [disabled]="wordsCurrentPage === wordsTotalPages" class="btn-pagination">
+        Next →
+      </button>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="words-summary">
+      <div class="stat positive">
+        <span class="stat-icon">😊</span>
+        <span class="stat-label">Positive:</span>
+        <span class="stat-value">{{ words.positive.length }}</span>
+      </div>
+      <div class="stat negative">
+        <span class="stat-icon">😠</span>
+        <span class="stat-label">Negative:</span>
+        <span class="stat-value">{{ words.negative.length }}</span>
+      </div>
+      <div class="stat neutral">
+        <span class="stat-icon">😐</span>
+        <span class="stat-label">Neutral:</span>
+        <span class="stat-value">{{ words.neutral.length }}</span>
+      </div>
+      <div class="stat total">
+        <span class="stat-label">Total Words:</span>
+        <span class="stat-value">{{ allWords.length }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Library Dialog -->
+  <div *ngIf="showCreateDialog" class="modal-overlay" (click)="cancelCreateLibrary()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h3>Create New Training Data</h3>
+      <div class="form-group">
+        <label>Name:</label>
+        <input type="text" [(ngModel)]="newLibraryName" placeholder="e.g., Indonesian Slang Words">
+      </div>
+      <div class="form-group">
+        <label>Description (optional):</label>
+        <textarea [(ngModel)]="newLibraryDescription" rows="3" placeholder="Brief description of this training data"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button (click)="createLibrary()" [disabled]="!newLibraryName.trim()" class="btn-primary">
+          Create
+        </button>
+        <button (click)="cancelCreateLibrary()" class="btn-secondary">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>

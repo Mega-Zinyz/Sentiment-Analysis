@@ -1,0 +1,199 @@
+<!-- Data Collection Guide Component -->
+<div class="data-collection-guide">
+  <div class="guide-header">
+    <h2>📊 Twitter Data Collection Guide</h2>
+    <p>Multiple methods to collect Twitter data for sentiment analysis</p>
+  </div>
+
+  <div class="collection-methods">
+    
+    <!-- Method 1: Multiple API Keys -->
+    <div class="method-card premium">
+      <div class="method-header">
+        <h3>🔑 Method 1: Multiple API Keys (Recommended)</h3>
+        <span class="difficulty easy">Easy</span>
+      </div>
+      <div class="method-content">
+        <p><strong>Get 300-500 tweets/month by using multiple Twitter developer accounts:</strong></p>
+        <ol>
+          <li>Create 3-5 different email addresses</li>
+          <li>Apply for Twitter Developer access with each email</li>
+          <li>Get separate API keys for each account</li>
+          <li>Add all keys to your system for automatic rotation</li>
+        </ol>
+        <div class="method-benefits">
+          <span class="benefit">✅ Legal & Safe</span>
+          <span class="benefit">✅ Official API</span>
+          <span class="benefit">✅ 300-500 tweets/month</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Method 2: Academic Research -->
+    <div class="method-card academic">
+      <div class="method-header">
+        <h3>🎓 Method 2: Academic Research Access</h3>
+        <span class="difficulty medium">Medium</span>
+      </div>
+      <div class="method-content">
+        <p><strong>Get up to 10 million tweets/month for research:</strong></p>
+        <ol>
+          <li>Apply at <a href="https://developer.twitter.com/en/products/twitter-api/academic-research" target="_blank">Twitter Academic Research</a></li>
+          <li>Provide university affiliation and research details</li>
+          <li>Explain your sentiment analysis thesis project</li>
+          <li>Wait 2-7 days for approval</li>
+        </ol>
+        <div class="method-benefits">
+          <span class="benefit">✅ 10M tweets/month</span>
+          <span class="benefit">✅ Historical data access</span>
+          <span class="benefit">✅ Perfect for thesis</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Method 3: Existing Datasets -->
+    <div class="method-card dataset">
+      <div class="method-header">
+        <h3>🗂️ Method 3: Existing Datasets</h3>
+        <span class="difficulty easy">Easy</span>
+      </div>
+      <div class="method-content">
+        <p><strong>Use pre-collected datasets from research repositories:</strong></p>
+        <div class="dataset-sources">
+          <div class="source">
+            <h4>Kaggle Datasets:</h4>
+            <ul>
+              <li><a href="https://www.kaggle.com/datasets/kazanova/sentiment140" target="_blank">Sentiment140 (1.6M tweets)</a></li>
+              <li><a href="https://www.kaggle.com/datasets/jp797498e/twitter-entity-sentiment-analysis" target="_blank">Twitter Sentiment Analysis</a></li>
+              <li><a href="https://www.kaggle.com/datasets/abhi8923shriv/sentiment-analysis-dataset" target="_blank">Indonesian Twitter Sentiment</a></li>
+            </ul>
+          </div>
+          <div class="source">
+            <h4>GitHub Repositories:</h4>
+            <ul>
+              <li><a href="https://github.com/topics/twitter-dataset" target="_blank">Twitter Dataset Collections</a></li>
+              <li><a href="https://github.com/topics/indonesian-sentiment-analysis" target="_blank">Indonesian Sentiment Datasets</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="method-benefits">
+          <span class="benefit">✅ Immediate access</span>
+          <span class="benefit">✅ Large datasets</span>
+          <span class="benefit">✅ Pre-labeled data</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Method 4: Browser Tools -->
+    <div class="method-card tools">
+      <div class="method-header">
+        <h3>🛠️ Method 4: Browser Collection Tools</h3>
+        <span class="difficulty advanced">Advanced</span>
+      </div>
+      <div class="method-content">
+        <p><strong>Use browser extensions and tools (use responsibly):</strong></p>
+        <div class="tools-list">
+          <div class="tool">
+            <h4>Browser Extensions:</h4>
+            <ul>
+              <li><strong>Tweet Harvester:</strong> Chrome extension for collecting tweets</li>
+              <li><strong>Twitter Scraper:</strong> Export tweets to CSV/JSON</li>
+            </ul>
+          </div>
+          <div class="tool">
+            <h4>Python Libraries:</h4>
+            <ul>
+              <li><strong>snscrape:</strong> <code>pip install snscrape</code></li>
+              <li><strong>tweepy:</strong> Official Twitter API wrapper</li>
+              <li><strong>selenium:</strong> Browser automation</li>
+            </ul>
+          </div>
+        </div>
+        <div class="method-warning">
+          <span class="warning">⚠️ Check Twitter's Terms of Service</span>
+          <span class="warning">⚠️ Use respectfully and ethically</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Format Examples -->
+  <div class="format-examples">
+    <h3>📋 Supported Data Formats</h3>
+    <div class="format-tabs">
+      <button class="tab-button active" (click)="activeTab = 'json'">Twitter API JSON</button>
+      <button class="tab-button" (click)="activeTab = 'csv'">CSV Format</button>
+      <button class="tab-button" (click)="activeTab = 'tsv'">TSV Format</button>
+    </div>
+
+    <div class="format-content">
+      <div *ngIf="activeTab === 'json'" class="format-example">
+        <h4>Twitter API JSON Format (Recommended)</h4>
+        <pre><code>[
+  {
+    "id": "1234567890123456789",
+    "text": "Ketahui informasi pembagian #PPKM di wilayah Jabar",
+    "created_at": "2022-03-31T14:32:04.000Z",
+    "author_id": "987654321"
+  },
+  {
+    "id": "9876543210987654321", 
+    "text": "Senang sekali bisa berkunjung ke Bandung!",
+    "created_at": "2022-03-31T15:45:30.000Z",
+    "author_id": "123456789"
+  }
+]</code></pre>
+      </div>
+
+      <div *ngIf="activeTab === 'csv'" class="format-example">
+        <h4>CSV Format</h4>
+        <pre><code>timestamp,username,message
+"2022-03-31 14:32:04+00:00","pikobar_jabar","Ketahui informasi pembagian #PPKM"
+"2022-03-31 15:45:30+00:00","user123","Senang sekali bisa berkunjung ke Bandung!"</code></pre>
+      </div>
+
+      <div *ngIf="activeTab === 'tsv'" class="format-example">
+        <h4>TSV Format (Tab-separated)</h4>
+        <pre><code>Mon Dec 04 14:38:54 +0000 2023	Senang sekali hari ini!	user123	https://twitter.com/user123/status/123
+Tue Dec 05 09:15:22 +0000 2023	Hujan deras di Jakarta	jakarta_info	https://twitter.com/jakarta_info/status/456</code></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Tips -->
+  <div class="quick-tips">
+    <h3>💡 Quick Tips for Better Results</h3>
+    <div class="tips-grid">
+      <div class="tip">
+        <span class="tip-icon">📊</span>
+        <div class="tip-content">
+          <h4>Data Quality</h4>
+          <p>500+ tweets give better sentiment analysis accuracy than 100</p>
+        </div>
+      </div>
+      <div class="tip">
+        <span class="tip-icon">🎯</span>
+        <div class="tip-content">
+          <h4>Keyword Strategy</h4>
+          <p>Use specific Indonesian keywords: "covid indonesia", "vaksin", "lockdown"</p>
+        </div>
+      </div>
+      <div class="tip">
+        <span class="tip-icon">📅</span>
+        <div class="tip-content">
+          <h4>Time Range</h4>
+          <p>Collect data from different time periods for balanced analysis</p>
+        </div>
+      </div>
+      <div class="tip">
+        <span class="tip-icon">🔄</span>
+        <div class="tip-content">
+          <h4>Mixed Sentiment</h4>
+          <p>Include positive, negative, and neutral tweets for training</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

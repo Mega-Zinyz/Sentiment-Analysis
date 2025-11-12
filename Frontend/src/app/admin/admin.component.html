@@ -1,0 +1,157 @@
+<div class="admin-container">
+  <div class="admin-header">
+    <h1>🛡️ Admin Dashboard</h1>
+    <button (click)="refresh()" class="refresh-btn">🔄 Refresh</button>
+  </div>
+
+  <!-- System Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon">👥</div>
+      <div class="stat-content">
+        <div class="stat-number">{{ systemStats.totalUsers }}</div>
+        <div class="stat-label">Total Users</div>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon">📊</div>
+      <div class="stat-content">
+        <div class="stat-number">{{ systemStats.totalAnalyses }}</div>
+        <div class="stat-label">Total Analyses</div>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon">📁</div>
+      <div class="stat-content">
+        <div class="stat-number">{{ systemStats.totalWordLibraries || 0 }}</div>
+        <div class="stat-label">Training Data</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="error" class="alert error">{{ error }}</div>
+  <div *ngIf="success" class="alert success">{{ success }}</div>
+
+  <!-- User Management -->
+  <div class="user-management">
+    <div class="section-header">
+      <h2>👥 User Management</h2>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+      <div class="search-box">
+        <input 
+          type="text" 
+          [(ngModel)]="searchTerm" 
+          placeholder="Search users..." 
+          class="search-input">
+      </div>
+      
+      <div class="role-filter">
+        <select [(ngModel)]="selectedRole" class="role-select">
+          <option value="">All Roles</option>
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="table-container" *ngIf="!loading">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of paginatedUsers" [class.inactive]="!user.is_active">
+            <td class="user-info">
+              <div class="user-details">
+                <strong>{{ user.username }}</strong>
+                <small>{{ user.email }}</small>
+              </div>
+            </td>
+            
+            <td class="role-cell">
+              <select 
+                [value]="user.role" 
+                (change)="onRoleChange($event, user.id)"
+                class="role-select-inline">
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+              </select>
+            </td>
+            
+            <td class="status-cell">
+              <span class="status-badge" [class.active]="user.is_active" [class.inactive]="!user.is_active">
+                {{ user.is_active ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            
+            <td class="date-cell">
+              {{ formatDate(user.created_at) }}
+            </td>
+            
+            <td class="actions-cell">
+              <button 
+                (click)="toggleUserStatus(user.id, user.is_active)"
+                class="action-btn"
+                [class.activate]="!user.is_active"
+                [class.deactivate]="user.is_active">
+                {{ user.is_active ? '🚫 Deactivate' : '✅ Activate' }}
+              </button>
+              
+              <button 
+                (click)="deleteUser(user.id, user.username)"
+                class="action-btn delete">
+                🗑️ Delete
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Pagination -->
+      <div class="pagination" *ngIf="totalPages > 1">
+        <button 
+          (click)="changePage(currentPage - 1)" 
+          [disabled]="currentPage === 1"
+          class="page-btn">
+          ← Previous
+        </button>
+        
+        <span class="page-info">
+          Page {{ currentPage }} of {{ totalPages }}
+        </span>
+        
+        <button 
+          (click)="changePage(currentPage + 1)" 
+          [disabled]="currentPage === totalPages"
+          class="page-btn">
+          Next →
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading-state">
+      <div class="loading-spinner">⏳</div>
+      <p>Loading users...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && filteredUsers.length === 0" class="empty-state">
+      <div class="empty-icon">👤</div>
+      <p>No users found</p>
+    </div>
+  </div>
+</div>
