@@ -128,6 +128,31 @@ Then open: http://localhost:8000
 
 ## 🐛 Troubleshooting
 
+### Build Fails: "Dependencies lock file is not found"
+
+**Error**: `Dependencies lock file is not found in /home/runner/work/Sentiment-Analysis/Sentiment-Analysis`
+
+**Cause**: GitHub Actions cache requires a lock file.
+
+**Solution**: The workflow has been updated to remove caching. If you want to re-enable caching:
+
+1. Generate lock file locally:
+   ```bash
+   npm install
+   git add package-lock.json
+   git commit -m "chore: Add package-lock.json for GitHub Actions cache"
+   git push
+   ```
+
+2. Update workflow to use cache:
+   ```yaml
+   - name: Setup Node.js
+     uses: actions/setup-node@v4
+     with:
+       node-version: '18'
+       cache: 'npm'  # This requires package-lock.json
+   ```
+
 ### Build Fails: "Plugin not found"
 
 **Solution**: Some plugins may not be compatible with Honkit. Remove problematic plugins from `book.json`:
