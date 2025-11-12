@@ -10,7 +10,7 @@
   "language": "en",
   "gitbook": ">=3.0.0",
   "plugins": [
-    "search",
+    "-search",
     "-sharing",
     "-fontsettings"
   ],
