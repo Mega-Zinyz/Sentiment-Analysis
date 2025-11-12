@@ -1,0 +1,27 @@
+# Environment variables - NEVER commit secrets!
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+temp/
+*.tmp
+
+# GitBook
+_book/
+node_modules/
+.grunt/

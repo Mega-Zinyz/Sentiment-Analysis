@@ -1,0 +1,11 @@
+# Backend .dockerignore
+node_modules
+npm-debug.log
+.env
+.env.local
+*.log
+.git
+.gitignore
+*.md
+test_data.csv
+docs/*.md

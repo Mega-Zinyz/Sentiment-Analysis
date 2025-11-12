@@ -1,0 +1,74 @@
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: sentiment-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-sentiment_analysis_root}
+      MYSQL_DATABASE: ${DB_NAME:-sentiment_analysis}
+      MYSQL_USER: ${DB_USER:-sentiment_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-sentiment_pass}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./Backend/docs/database_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./Backend/docs/word_libraries_schema.sql:/docker-entrypoint-initdb.d/02_word_libraries.sql
+    networks:
+      - sentiment-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend API
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: sentiment-backend
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: ${PORT:-5000}
+      DB_HOST: mysql
+      DB_USER: ${DB_USER:-sentiment_user}
+      DB_PASSWORD: ${DB_PASSWORD:-sentiment_pass}
+      DB_NAME: ${DB_NAME:-sentiment_analysis}
+      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-this}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-your-encryption-key-change-this}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    ports:
+      - "5000:5000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    volumes:
+      - ./Backend/config:/app/config
+      - ./Backend/python:/app/python
+    networks:
+      - sentiment-network
+    restart: unless-stopped
+
+  # Frontend (Angular + Nginx)
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: sentiment-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - sentiment-network
+    restart: unless-stopped
+
+networks:
+  sentiment-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local

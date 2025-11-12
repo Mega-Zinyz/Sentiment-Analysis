@@ -1,0 +1,1053 @@
+
+<!DOCTYPE HTML>
+<html lang="en" >
+    <head>
+        <meta charset="UTF-8">
+        <title>Security Analysis · Indonesian Sentiment Analysis System</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="HonKit 6.1.4">
+        <meta name="author" content="Mega-Zinyz">
+        
+        
+    
+    <link rel="stylesheet" href="../../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../../gitbook/@honkit/honkit-plugin-highlight/website.css">
+                
+            
+        
+
+    
+
+    
+        
+        <link rel="stylesheet" href="../../styles/website.css">
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="../../PRODUCTION_CHECKLIST.html" />
+    
+    
+    <link rel="prev" href="RAW_DATA_ANALYSIS_API.html" />
+    
+
+    </head>
+    <body>
+        
+<div class="book honkit-cloak">
+    <div class="book-summary">
+        
+            
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+    
+        
+        <li>
+            <a href="https://github.com/Mega-Zinyz/Sentiment-Analysis" target="_blank" class="custom-link">Home</a>
+        </li>
+    
+        
+        <li>
+            <a href="https://mega-zinyz.github.io/Sentiment-Analysis" target="_blank" class="custom-link">Documentation</a>
+        </li>
+    
+        
+        <li>
+            <a href="https://github.com/Mega-Zinyz/Sentiment-Analysis/issues" target="_blank" class="custom-link">Issues</a>
+        </li>
+    
+    
+
+    
+    <li class="divider"></li>
+    
+
+    
+        
+        <li class="header">Introduction</li>
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../../">
+            
+                <a href="../../">
+            
+                    
+                        <b>1.1.</b>
+                    
+                    Welcome
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>1.2.</b>
+                    
+                    Overview
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>1.3.</b>
+                    
+                    Quick Start
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4" data-path="../../PRODUCTION_READY.html">
+            
+                <a href="../../PRODUCTION_READY.html">
+            
+                    
+                        <b>1.4.</b>
+                    
+                    Production Ready Status
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Getting Started</li>
+        
+        
+    
+        <li class="chapter " data-level="2.1" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>2.1.</b>
+                    
+                    Installation
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.2" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>2.2.</b>
+                    
+                    Configuration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.3" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>2.3.</b>
+                    
+                    First Time Setup
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.4" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>2.4.</b>
+                    
+                    Default Credentials
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Architecture & Design</li>
+        
+        
+    
+        <li class="chapter " data-level="3.1" data-path="../architecture/SYSTEM_ARCHITECTURE.html">
+            
+                <a href="../architecture/SYSTEM_ARCHITECTURE.html">
+            
+                    
+                        <b>3.1.</b>
+                    
+                    System Architecture
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="3.2" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>3.2.</b>
+                    
+                    Project Structure
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="3.3" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>3.3.</b>
+                    
+                    Technology Stack
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="3.4" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>3.4.</b>
+                    
+                    Performance Metrics
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">User Guide</li>
+        
+        
+    
+        <li class="chapter " data-level="4.1" data-path="../../user-guide/manual-csv-analysis.html">
+            
+                <a href="../../user-guide/manual-csv-analysis.html">
+            
+                    
+                        <b>4.1.</b>
+                    
+                    Manual CSV Analysis
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="4.2" data-path="../../user-guide/twitter-x-integration.html">
+            
+                <a href="../../user-guide/twitter-x-integration.html">
+            
+                    
+                        <b>4.2.</b>
+                    
+                    Twitter/X Integration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="4.3" data-path="../../user-guide/word-library-management.html">
+            
+                <a href="../../user-guide/word-library-management.html">
+            
+                    
+                        <b>4.3.</b>
+                    
+                    Word Library Management
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="4.4" data-path="../../user-guide/analysis-history.html">
+            
+                <a href="../../user-guide/analysis-history.html">
+            
+                    
+                        <b>4.4.</b>
+                    
+                    Analysis History
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">API Reference</li>
+        
+        
+    
+        <li class="chapter " data-level="5.1" data-path="../api/AUTHENTICATION.html">
+            
+                <a href="../api/AUTHENTICATION.html">
+            
+                    
+                        <b>5.1.</b>
+                    
+                    API Overview
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="5.2" data-path="RAW_DATA_ANALYSIS_API.html">
+            
+                <a href="RAW_DATA_ANALYSIS_API.html">
+            
+                    
+                        <b>5.2.</b>
+                    
+                    Raw Data Analysis API
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="5.3" data-path="SECURITY_ANALYSIS.html">
+            
+                <a href="SECURITY_ANALYSIS.html">
+            
+                    
+                        <b>5.3.</b>
+                    
+                    Security Analysis
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Deployment</li>
+        
+        
+    
+        <li class="chapter " data-level="6.1" data-path="../../PRODUCTION_CHECKLIST.html">
+            
+                <a href="../../PRODUCTION_CHECKLIST.html">
+            
+                    
+                        <b>6.1.</b>
+                    
+                    Production Checklist
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.2" data-path="../deployment/DOCKER_README.html">
+            
+                <a href="../deployment/DOCKER_README.html">
+            
+                    
+                        <b>6.2.</b>
+                    
+                    Docker Deployment
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.3" data-path="../deployment/DOCKER_INTEGRATION.html">
+            
+                <a href="../deployment/DOCKER_INTEGRATION.html">
+            
+                    
+                        <b>6.3.</b>
+                    
+                    Docker Integration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.4" data-path="../deployment/ENVIRONMENT_CONFIG_GUIDE.html">
+            
+                <a href="../deployment/ENVIRONMENT_CONFIG_GUIDE.html">
+            
+                    
+                        <b>6.4.</b>
+                    
+                    Environment Configuration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.5" data-path="../deployment/HOSTING_DEPLOYMENT_GUIDE.html">
+            
+                <a href="../deployment/HOSTING_DEPLOYMENT_GUIDE.html">
+            
+                    
+                        <b>6.5.</b>
+                    
+                    Hosting Providers
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.6" data-path="../deployment/PRODUCTION_SECURITY.html">
+            
+                <a href="../deployment/PRODUCTION_SECURITY.html">
+            
+                    
+                        <b>6.6.</b>
+                    
+                    Production Security
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.7" data-path="../deployment/CORS_CONFIGURATION.html">
+            
+                <a href="../deployment/CORS_CONFIGURATION.html">
+            
+                    
+                        <b>6.7.</b>
+                    
+                    CORS Configuration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.8" data-path="../GITHUB_PAGES_SETUP.html">
+            
+                <a href="../GITHUB_PAGES_SETUP.html">
+            
+                    
+                        <b>6.8.</b>
+                    
+                    GitHub Pages Setup
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Development</li>
+        
+        
+    
+        <li class="chapter " data-level="7.1" data-path="../development/LOGGING_GUIDE.html">
+            
+                <a href="../development/LOGGING_GUIDE.html">
+            
+                    
+                        <b>7.1.</b>
+                    
+                    Logging Guide
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="7.2" data-path="../development/PRODUCTION_DEBUGGING.html">
+            
+                <a href="../development/PRODUCTION_DEBUGGING.html">
+            
+                    
+                        <b>7.2.</b>
+                    
+                    Production Debugging
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Security</li>
+        
+        
+    
+        <li class="chapter " data-level="8.1" data-path="../deployment/PRODUCTION_SECURITY.html">
+            
+                <a href="../deployment/PRODUCTION_SECURITY.html">
+            
+                    
+                        <b>8.1.</b>
+                    
+                    Security Overview
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="8.2" data-path="SECURITY_ANALYSIS.html">
+            
+                <a href="SECURITY_ANALYSIS.html">
+            
+                    
+                        <b>8.2.</b>
+                    
+                    Security Analysis
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="8.3" data-path="../../SECURITY_FIXES.html">
+            
+                <a href="../../SECURITY_FIXES.html">
+            
+                    
+                        <b>8.3.</b>
+                    
+                    Security Fixes
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Monitoring & Maintenance</li>
+        
+        
+    
+        <li class="chapter " data-level="9.1" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>9.1.</b>
+                    
+                    Error Logs
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="9.2" data-path="../CLEANUP_PLAN.html">
+            
+                <a href="../CLEANUP_PLAN.html">
+            
+                    
+                        <b>9.2.</b>
+                    
+                    Cleanup Plan
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Troubleshooting</li>
+        
+        
+    
+        <li class="chapter " data-level="10.1" data-path="../troubleshooting/COMMON_ISSUES.html">
+            
+                <a href="../troubleshooting/COMMON_ISSUES.html">
+            
+                    
+                        <b>10.1.</b>
+                    
+                    Common Issues
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Reference</li>
+        
+        
+    
+        <li class="chapter " data-level="11.1" data-path="../reference/GLOSSARY.html">
+            
+                <a href="../reference/GLOSSARY.html">
+            
+                    
+                        <b>11.1.</b>
+                    
+                    Glossary
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="11.2" data-path="../reference/FAQ.html">
+            
+                <a href="../reference/FAQ.html">
+            
+                    
+                        <b>11.2.</b>
+                    
+                    FAQ
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="11.3" data-path="../../CHANGELOG.html">
+            
+                <a href="../../CHANGELOG.html">
+            
+                    
+                        <b>11.3.</b>
+                    
+                    Changelog
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Contributing</li>
+        
+        
+    
+        <li class="chapter " data-level="12.1" data-path="../../GITBOOK_SETUP.html">
+            
+                <a href="../../GITBOOK_SETUP.html">
+            
+                    
+                        <b>12.1.</b>
+                    
+                    GitBook Setup
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="12.2" data-path="../">
+            
+                <a href="../">
+            
+                    
+                        <b>12.2.</b>
+                    
+                    Documentation
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Support</li>
+        
+        
+    
+        <li class="chapter " data-level="13.1" >
+            
+                <a target="_blank" href="https://github.com/Mega-Zinyz/Sentiment-Analysis/issues">
+            
+                    
+                        <b>13.1.</b>
+                    
+                    GitHub Issues
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="13.2" >
+            
+                <a target="_blank" href="https://github.com/Mega-Zinyz/Sentiment-Analysis">
+            
+                    
+                        <b>13.2.</b>
+                    
+                    GitHub Repository
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://github.com/honkit/honkit" target="blank" class="gitbook-link">
+            Published with HonKit
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="../.." >Security Analysis</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+                                <section class="normal markdown-section">
+                                
+                                <p>// Enhanced security recommendations for API credential storage</p>
+<h2 id="security-enhancements-checklist">Security Enhancements Checklist</h2>
+<h3 id="✅-already-implemented-good-job">✅ Already Implemented (Good Job!)</h3>
+<ul>
+<li>[x] AES-256-GCM encryption</li>
+<li>[x] Unique IV per encryption</li>
+<li>[x] Authentication tags</li>
+<li>[x] Masked UI display</li>
+<li>[x] Per-user credential isolation</li>
+<li>[x] Environment-based encryption keys</li>
+</ul>
+<h3 id="🔧-recommended-improvements">🔧 Recommended Improvements</h3>
+<h4 id="1-key-rotation-strategy">1. Key Rotation Strategy</h4>
+<pre><code class="lang-javascript"><span class="hljs-comment">// Add to encryption.js</span>
+<span class="hljs-keyword">const</span> <span class="hljs-title function_">rotateEncryptionKey</span> = <span class="hljs-keyword">async</span> (<span class="hljs-params"></span>) =&gt; {
+  <span class="hljs-comment">// Implement key rotation every 90 days</span>
+  <span class="hljs-comment">// Re-encrypt all credentials with new key</span>
+};
+</code></pre>
+<h4 id="2-audit-logging">2. Audit Logging</h4>
+<pre><code class="lang-javascript"><span class="hljs-comment">// Log credential access (not values)</span>
+<span class="hljs-keyword">const</span> auditLog = {
+  <span class="hljs-attr">userId</span>: req.<span class="hljs-property">user</span>.<span class="hljs-property">id</span>,
+  <span class="hljs-attr">action</span>: <span class="hljs-string">'CREDENTIAL_ACCESS'</span>,
+  <span class="hljs-attr">timestamp</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>(),
+  <span class="hljs-attr">ipAddress</span>: req.<span class="hljs-property">ip</span>
+};
+</code></pre>
+<h4 id="3-credential-expiry">3. Credential Expiry</h4>
+<pre><code class="lang-sql"><span class="hljs-comment">-- Add expiry dates to credentials</span>
+<span class="hljs-keyword">ALTER TABLE</span> user_api_credentials 
+<span class="hljs-keyword">ADD</span> <span class="hljs-keyword">COLUMN</span> expires_at DATETIME <span class="hljs-keyword">DEFAULT</span> <span class="hljs-keyword">NULL</span>;
+</code></pre>
+<h4 id="4-rate-limiting">4. Rate Limiting</h4>
+<pre><code class="lang-javascript"><span class="hljs-comment">// Limit credential access attempts</span>
+<span class="hljs-keyword">const</span> rateLimitCredentialAccess = <span class="hljs-title function_">rateLimit</span>({
+  <span class="hljs-attr">windowMs</span>: <span class="hljs-number">15</span> * <span class="hljs-number">60</span> * <span class="hljs-number">1000</span>, <span class="hljs-comment">// 15 minutes</span>
+  <span class="hljs-attr">max</span>: <span class="hljs-number">100</span>, <span class="hljs-comment">// limit each user to 100 requests per windowMs</span>
+  <span class="hljs-attr">keyGenerator</span>: <span class="hljs-function">(<span class="hljs-params">req</span>) =&gt;</span> req.<span class="hljs-property">user</span>.<span class="hljs-property">id</span>
+});
+</code></pre>
+<h3 id="🛡️-security-best-practices">🛡️ Security Best Practices</h3>
+<ol>
+<li><p><strong>Regular Security Audits</strong></p>
+<ul>
+<li>Review access logs monthly</li>
+<li>Check for suspicious patterns</li>
+<li>Validate encryption integrity</li>
+</ul>
+</li>
+<li><p><strong>Backup Security</strong></p>
+<ul>
+<li>Encrypt database backups</li>
+<li>Secure backup storage</li>
+<li>Test recovery procedures</li>
+</ul>
+</li>
+<li><p><strong>Environment Hardening</strong></p>
+<ul>
+<li>Secure .env file permissions (600)</li>
+<li>Use secrets management in production</li>
+<li>Regular security updates</li>
+</ul>
+</li>
+<li><p><strong>Monitoring</strong></p>
+<ul>
+<li>Alert on multiple failed attempts</li>
+<li>Monitor for unusual access patterns</li>
+<li>Track credential usage metrics</li>
+</ul>
+</li>
+</ol>
+<h3 id="🎯-production-deployment-tips">🎯 Production Deployment Tips</h3>
+<ol>
+<li><p><strong>Use Secret Management Services:</strong></p>
+<ul>
+<li>AWS Secrets Manager</li>
+<li>Azure Key Vault  </li>
+<li>HashiCorp Vault</li>
+</ul>
+</li>
+<li><p><strong>Environment Separation:</strong></p>
+<ul>
+<li>Different keys per environment</li>
+<li>Separate databases for dev/prod</li>
+<li>Role-based access controls</li>
+</ul>
+</li>
+<li><p><strong>Network Security:</strong></p>
+<ul>
+<li>VPN access to databases</li>
+<li>Firewall rules</li>
+<li>SSL/TLS everywhere</li>
+</ul>
+</li>
+</ol>
+<h3 id="📈-risk-vs-convenience-matrix">📈 Risk vs Convenience Matrix</h3>
+<pre><code>High Security (Vault) ←→ High Convenience (Plain text)
+     ↑                              ↑
+Your Current System        Environment Variables
+(Good Balance)            (Single credentials)
+</code></pre><h2 id="conclusion">Conclusion</h2>
+<p>Your current implementation strikes an excellent balance between security and usability. The encryption is strong, the implementation is sound, and it allows per-user customization which is crucial for a multi-user system.</p>
+<p><strong>Recommendation: Keep your current approach</strong> with the minor enhancements suggested above.</p>
+
+                                
+                                </section>
+                            
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="RAW_DATA_ANALYSIS_API.html" class="navigation navigation-prev " aria-label="Previous page: Raw Data Analysis API">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="../../PRODUCTION_CHECKLIST.html" class="navigation navigation-next " aria-label="Next page: Production Checklist">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"Security Analysis","level":"5.3","depth":1,"next":{"title":"Production Checklist","level":"6.1","depth":1,"path":"PRODUCTION_CHECKLIST.md","ref":"PRODUCTION_CHECKLIST.md","articles":[]},"previous":{"title":"Raw Data Analysis API","level":"5.2","depth":1,"path":"docs/api-reference/RAW_DATA_ANALYSIS_API.md","ref":"docs/api-reference/RAW_DATA_ANALYSIS_API.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-search","-sharing","-fontsettings"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":true},"highlight":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false}},"theme":"default","author":"Mega-Zinyz","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56},"embedFonts":false},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{"version":"1.0.0","lastUpdated":"November 12, 2025"},"title":"Indonesian Sentiment Analysis System","language":"en","links":{"sidebar":{"Home":"https://github.com/Mega-Zinyz/Sentiment-Analysis","Documentation":"https://mega-zinyz.github.io/Sentiment-Analysis","Issues":"https://github.com/Mega-Zinyz/Sentiment-Analysis/issues"}},"gitbook":">=3.0.0","description":"Comprehensive documentation for production-ready Indonesian Sentiment Analysis application with Docker deployment"},"file":{"path":"docs/api-reference/SECURITY_ANALYSIS.md","mtime":"2025-11-12T10:47:36.258Z","type":"markdown"},"gitbook":{"version":"6.1.4","time":"2025-11-12T10:47:54.086Z"},"basePath":"../..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    <noscript>
+        <style>
+            .honkit-cloak {
+                display: block !important;
+            }
+        </style>
+    </noscript>
+    <script>
+        // Restore sidebar state as critical path for prevent layout shift
+        function __init__getSidebarState(defaultValue){
+            var baseKey = "";
+            var key = baseKey + ":sidebar";
+            try {
+                var value = localStorage[key];
+                if (value === undefined) {
+                    return defaultValue;
+                }
+                var parsed = JSON.parse(value);
+                return parsed == null ? defaultValue : parsed;
+            } catch (e) {
+                return defaultValue;
+            }
+        }
+        function __init__restoreLastSidebarState() {
+            var isMobile = window.matchMedia("(max-width: 600px)").matches;
+            if (isMobile) {
+                // Init last state if not mobile
+                return;
+            }
+            var sidebarState = __init__getSidebarState(true);
+            var book = document.querySelector(".book");
+            // Show sidebar if it enabled
+            if (sidebarState && book) {
+                book.classList.add("without-animation", "with-summary");
+            }
+        }
+
+        try {
+            __init__restoreLastSidebarState();
+        } finally {
+            var book = document.querySelector(".book");
+            book.classList.remove("honkit-cloak");
+        }
+    </script>
+    <script src="../../gitbook/gitbook.js"></script>
+    <script src="../../gitbook/theme.js"></script>
+    
+        
+        <script src="../../gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+
+    </body>
+</html>
+

@@ -1,0 +1,24 @@
+{
+  "name": "sentiment-analysis-docs",
+  "version": "1.0.0",
+  "description": "Documentation for Indonesian Sentiment Analysis System",
+  "scripts": {
+    "docs:install": "honkit install",
+    "docs:serve": "honkit serve",
+    "docs:build": "honkit build",
+    "docs:clean": "rimraf _book"
+  },
+  "keywords": [
+    "sentiment-analysis",
+    "indonesian",
+    "nlp",
+    "documentation",
+    "gitbook",
+    "honkit"
+  ],
+  "author": "Mega-Zinyz",
+  "license": "MIT",
+  "devDependencies": {
+    "honkit": "^4.0.0"
+  }
+}

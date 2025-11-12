@@ -1,0 +1,1136 @@
+
+<!DOCTYPE HTML>
+<html lang="en" >
+    <head>
+        <meta charset="UTF-8">
+        <title>Logging Guide · Indonesian Sentiment Analysis System</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="HonKit 6.1.4">
+        <meta name="author" content="Mega-Zinyz">
+        
+        
+    
+    <link rel="stylesheet" href="../../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../../gitbook/@honkit/honkit-plugin-highlight/website.css">
+                
+            
+        
+
+    
+
+    
+        
+        <link rel="stylesheet" href="../../styles/website.css">
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="PRODUCTION_DEBUGGING.html" />
+    
+    
+    <link rel="prev" href="../GITHUB_PAGES_SETUP.html" />
+    
+
+    </head>
+    <body>
+        
+<div class="book honkit-cloak">
+    <div class="book-summary">
+        
+            
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+    
+        
+        <li>
+            <a href="https://github.com/Mega-Zinyz/Sentiment-Analysis" target="_blank" class="custom-link">Home</a>
+        </li>
+    
+        
+        <li>
+            <a href="https://mega-zinyz.github.io/Sentiment-Analysis" target="_blank" class="custom-link">Documentation</a>
+        </li>
+    
+        
+        <li>
+            <a href="https://github.com/Mega-Zinyz/Sentiment-Analysis/issues" target="_blank" class="custom-link">Issues</a>
+        </li>
+    
+    
+
+    
+    <li class="divider"></li>
+    
+
+    
+        
+        <li class="header">Introduction</li>
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../../">
+            
+                <a href="../../">
+            
+                    
+                        <b>1.1.</b>
+                    
+                    Welcome
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>1.2.</b>
+                    
+                    Overview
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>1.3.</b>
+                    
+                    Quick Start
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4" data-path="../../PRODUCTION_READY.html">
+            
+                <a href="../../PRODUCTION_READY.html">
+            
+                    
+                        <b>1.4.</b>
+                    
+                    Production Ready Status
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Getting Started</li>
+        
+        
+    
+        <li class="chapter " data-level="2.1" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>2.1.</b>
+                    
+                    Installation
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.2" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>2.2.</b>
+                    
+                    Configuration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.3" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>2.3.</b>
+                    
+                    First Time Setup
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.4" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>2.4.</b>
+                    
+                    Default Credentials
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Architecture & Design</li>
+        
+        
+    
+        <li class="chapter " data-level="3.1" data-path="../architecture/SYSTEM_ARCHITECTURE.html">
+            
+                <a href="../architecture/SYSTEM_ARCHITECTURE.html">
+            
+                    
+                        <b>3.1.</b>
+                    
+                    System Architecture
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="3.2" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>3.2.</b>
+                    
+                    Project Structure
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="3.3" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>3.3.</b>
+                    
+                    Technology Stack
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="3.4" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>3.4.</b>
+                    
+                    Performance Metrics
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">User Guide</li>
+        
+        
+    
+        <li class="chapter " data-level="4.1" data-path="../../user-guide/manual-csv-analysis.html">
+            
+                <a href="../../user-guide/manual-csv-analysis.html">
+            
+                    
+                        <b>4.1.</b>
+                    
+                    Manual CSV Analysis
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="4.2" data-path="../../user-guide/twitter-x-integration.html">
+            
+                <a href="../../user-guide/twitter-x-integration.html">
+            
+                    
+                        <b>4.2.</b>
+                    
+                    Twitter/X Integration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="4.3" data-path="../../user-guide/word-library-management.html">
+            
+                <a href="../../user-guide/word-library-management.html">
+            
+                    
+                        <b>4.3.</b>
+                    
+                    Word Library Management
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="4.4" data-path="../../user-guide/analysis-history.html">
+            
+                <a href="../../user-guide/analysis-history.html">
+            
+                    
+                        <b>4.4.</b>
+                    
+                    Analysis History
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">API Reference</li>
+        
+        
+    
+        <li class="chapter " data-level="5.1" data-path="../api/AUTHENTICATION.html">
+            
+                <a href="../api/AUTHENTICATION.html">
+            
+                    
+                        <b>5.1.</b>
+                    
+                    API Overview
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="5.2" data-path="../api-reference/RAW_DATA_ANALYSIS_API.html">
+            
+                <a href="../api-reference/RAW_DATA_ANALYSIS_API.html">
+            
+                    
+                        <b>5.2.</b>
+                    
+                    Raw Data Analysis API
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="5.3" data-path="../api-reference/SECURITY_ANALYSIS.html">
+            
+                <a href="../api-reference/SECURITY_ANALYSIS.html">
+            
+                    
+                        <b>5.3.</b>
+                    
+                    Security Analysis
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Deployment</li>
+        
+        
+    
+        <li class="chapter " data-level="6.1" data-path="../../PRODUCTION_CHECKLIST.html">
+            
+                <a href="../../PRODUCTION_CHECKLIST.html">
+            
+                    
+                        <b>6.1.</b>
+                    
+                    Production Checklist
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.2" data-path="../deployment/DOCKER_README.html">
+            
+                <a href="../deployment/DOCKER_README.html">
+            
+                    
+                        <b>6.2.</b>
+                    
+                    Docker Deployment
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.3" data-path="../deployment/DOCKER_INTEGRATION.html">
+            
+                <a href="../deployment/DOCKER_INTEGRATION.html">
+            
+                    
+                        <b>6.3.</b>
+                    
+                    Docker Integration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.4" data-path="../deployment/ENVIRONMENT_CONFIG_GUIDE.html">
+            
+                <a href="../deployment/ENVIRONMENT_CONFIG_GUIDE.html">
+            
+                    
+                        <b>6.4.</b>
+                    
+                    Environment Configuration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.5" data-path="../deployment/HOSTING_DEPLOYMENT_GUIDE.html">
+            
+                <a href="../deployment/HOSTING_DEPLOYMENT_GUIDE.html">
+            
+                    
+                        <b>6.5.</b>
+                    
+                    Hosting Providers
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.6" data-path="../deployment/PRODUCTION_SECURITY.html">
+            
+                <a href="../deployment/PRODUCTION_SECURITY.html">
+            
+                    
+                        <b>6.6.</b>
+                    
+                    Production Security
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.7" data-path="../deployment/CORS_CONFIGURATION.html">
+            
+                <a href="../deployment/CORS_CONFIGURATION.html">
+            
+                    
+                        <b>6.7.</b>
+                    
+                    CORS Configuration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.8" data-path="../GITHUB_PAGES_SETUP.html">
+            
+                <a href="../GITHUB_PAGES_SETUP.html">
+            
+                    
+                        <b>6.8.</b>
+                    
+                    GitHub Pages Setup
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Development</li>
+        
+        
+    
+        <li class="chapter active" data-level="7.1" data-path="LOGGING_GUIDE.html">
+            
+                <a href="LOGGING_GUIDE.html">
+            
+                    
+                        <b>7.1.</b>
+                    
+                    Logging Guide
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="7.2" data-path="PRODUCTION_DEBUGGING.html">
+            
+                <a href="PRODUCTION_DEBUGGING.html">
+            
+                    
+                        <b>7.2.</b>
+                    
+                    Production Debugging
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Security</li>
+        
+        
+    
+        <li class="chapter " data-level="8.1" data-path="../deployment/PRODUCTION_SECURITY.html">
+            
+                <a href="../deployment/PRODUCTION_SECURITY.html">
+            
+                    
+                        <b>8.1.</b>
+                    
+                    Security Overview
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="8.2" data-path="../api-reference/SECURITY_ANALYSIS.html">
+            
+                <a href="../api-reference/SECURITY_ANALYSIS.html">
+            
+                    
+                        <b>8.2.</b>
+                    
+                    Security Analysis
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="8.3" data-path="../../SECURITY_FIXES.html">
+            
+                <a href="../../SECURITY_FIXES.html">
+            
+                    
+                        <b>8.3.</b>
+                    
+                    Security Fixes
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Monitoring & Maintenance</li>
+        
+        
+    
+        <li class="chapter " data-level="9.1" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>9.1.</b>
+                    
+                    Error Logs
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="9.2" data-path="../CLEANUP_PLAN.html">
+            
+                <a href="../CLEANUP_PLAN.html">
+            
+                    
+                        <b>9.2.</b>
+                    
+                    Cleanup Plan
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Troubleshooting</li>
+        
+        
+    
+        <li class="chapter " data-level="10.1" data-path="../troubleshooting/COMMON_ISSUES.html">
+            
+                <a href="../troubleshooting/COMMON_ISSUES.html">
+            
+                    
+                        <b>10.1.</b>
+                    
+                    Common Issues
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Reference</li>
+        
+        
+    
+        <li class="chapter " data-level="11.1" data-path="../reference/GLOSSARY.html">
+            
+                <a href="../reference/GLOSSARY.html">
+            
+                    
+                        <b>11.1.</b>
+                    
+                    Glossary
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="11.2" data-path="../reference/FAQ.html">
+            
+                <a href="../reference/FAQ.html">
+            
+                    
+                        <b>11.2.</b>
+                    
+                    FAQ
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="11.3" data-path="../../CHANGELOG.html">
+            
+                <a href="../../CHANGELOG.html">
+            
+                    
+                        <b>11.3.</b>
+                    
+                    Changelog
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Contributing</li>
+        
+        
+    
+        <li class="chapter " data-level="12.1" data-path="../../GITBOOK_SETUP.html">
+            
+                <a href="../../GITBOOK_SETUP.html">
+            
+                    
+                        <b>12.1.</b>
+                    
+                    GitBook Setup
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="12.2" data-path="../">
+            
+                <a href="../">
+            
+                    
+                        <b>12.2.</b>
+                    
+                    Documentation
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Support</li>
+        
+        
+    
+        <li class="chapter " data-level="13.1" >
+            
+                <a target="_blank" href="https://github.com/Mega-Zinyz/Sentiment-Analysis/issues">
+            
+                    
+                        <b>13.1.</b>
+                    
+                    GitHub Issues
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="13.2" >
+            
+                <a target="_blank" href="https://github.com/Mega-Zinyz/Sentiment-Analysis">
+            
+                    
+                        <b>13.2.</b>
+                    
+                    GitHub Repository
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://github.com/honkit/honkit" target="blank" class="gitbook-link">
+            Published with HonKit
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="../.." >Logging Guide</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="production-logging--debugging-guide">Production Logging &amp; Debugging Guide</h1>
+<h2 id="overview">Overview</h2>
+<p>This application uses <strong>Winston</strong> for production-grade logging instead of console.log statements. This allows you to debug production issues without cluttering the console.</p>
+<h2 id="how-it-works">How It Works</h2>
+<h3 id="development-mode-nodeenvdevelopment">Development Mode (NODE_ENV=development)</h3>
+<ul>
+<li>Logs appear in <strong>console</strong> with colors</li>
+<li>All log levels visible (debug, info, warn, error)</li>
+<li>Frontend shows detailed error messages</li>
+</ul>
+<h3 id="production-mode-nodeenvproduction">Production Mode (NODE_ENV=production)</h3>
+<ul>
+<li>Logs written to <strong>rotating log files</strong> in <code>/app/logs/</code></li>
+<li>Console.log statements are suppressed (except important ones with emojis)</li>
+<li>Frontend errors automatically sent to backend for logging</li>
+<li>Log files rotate daily and are kept for 14-30 days</li>
+</ul>
+<h2 id="log-files-location">Log Files Location</h2>
+<pre><code>Backend/logs/
+├── error-2025-11-12.log          # Error logs only (kept 30 days)
+├── combined-2025-11-12.log       # All logs info+ (kept 14 days)
+└── analysis-2025-11-12.log       # Sentiment analysis logs (kept 30 days)
+</code></pre><h2 id="accessing-logs-in-production">Accessing Logs in Production</h2>
+<h3 id="1-docker-container-logs">1. Docker Container Logs</h3>
+<pre><code class="lang-bash"><span class="hljs-comment"># View live logs</span>
+docker logs -f sentiment-backend
+
+<span class="hljs-comment"># View last 100 lines</span>
+docker logs --<span class="hljs-built_in">tail</span> 100 sentiment-backend
+
+<span class="hljs-comment"># View logs from specific time</span>
+docker logs --since 30m sentiment-backend
+</code></pre>
+<h3 id="2-access-log-files-inside-container">2. Access Log Files Inside Container</h3>
+<pre><code class="lang-bash"><span class="hljs-comment"># Enter container</span>
+docker <span class="hljs-built_in">exec</span> -it sentiment-backend sh
+
+<span class="hljs-comment"># View error logs</span>
+<span class="hljs-built_in">cat</span> /app/logs/error-2025-11-12.<span class="hljs-built_in">log</span>
+
+<span class="hljs-comment"># Tail live errors</span>
+<span class="hljs-built_in">tail</span> -f /app/logs/error-2025-11-12.<span class="hljs-built_in">log</span>
+
+<span class="hljs-comment"># Search for specific error</span>
+grep <span class="hljs-string">"session_id"</span> /app/logs/error-2025-11-12.<span class="hljs-built_in">log</span>
+</code></pre>
+<h3 id="3-copy-log-files-to-host">3. Copy Log Files to Host</h3>
+<pre><code class="lang-bash"><span class="hljs-comment"># Copy today's error log</span>
+docker <span class="hljs-built_in">cp</span> sentiment-backend:/app/logs/error-2025-11-12.<span class="hljs-built_in">log</span> ./error.log
+
+<span class="hljs-comment"># Copy all logs</span>
+docker <span class="hljs-built_in">cp</span> sentiment-backend:/app/logs/ ./backend-logs/
+</code></pre>
+<h3 id="4-mount-logs-volume-recommended-for-production">4. Mount Logs Volume (Recommended for Production)</h3>
+<p>Update <code>docker-compose.yml</code>:</p>
+<pre><code class="lang-yaml"><span class="hljs-attr">backend:</span>
+  <span class="hljs-attr">volumes:</span>
+    <span class="hljs-bullet">-</span> <span class="hljs-string">./logs:/app/logs</span>  <span class="hljs-comment"># Mount logs to host</span>
+</code></pre>
+<p>Then logs will be available at <code>./logs/</code> on your host machine.</p>
+<h2 id="log-levels">Log Levels</h2>
+<ol>
+<li><strong>error</strong> - Critical errors that need immediate attention</li>
+<li><strong>warn</strong> - Warning messages about potential issues</li>
+<li><strong>info</strong> - General information (analysis progress, API calls)</li>
+<li><strong>debug</strong> - Detailed debugging information (dev only)</li>
+</ol>
+<h2 id="using-the-logger-in-code">Using the Logger in Code</h2>
+<h3 id="backend-nodejs">Backend (Node.js)</h3>
+<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> logger = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./utils/logger'</span>);
+
+<span class="hljs-comment">// Basic logging</span>
+logger.<span class="hljs-title function_">info</span>(<span class="hljs-string">'User logged in successfully'</span>);
+logger.<span class="hljs-title function_">error</span>(<span class="hljs-string">'Database connection failed'</span>);
+logger.<span class="hljs-title function_">warn</span>(<span class="hljs-string">'Rate limit approaching threshold'</span>);
+
+<span class="hljs-comment">// Structured logging with metadata</span>
+logger.<span class="hljs-title function_">info</span>(<span class="hljs-string">'Analysis started'</span>, {
+  <span class="hljs-attr">sessionId</span>: <span class="hljs-string">'ABC123'</span>,
+  <span class="hljs-attr">itemCount</span>: <span class="hljs-number">1000</span>,
+  <span class="hljs-attr">userId</span>: <span class="hljs-number">42</span>
+});
+
+<span class="hljs-comment">// Specialized logging methods</span>
+logger.<span class="hljs-title function_">logAnalysis</span>(<span class="hljs-string">'SESSION_123'</span>, <span class="hljs-string">'Batch 5/10 completed'</span>, { 
+  <span class="hljs-attr">batchSize</span>: <span class="hljs-number">100</span> 
+});
+
+logger.<span class="hljs-title function_">logAuth</span>(userId, <span class="hljs-string">'Login attempt'</span>, { 
+  <span class="hljs-attr">success</span>: <span class="hljs-literal">true</span>, 
+  <span class="hljs-attr">ip</span>: <span class="hljs-string">'192.168.1.1'</span> 
+});
+
+logger.<span class="hljs-title function_">logAPI</span>(<span class="hljs-string">'/api/sentiment/analyze'</span>, <span class="hljs-string">'POST'</span>, <span class="hljs-number">200</span>, { 
+  <span class="hljs-attr">duration</span>: <span class="hljs-string">'1.5s'</span> 
+});
+
+logger.<span class="hljs-title function_">logError</span>(<span class="hljs-string">'SENTIMENT_ANALYSIS'</span>, error, { 
+  <span class="hljs-attr">sessionId</span>: <span class="hljs-string">'ABC123'</span> 
+});
+</code></pre>
+<h3 id="frontend-angular">Frontend (Angular)</h3>
+<p>Frontend errors are automatically logged to backend in production via <code>GlobalErrorHandler</code>.</p>
+<p>To manually log:</p>
+<pre><code class="lang-typescript"><span class="hljs-comment">// Errors are automatically caught and logged</span>
+<span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">'Something went wrong'</span>);
+
+<span class="hljs-comment">// For severe errors in development that should be logged:</span>
+<span class="hljs-variable language_">this</span>.<span class="hljs-property">http</span>.<span class="hljs-title function_">post</span>(<span class="hljs-string">`<span class="hljs-subst">${environment.apiUrl}</span>/error-log`</span>, {
+  <span class="hljs-attr">message</span>: <span class="hljs-string">'Critical operation failed'</span>,
+  <span class="hljs-attr">severity</span>: <span class="hljs-string">'error'</span>,
+  <span class="hljs-attr">metadata</span>: { <span class="hljs-attr">userId</span>: <span class="hljs-variable language_">this</span>.<span class="hljs-property">userId</span>, <span class="hljs-attr">action</span>: <span class="hljs-string">'export'</span> }
+}).<span class="hljs-title function_">subscribe</span>();
+</code></pre>
+<h2 id="monitoring-production-issues">Monitoring Production Issues</h2>
+<h3 id="common-debugging-scenarios">Common Debugging Scenarios:</h3>
+<p><strong>1. Analysis taking too long</strong></p>
+<pre><code class="lang-bash"><span class="hljs-comment"># Check analysis logs</span>
+docker <span class="hljs-built_in">exec</span> sentiment-backend <span class="hljs-built_in">tail</span> -f /app/logs/analysis-2025-11-12.<span class="hljs-built_in">log</span> | grep <span class="hljs-string">"ANALYSIS"</span>
+</code></pre>
+<p><strong>2. User authentication errors</strong></p>
+<pre><code class="lang-bash"><span class="hljs-comment"># Search for auth issues</span>
+docker <span class="hljs-built_in">exec</span> sentiment-backend grep <span class="hljs-string">"AUTH"</span> /app/logs/error-2025-11-12.<span class="hljs-built_in">log</span>
+</code></pre>
+<p><strong>3. Database connection issues</strong></p>
+<pre><code class="lang-bash"><span class="hljs-comment"># Look for database errors</span>
+docker <span class="hljs-built_in">exec</span> sentiment-backend grep -i <span class="hljs-string">"database\|mysql"</span> /app/logs/error-2025-11-12.<span class="hljs-built_in">log</span>
+</code></pre>
+<p><strong>4. API errors</strong></p>
+<pre><code class="lang-bash"><span class="hljs-comment"># Monitor API calls</span>
+docker <span class="hljs-built_in">exec</span> sentiment-backend grep <span class="hljs-string">"API"</span> /app/logs/combined-2025-11-12.<span class="hljs-built_in">log</span>
+</code></pre>
+<h2 id="production-deployment-checklist">Production Deployment Checklist</h2>
+<ul>
+<li>[ ] Set <code>NODE_ENV=production</code> in docker-compose.yml</li>
+<li>[ ] Mount logs volume: <code>./logs:/app/logs</code></li>
+<li>[ ] Set <code>LOG_LEVEL=info</code> (not debug)</li>
+<li>[ ] Remove any remaining console.log from code</li>
+<li>[ ] Test log file rotation (check next day)</li>
+<li>[ ] Setup log monitoring (optional: ELK stack, CloudWatch, etc.)</li>
+<li>[ ] Configure log retention based on compliance requirements</li>
+</ul>
+<h2 id="log-rotation">Log Rotation</h2>
+<p>Logs automatically rotate:</p>
+<ul>
+<li><strong>Daily</strong>: New file created each day</li>
+<li><strong>Max Size</strong>: 20-50MB per file</li>
+<li><strong>Retention</strong>: 14-30 days depending on log type</li>
+<li><strong>Old logs</strong>: Automatically deleted</li>
+</ul>
+<h2 id="security-notes">Security Notes</h2>
+<ul>
+<li>Log files may contain sensitive data (sanitize before sharing)</li>
+<li>Don't log passwords, API keys, or tokens</li>
+<li>Limit access to log files in production</li>
+<li>Consider encrypting log files at rest</li>
+<li>Review logs periodically for security incidents</li>
+</ul>
+<h2 id="advanced-centralized-logging-optional">Advanced: Centralized Logging (Optional)</h2>
+<p>For large-scale production, consider:</p>
+<ol>
+<li><strong>ELK Stack</strong> (Elasticsearch, Logstash, Kibana)</li>
+<li><strong>CloudWatch</strong> (AWS)</li>
+<li><strong>Papertrail</strong> (Solarwinds)</li>
+<li><strong>Datadog</strong></li>
+<li><strong>Sentry</strong> (for error tracking)</li>
+</ol>
+<p>Winston supports transports for all major logging services.</p>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<p><strong>Logs not appearing:</strong></p>
+<ul>
+<li>Check <code>NODE_ENV</code> is set correctly</li>
+<li>Verify <code>/app/logs</code> directory exists and is writable</li>
+<li>Check Docker volume mounts</li>
+</ul>
+<p><strong>Log files too large:</strong></p>
+<ul>
+<li>Reduce <code>maxSize</code> in <code>logger.js</code></li>
+<li>Decrease <code>maxFiles</code> retention period</li>
+<li>Adjust <code>LOG_LEVEL</code> to <code>info</code> or <code>warn</code></li>
+</ul>
+<p><strong>Missing log entries:</strong></p>
+<ul>
+<li>Check <code>LOG_LEVEL</code> setting (may be filtering out logs)</li>
+<li>Verify logger is imported and used instead of console.log</li>
+<li>Check if errors are thrown before logging</li>
+</ul>
+
+                                
+                                </section>
+                            
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="../GITHUB_PAGES_SETUP.html" class="navigation navigation-prev " aria-label="Previous page: GitHub Pages Setup">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="PRODUCTION_DEBUGGING.html" class="navigation navigation-next " aria-label="Next page: Production Debugging">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"Logging Guide","level":"7.1","depth":1,"next":{"title":"Production Debugging","level":"7.2","depth":1,"path":"docs/development/PRODUCTION_DEBUGGING.md","ref":"docs/development/PRODUCTION_DEBUGGING.md","articles":[]},"previous":{"title":"GitHub Pages Setup","level":"6.8","depth":1,"path":"docs/GITHUB_PAGES_SETUP.md","ref":"docs/GITHUB_PAGES_SETUP.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-search","-sharing","-fontsettings"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":true},"highlight":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false}},"theme":"default","author":"Mega-Zinyz","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56},"embedFonts":false},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{"version":"1.0.0","lastUpdated":"November 12, 2025"},"title":"Indonesian Sentiment Analysis System","language":"en","links":{"sidebar":{"Home":"https://github.com/Mega-Zinyz/Sentiment-Analysis","Documentation":"https://mega-zinyz.github.io/Sentiment-Analysis","Issues":"https://github.com/Mega-Zinyz/Sentiment-Analysis/issues"}},"gitbook":">=3.0.0","description":"Comprehensive documentation for production-ready Indonesian Sentiment Analysis application with Docker deployment"},"file":{"path":"docs/development/LOGGING_GUIDE.md","mtime":"2025-11-12T10:47:36.259Z","type":"markdown"},"gitbook":{"version":"6.1.4","time":"2025-11-12T10:47:54.086Z"},"basePath":"../..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    <noscript>
+        <style>
+            .honkit-cloak {
+                display: block !important;
+            }
+        </style>
+    </noscript>
+    <script>
+        // Restore sidebar state as critical path for prevent layout shift
+        function __init__getSidebarState(defaultValue){
+            var baseKey = "";
+            var key = baseKey + ":sidebar";
+            try {
+                var value = localStorage[key];
+                if (value === undefined) {
+                    return defaultValue;
+                }
+                var parsed = JSON.parse(value);
+                return parsed == null ? defaultValue : parsed;
+            } catch (e) {
+                return defaultValue;
+            }
+        }
+        function __init__restoreLastSidebarState() {
+            var isMobile = window.matchMedia("(max-width: 600px)").matches;
+            if (isMobile) {
+                // Init last state if not mobile
+                return;
+            }
+            var sidebarState = __init__getSidebarState(true);
+            var book = document.querySelector(".book");
+            // Show sidebar if it enabled
+            if (sidebarState && book) {
+                book.classList.add("without-animation", "with-summary");
+            }
+        }
+
+        try {
+            __init__restoreLastSidebarState();
+        } finally {
+            var book = document.querySelector(".book");
+            book.classList.remove("honkit-cloak");
+        }
+    </script>
+    <script src="../../gitbook/gitbook.js"></script>
+    <script src="../../gitbook/theme.js"></script>
+    
+        
+        <script src="../../gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+
+    </body>
+</html>
+

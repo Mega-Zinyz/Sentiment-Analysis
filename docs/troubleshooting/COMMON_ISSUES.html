@@ -1,0 +1,1526 @@
+
+<!DOCTYPE HTML>
+<html lang="en" >
+    <head>
+        <meta charset="UTF-8">
+        <title>Common Issues · Indonesian Sentiment Analysis System</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="HonKit 6.1.4">
+        <meta name="author" content="Mega-Zinyz">
+        
+        
+    
+    <link rel="stylesheet" href="../../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../../gitbook/@honkit/honkit-plugin-highlight/website.css">
+                
+            
+        
+
+    
+
+    
+        
+        <link rel="stylesheet" href="../../styles/website.css">
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="../reference/GLOSSARY.html" />
+    
+    
+    <link rel="prev" href="../CLEANUP_PLAN.html" />
+    
+
+    </head>
+    <body>
+        
+<div class="book honkit-cloak">
+    <div class="book-summary">
+        
+            
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+    
+        
+        <li>
+            <a href="https://github.com/Mega-Zinyz/Sentiment-Analysis" target="_blank" class="custom-link">Home</a>
+        </li>
+    
+        
+        <li>
+            <a href="https://mega-zinyz.github.io/Sentiment-Analysis" target="_blank" class="custom-link">Documentation</a>
+        </li>
+    
+        
+        <li>
+            <a href="https://github.com/Mega-Zinyz/Sentiment-Analysis/issues" target="_blank" class="custom-link">Issues</a>
+        </li>
+    
+    
+
+    
+    <li class="divider"></li>
+    
+
+    
+        
+        <li class="header">Introduction</li>
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../../">
+            
+                <a href="../../">
+            
+                    
+                        <b>1.1.</b>
+                    
+                    Welcome
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>1.2.</b>
+                    
+                    Overview
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>1.3.</b>
+                    
+                    Quick Start
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4" data-path="../../PRODUCTION_READY.html">
+            
+                <a href="../../PRODUCTION_READY.html">
+            
+                    
+                        <b>1.4.</b>
+                    
+                    Production Ready Status
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Getting Started</li>
+        
+        
+    
+        <li class="chapter " data-level="2.1" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>2.1.</b>
+                    
+                    Installation
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.2" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>2.2.</b>
+                    
+                    Configuration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.3" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>2.3.</b>
+                    
+                    First Time Setup
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.4" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>2.4.</b>
+                    
+                    Default Credentials
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Architecture & Design</li>
+        
+        
+    
+        <li class="chapter " data-level="3.1" data-path="../architecture/SYSTEM_ARCHITECTURE.html">
+            
+                <a href="../architecture/SYSTEM_ARCHITECTURE.html">
+            
+                    
+                        <b>3.1.</b>
+                    
+                    System Architecture
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="3.2" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>3.2.</b>
+                    
+                    Project Structure
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="3.3" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>3.3.</b>
+                    
+                    Technology Stack
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="3.4" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>3.4.</b>
+                    
+                    Performance Metrics
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">User Guide</li>
+        
+        
+    
+        <li class="chapter " data-level="4.1" data-path="../../user-guide/manual-csv-analysis.html">
+            
+                <a href="../../user-guide/manual-csv-analysis.html">
+            
+                    
+                        <b>4.1.</b>
+                    
+                    Manual CSV Analysis
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="4.2" data-path="../../user-guide/twitter-x-integration.html">
+            
+                <a href="../../user-guide/twitter-x-integration.html">
+            
+                    
+                        <b>4.2.</b>
+                    
+                    Twitter/X Integration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="4.3" data-path="../../user-guide/word-library-management.html">
+            
+                <a href="../../user-guide/word-library-management.html">
+            
+                    
+                        <b>4.3.</b>
+                    
+                    Word Library Management
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="4.4" data-path="../../user-guide/analysis-history.html">
+            
+                <a href="../../user-guide/analysis-history.html">
+            
+                    
+                        <b>4.4.</b>
+                    
+                    Analysis History
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">API Reference</li>
+        
+        
+    
+        <li class="chapter " data-level="5.1" data-path="../api/AUTHENTICATION.html">
+            
+                <a href="../api/AUTHENTICATION.html">
+            
+                    
+                        <b>5.1.</b>
+                    
+                    API Overview
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="5.2" data-path="../api-reference/RAW_DATA_ANALYSIS_API.html">
+            
+                <a href="../api-reference/RAW_DATA_ANALYSIS_API.html">
+            
+                    
+                        <b>5.2.</b>
+                    
+                    Raw Data Analysis API
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="5.3" data-path="../api-reference/SECURITY_ANALYSIS.html">
+            
+                <a href="../api-reference/SECURITY_ANALYSIS.html">
+            
+                    
+                        <b>5.3.</b>
+                    
+                    Security Analysis
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Deployment</li>
+        
+        
+    
+        <li class="chapter " data-level="6.1" data-path="../../PRODUCTION_CHECKLIST.html">
+            
+                <a href="../../PRODUCTION_CHECKLIST.html">
+            
+                    
+                        <b>6.1.</b>
+                    
+                    Production Checklist
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.2" data-path="../deployment/DOCKER_README.html">
+            
+                <a href="../deployment/DOCKER_README.html">
+            
+                    
+                        <b>6.2.</b>
+                    
+                    Docker Deployment
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.3" data-path="../deployment/DOCKER_INTEGRATION.html">
+            
+                <a href="../deployment/DOCKER_INTEGRATION.html">
+            
+                    
+                        <b>6.3.</b>
+                    
+                    Docker Integration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.4" data-path="../deployment/ENVIRONMENT_CONFIG_GUIDE.html">
+            
+                <a href="../deployment/ENVIRONMENT_CONFIG_GUIDE.html">
+            
+                    
+                        <b>6.4.</b>
+                    
+                    Environment Configuration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.5" data-path="../deployment/HOSTING_DEPLOYMENT_GUIDE.html">
+            
+                <a href="../deployment/HOSTING_DEPLOYMENT_GUIDE.html">
+            
+                    
+                        <b>6.5.</b>
+                    
+                    Hosting Providers
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.6" data-path="../deployment/PRODUCTION_SECURITY.html">
+            
+                <a href="../deployment/PRODUCTION_SECURITY.html">
+            
+                    
+                        <b>6.6.</b>
+                    
+                    Production Security
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.7" data-path="../deployment/CORS_CONFIGURATION.html">
+            
+                <a href="../deployment/CORS_CONFIGURATION.html">
+            
+                    
+                        <b>6.7.</b>
+                    
+                    CORS Configuration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.8" data-path="../GITHUB_PAGES_SETUP.html">
+            
+                <a href="../GITHUB_PAGES_SETUP.html">
+            
+                    
+                        <b>6.8.</b>
+                    
+                    GitHub Pages Setup
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Development</li>
+        
+        
+    
+        <li class="chapter " data-level="7.1" data-path="../development/LOGGING_GUIDE.html">
+            
+                <a href="../development/LOGGING_GUIDE.html">
+            
+                    
+                        <b>7.1.</b>
+                    
+                    Logging Guide
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="7.2" data-path="../development/PRODUCTION_DEBUGGING.html">
+            
+                <a href="../development/PRODUCTION_DEBUGGING.html">
+            
+                    
+                        <b>7.2.</b>
+                    
+                    Production Debugging
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Security</li>
+        
+        
+    
+        <li class="chapter " data-level="8.1" data-path="../deployment/PRODUCTION_SECURITY.html">
+            
+                <a href="../deployment/PRODUCTION_SECURITY.html">
+            
+                    
+                        <b>8.1.</b>
+                    
+                    Security Overview
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="8.2" data-path="../api-reference/SECURITY_ANALYSIS.html">
+            
+                <a href="../api-reference/SECURITY_ANALYSIS.html">
+            
+                    
+                        <b>8.2.</b>
+                    
+                    Security Analysis
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="8.3" data-path="../../SECURITY_FIXES.html">
+            
+                <a href="../../SECURITY_FIXES.html">
+            
+                    
+                        <b>8.3.</b>
+                    
+                    Security Fixes
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Monitoring & Maintenance</li>
+        
+        
+    
+        <li class="chapter " data-level="9.1" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>9.1.</b>
+                    
+                    Error Logs
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="9.2" data-path="../CLEANUP_PLAN.html">
+            
+                <a href="../CLEANUP_PLAN.html">
+            
+                    
+                        <b>9.2.</b>
+                    
+                    Cleanup Plan
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Troubleshooting</li>
+        
+        
+    
+        <li class="chapter active" data-level="10.1" data-path="COMMON_ISSUES.html">
+            
+                <a href="COMMON_ISSUES.html">
+            
+                    
+                        <b>10.1.</b>
+                    
+                    Common Issues
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Reference</li>
+        
+        
+    
+        <li class="chapter " data-level="11.1" data-path="../reference/GLOSSARY.html">
+            
+                <a href="../reference/GLOSSARY.html">
+            
+                    
+                        <b>11.1.</b>
+                    
+                    Glossary
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="11.2" data-path="../reference/FAQ.html">
+            
+                <a href="../reference/FAQ.html">
+            
+                    
+                        <b>11.2.</b>
+                    
+                    FAQ
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="11.3" data-path="../../CHANGELOG.html">
+            
+                <a href="../../CHANGELOG.html">
+            
+                    
+                        <b>11.3.</b>
+                    
+                    Changelog
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Contributing</li>
+        
+        
+    
+        <li class="chapter " data-level="12.1" data-path="../../GITBOOK_SETUP.html">
+            
+                <a href="../../GITBOOK_SETUP.html">
+            
+                    
+                        <b>12.1.</b>
+                    
+                    GitBook Setup
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="12.2" data-path="../">
+            
+                <a href="../">
+            
+                    
+                        <b>12.2.</b>
+                    
+                    Documentation
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Support</li>
+        
+        
+    
+        <li class="chapter " data-level="13.1" >
+            
+                <a target="_blank" href="https://github.com/Mega-Zinyz/Sentiment-Analysis/issues">
+            
+                    
+                        <b>13.1.</b>
+                    
+                    GitHub Issues
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="13.2" >
+            
+                <a target="_blank" href="https://github.com/Mega-Zinyz/Sentiment-Analysis">
+            
+                    
+                        <b>13.2.</b>
+                    
+                    GitHub Repository
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://github.com/honkit/honkit" target="blank" class="gitbook-link">
+            Published with HonKit
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="../.." >Common Issues</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="common-issues--troubleshooting">Common Issues &amp; Troubleshooting</h1>
+<p>This guide covers the most common issues you might encounter and their solutions.</p>
+<h2 id="🔍-quick-diagnosis">🔍 Quick Diagnosis</h2>
+<h3 id="check-system-health">Check System Health</h3>
+<pre><code class="lang-bash"><span class="hljs-comment"># Check all containers</span>
+docker-compose ps
+
+<span class="hljs-comment"># Check backend health</span>
+curl http://localhost:5000/health
+
+<span class="hljs-comment"># View recent logs</span>
+docker-compose logs --<span class="hljs-built_in">tail</span>=50 backend
+</code></pre>
+<h2 id="🚫-installation--setup-issues">🚫 Installation &amp; Setup Issues</h2>
+<h3 id="issue-docker-compose-fails-to-start">Issue: Docker Compose Fails to Start</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>Containers won't start</li>
+<li>Error messages during <code>docker-compose up</code></li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><p><strong>Check Docker is Running</strong></p>
+<pre><code class="lang-powershell">docker <span class="hljs-literal">--version</span>
+docker<span class="hljs-literal">-compose</span> <span class="hljs-literal">--version</span>
+</code></pre>
+</li>
+<li><p><strong>Check Port Conflicts</strong></p>
+<pre><code class="lang-powershell"><span class="hljs-comment"># Check if ports are already in use</span>
+netstat <span class="hljs-literal">-ano</span> | findstr :<span class="hljs-number">80</span>
+netstat <span class="hljs-literal">-ano</span> | findstr :<span class="hljs-number">5000</span>
+netstat <span class="hljs-literal">-ano</span> | findstr :<span class="hljs-number">3306</span>
+</code></pre>
+</li>
+<li><p><strong>Clear Docker Cache</strong></p>
+<pre><code class="lang-bash">docker-compose down -v
+docker system prune -a
+docker-compose up -d --build
+</code></pre>
+</li>
+<li><p><strong>Check .env File Exists</strong></p>
+<pre><code class="lang-powershell"><span class="hljs-built_in">Test-Path</span> .env
+<span class="hljs-built_in">cat</span> .env
+</code></pre>
+</li>
+</ol>
+<h3 id="issue-environment-variables-not-loading">Issue: Environment Variables Not Loading</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>"JWT_SECRET is required" error</li>
+<li>Database connection failed</li>
+<li>CORS errors</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><p><strong>Verify .env File</strong></p>
+<pre><code class="lang-bash"><span class="hljs-comment"># Check file exists</span>
+<span class="hljs-built_in">ls</span> -la .<span class="hljs-built_in">env</span>
+
+<span class="hljs-comment"># Verify critical variables</span>
+<span class="hljs-built_in">cat</span> .<span class="hljs-built_in">env</span> | grep JWT_SECRET
+<span class="hljs-built_in">cat</span> .<span class="hljs-built_in">env</span> | grep DB_PASSWORD
+</code></pre>
+</li>
+<li><p><strong>Regenerate Secrets</strong></p>
+<pre><code class="lang-bash">node -e <span class="hljs-string">"console.log('JWT_SECRET=' + require('crypto').randomBytes(64).toString('hex'))"</span>
+node -e <span class="hljs-string">"console.log('ENCRYPTION_KEY=' + require('crypto').randomBytes(32).toString('hex'))"</span>
+</code></pre>
+</li>
+<li><p><strong>Check for Quotes</strong></p>
+<pre><code class="lang-bash"><span class="hljs-comment"># WRONG</span>
+JWT_SECRET=<span class="hljs-string">"your-secret-here"</span>
+
+<span class="hljs-comment"># CORRECT</span>
+JWT_SECRET=your-secret-here
+</code></pre>
+</li>
+</ol>
+<h2 id="🔐-authentication-issues">🔐 Authentication Issues</h2>
+<h3 id="issue-cannot-login--invalid-credentials">Issue: Cannot Login / Invalid Credentials</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>"Invalid email or password" error</li>
+<li>Login succeeds but immediately logs out</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><p><strong>Check User Exists</strong></p>
+<pre><code class="lang-bash">docker <span class="hljs-built_in">exec</span> -it sentiment-mysql mysql -u sentiment_user -p
+USE sentiment_analysis;
+SELECT email, full_name FROM <span class="hljs-built_in">users</span>;
+</code></pre>
+</li>
+<li><p><strong>Reset Admin Password</strong></p>
+<pre><code class="lang-bash"><span class="hljs-built_in">cd</span> Backend
+node scripts/maintenance/reset-admin-password.js
+</code></pre>
+</li>
+<li><p><strong>Clear Browser Storage</strong></p>
+<ul>
+<li>Open DevTools (F12)</li>
+<li>Go to Application → Storage</li>
+<li>Clear site data</li>
+<li>Refresh page</li>
+</ul>
+</li>
+</ol>
+<h3 id="issue-jwt-token-expired">Issue: JWT Token Expired</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>401 Unauthorized errors</li>
+<li>Redirected to login frequently</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><p><strong>Check Token Expiration Settings</strong></p>
+<pre><code class="lang-bash">JWT_EXPIRATION=24h
+JWT_REFRESH_EXPIRATION=7d
+</code></pre>
+</li>
+<li><p><strong>Clear Tokens and Re-login</strong></p>
+<ul>
+<li>Logout</li>
+<li>Clear browser cache</li>
+<li>Login again</li>
+</ul>
+</li>
+</ol>
+<h2 id="🗄️-database-issues">🗄️ Database Issues</h2>
+<h3 id="issue-database-connection-failed">Issue: Database Connection Failed</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>"Error: connect ECONNREFUSED"</li>
+<li>"Access denied for user"</li>
+<li>Backend logs show database errors</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><p><strong>Check MySQL Container Status</strong></p>
+<pre><code class="lang-bash">docker-compose ps mysql
+docker-compose logs mysql
+</code></pre>
+</li>
+<li><p><strong>Wait for MySQL to be Ready</strong></p>
+<pre><code class="lang-bash"><span class="hljs-comment"># MySQL takes time to initialize</span>
+docker-compose logs mysql | grep <span class="hljs-string">"ready for connections"</span>
+</code></pre>
+</li>
+<li><p><strong>Verify Database Credentials</strong></p>
+<pre><code class="lang-bash"><span class="hljs-built_in">cat</span> .<span class="hljs-built_in">env</span> | grep DB_
+</code></pre>
+</li>
+<li><p><strong>Reset Database (WARNING: Deletes all data)</strong></p>
+<pre><code class="lang-bash">docker-compose down -v
+docker-compose up -d
+<span class="hljs-comment"># Wait 30 seconds for initialization</span>
+</code></pre>
+</li>
+<li><p><strong>Manual Database Connection Test</strong></p>
+<pre><code class="lang-bash">docker <span class="hljs-built_in">exec</span> -it sentiment-mysql mysql -u sentiment_user -p
+<span class="hljs-comment"># Enter password from .env file</span>
+SHOW DATABASES;
+USE sentiment_analysis;
+SHOW TABLES;
+</code></pre>
+</li>
+</ol>
+<h3 id="issue-tables-dont-exist">Issue: Tables Don't Exist</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>"Table doesn't exist" errors</li>
+<li>Database schema not created</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><p><strong>Run Setup Script</strong></p>
+<pre><code class="lang-bash"><span class="hljs-built_in">cd</span> Backend
+node scripts/setup/setup-database.js
+</code></pre>
+</li>
+<li><p><strong>Check Tables</strong></p>
+<pre><code class="lang-bash">docker <span class="hljs-built_in">exec</span> -it sentiment-mysql mysql -u sentiment_user -p
+USE sentiment_analysis;
+SHOW TABLES;
+</code></pre>
+</li>
+</ol>
+<h2 id="📊-analysis-issues">📊 Analysis Issues</h2>
+<h3 id="issue-analysis-stuck-or-very-slow">Issue: Analysis Stuck or Very Slow</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>Progress bar not moving</li>
+<li>Analysis takes longer than expected</li>
+<li>No results after long wait</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><p><strong>Check Worker Status</strong></p>
+<pre><code class="lang-bash">docker-compose logs backend | grep <span class="hljs-string">"Worker"</span>
+docker-compose logs backend | grep <span class="hljs-string">"Processing batch"</span>
+</code></pre>
+</li>
+<li><p><strong>Restart Backend</strong></p>
+<pre><code class="lang-bash">docker-compose restart backend
+</code></pre>
+</li>
+<li><p><strong>Reduce Worker Count/Batch Size</strong>
+Edit <code>Backend/routes/sentimentAnalysis.js</code>:</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> <span class="hljs-variable constant_">NUM_WORKERS</span> = <span class="hljs-number">3</span>;      <span class="hljs-comment">// Reduce from 6</span>
+<span class="hljs-keyword">const</span> <span class="hljs-variable constant_">BATCH_SIZE</span> = <span class="hljs-number">200</span>;     <span class="hljs-comment">// Reduce from 300</span>
+</code></pre>
+</li>
+<li><p><strong>Check System Resources</strong></p>
+<pre><code class="lang-bash">docker stats sentiment-backend
+</code></pre>
+</li>
+<li><p><strong>Check for Errors</strong></p>
+<pre><code class="lang-bash">docker-compose logs backend | grep <span class="hljs-string">"ERROR"</span>
+docker <span class="hljs-built_in">exec</span> sentiment-backend <span class="hljs-built_in">tail</span> -f /app/logs/error-*.<span class="hljs-built_in">log</span>
+</code></pre>
+</li>
+</ol>
+<h3 id="issue-analysis-results-show-0-or-100">Issue: Analysis Results Show 0% or 100%</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>All tweets classified as positive</li>
+<li>All tweets classified as negative</li>
+<li>No variation in results</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><p><strong>Check Word Library Quality</strong></p>
+<ul>
+<li>Ensure library has both positive AND negative words</li>
+<li>Add more diverse words</li>
+<li>Use domain-specific vocabulary</li>
+</ul>
+</li>
+<li><p><strong>Verify Word Library Selection</strong></p>
+<ul>
+<li>Check that correct library was selected</li>
+<li>View library contents in Admin panel</li>
+</ul>
+</li>
+<li><p><strong>Test with Sample Data</strong></p>
+<pre><code class="lang-bash"><span class="hljs-built_in">cd</span> Backend
+node scripts/testing/test_raw_data_analysis.js
+</code></pre>
+</li>
+</ol>
+<h3 id="issue-python-worker-timeout">Issue: Python Worker Timeout</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>"Worker timeout" errors</li>
+<li>Analysis fails after 240 seconds</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><p><strong>Increase Timeout</strong>
+Edit <code>Backend/routes/sentimentAnalysis.js</code>:</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> <span class="hljs-variable constant_">WORKER_TIMEOUT</span> = <span class="hljs-number">360</span>; <span class="hljs-comment">// Increase from 240</span>
+</code></pre>
+</li>
+<li><p><strong>Reduce Batch Size</strong></p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> <span class="hljs-variable constant_">BATCH_SIZE</span> = <span class="hljs-number">200</span>; <span class="hljs-comment">// Reduce from 300</span>
+</code></pre>
+</li>
+<li><p><strong>Check Python Dependencies</strong></p>
+<pre><code class="lang-bash">docker <span class="hljs-built_in">exec</span> sentiment-backend pip list | grep -E <span class="hljs-string">"scikit|sastrawi"</span>
+</code></pre>
+</li>
+</ol>
+<h2 id="🌐-frontend-issues">🌐 Frontend Issues</h2>
+<h3 id="issue-frontend-not-loading--blank-page">Issue: Frontend Not Loading / Blank Page</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>White screen</li>
+<li>"Cannot GET /" error</li>
+<li>Nginx errors</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><p><strong>Check Frontend Container</strong></p>
+<pre><code class="lang-bash">docker-compose ps frontend
+docker-compose logs frontend
+</code></pre>
+</li>
+<li><p><strong>Rebuild Frontend</strong></p>
+<pre><code class="lang-bash">docker-compose up -d --build frontend
+</code></pre>
+</li>
+<li><p><strong>Check Nginx Configuration</strong></p>
+<pre><code class="lang-bash">docker <span class="hljs-built_in">exec</span> sentiment-frontend <span class="hljs-built_in">cat</span> /etc/nginx/nginx.conf
+</code></pre>
+</li>
+<li><p><strong>Clear Browser Cache</strong></p>
+<ul>
+<li>Hard refresh (Ctrl + Shift + R)</li>
+<li>Clear cache and cookies</li>
+</ul>
+</li>
+</ol>
+<h3 id="issue-cors-errors">Issue: CORS Errors</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>"Access to XMLHttpRequest blocked by CORS"</li>
+<li>Network errors in browser console</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><p><strong>Check Allowed Origins</strong></p>
+<pre><code class="lang-bash"><span class="hljs-built_in">cat</span> .<span class="hljs-built_in">env</span> | grep ALLOWED_ORIGINS
+</code></pre>
+</li>
+<li><p><strong>Update CORS Settings</strong></p>
+<pre><code class="lang-bash"><span class="hljs-comment"># For development</span>
+ALLOWED_ORIGINS=http://localhost,http://localhost:4200
+
+<span class="hljs-comment"># For production</span>
+ALLOWED_ORIGINS=https://yourdomain.com
+
+<span class="hljs-comment"># For wildcard subdomain</span>
+ALLOWED_ORIGINS=*.yourdomain.com
+</code></pre>
+</li>
+<li><p><strong>Restart Backend</strong></p>
+<pre><code class="lang-bash">docker-compose restart backend
+</code></pre>
+</li>
+<li><p><strong>Check CORS Logs</strong></p>
+<pre><code class="lang-bash">docker-compose logs backend | grep <span class="hljs-string">"CORS"</span>
+</code></pre>
+</li>
+</ol>
+<h3 id="issue-api-requests-failing">Issue: API Requests Failing</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>404 Not Found errors</li>
+<li>500 Internal Server Error</li>
+<li>Network timeout</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><p><strong>Check Backend Health</strong></p>
+<pre><code class="lang-bash">curl http://localhost:5000/health
+</code></pre>
+</li>
+<li><p><strong>Verify API URL Configuration</strong>
+Check <code>Frontend/src/environments/environment.ts</code>:</p>
+<pre><code class="lang-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> environment = {
+  <span class="hljs-attr">apiUrl</span>: <span class="hljs-string">'http://localhost:5000'</span>
+};
+</code></pre>
+</li>
+<li><p><strong>Check Network Tab</strong></p>
+<ul>
+<li>Open DevTools (F12)</li>
+<li>Go to Network tab</li>
+<li>See actual requests and responses</li>
+<li>Check request URL and payload</li>
+</ul>
+</li>
+</ol>
+<h2 id="🔒-security-issues">🔒 Security Issues</h2>
+<h3 id="issue-rate-limiting--too-many-requests">Issue: Rate Limiting / Too Many Requests</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>"Too many requests" error</li>
+<li>429 status code</li>
+<li>Temporary API lockout</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><p><strong>Wait and Retry</strong></p>
+<ul>
+<li>Rate limit resets after 15 minutes</li>
+</ul>
+</li>
+<li><p><strong>Adjust Rate Limits</strong>
+Edit <code>.env</code>:</p>
+<pre><code class="lang-bash">RATE_LIMIT_WINDOW_MS=900000  <span class="hljs-comment"># 15 minutes</span>
+RATE_LIMIT_MAX_REQUESTS=200  <span class="hljs-comment"># Increase from 100</span>
+</code></pre>
+</li>
+<li><p><strong>Check IP Address</strong></p>
+<pre><code class="lang-bash">docker-compose logs backend | grep <span class="hljs-string">"Rate limit"</span>
+</code></pre>
+</li>
+</ol>
+<h3 id="issue-unauthorized--401-errors">Issue: Unauthorized / 401 Errors</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>Logged out unexpectedly</li>
+<li>Cannot access protected routes</li>
+<li>"Unauthorized" errors</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><p><strong>Check Token Validity</strong></p>
+<ul>
+<li>Open DevTools → Application → Session Storage</li>
+<li>Check if <code>token</code> exists</li>
+<li>Check <code>tokenExpiry</code></li>
+</ul>
+</li>
+<li><p><strong>Re-authenticate</strong></p>
+<ul>
+<li>Logout and login again</li>
+<li>Clear session storage</li>
+</ul>
+</li>
+<li><p><strong>Verify JWT Secret</strong></p>
+<pre><code class="lang-bash"><span class="hljs-built_in">cat</span> .<span class="hljs-built_in">env</span> | grep JWT_SECRET
+<span class="hljs-comment"># Ensure it's set and hasn't changed</span>
+</code></pre>
+</li>
+</ol>
+<h2 id="📁-file-upload-issues">📁 File Upload Issues</h2>
+<h3 id="issue-csv-upload-fails">Issue: CSV Upload Fails</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>"Invalid file format" error</li>
+<li>Upload stuck at 0%</li>
+<li>No data appears after upload</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><p><strong>Verify CSV Format</strong>
+Required columns:</p>
+<pre><code class="lang-text">timestamp,username,message
+2024-01-01 10:00:00,user123,Tweet text here
+</code></pre>
+</li>
+<li><p><strong>Check File Size</strong></p>
+<pre><code class="lang-bash"><span class="hljs-comment"># Increase in .env if needed</span>
+MAX_FILE_SIZE=50MB
+</code></pre>
+</li>
+<li><p><strong>Check Upload Directory Permissions</strong></p>
+<pre><code class="lang-bash">docker <span class="hljs-built_in">exec</span> sentiment-backend <span class="hljs-built_in">ls</span> -la /app/temp/uploads
+</code></pre>
+</li>
+<li><p><strong>Check Backend Logs</strong></p>
+<pre><code class="lang-bash">docker-compose logs backend | grep <span class="hljs-string">"upload"</span>
+</code></pre>
+</li>
+</ol>
+<h2 id="🐛-performance-issues">🐛 Performance Issues</h2>
+<h3 id="issue-high-memory-usage">Issue: High Memory Usage</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>System slowdown</li>
+<li>Container crashes</li>
+<li>Out of memory errors</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><p><strong>Check Resource Usage</strong></p>
+<pre><code class="lang-bash">docker stats
+</code></pre>
+</li>
+<li><p><strong>Reduce Worker Count</strong></p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> <span class="hljs-variable constant_">NUM_WORKERS</span> = <span class="hljs-number">3</span>; <span class="hljs-comment">// Instead of 6</span>
+</code></pre>
+</li>
+<li><p><strong>Reduce Batch Size</strong></p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> <span class="hljs-variable constant_">BATCH_SIZE</span> = <span class="hljs-number">100</span>; <span class="hljs-comment">// Instead of 300</span>
+</code></pre>
+</li>
+<li><p><strong>Increase Docker Memory Limit</strong></p>
+<ul>
+<li>Docker Desktop → Settings → Resources</li>
+<li>Increase memory allocation</li>
+</ul>
+</li>
+</ol>
+<h3 id="issue-slow-database-queries">Issue: Slow Database Queries</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>Long response times</li>
+<li>Timeouts</li>
+<li>High database CPU usage</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><p><strong>Add Database Indexes</strong></p>
+<pre><code class="lang-sql"><span class="hljs-keyword">CREATE</span> INDEX idx_user_id <span class="hljs-keyword">ON</span> analysis_sessions(user_id);
+<span class="hljs-keyword">CREATE</span> INDEX idx_session_id <span class="hljs-keyword">ON</span> analysis_results(session_id);
+</code></pre>
+</li>
+<li><p><strong>Optimize Queries</strong></p>
+<pre><code class="lang-bash">docker <span class="hljs-built_in">exec</span> sentiment-backend <span class="hljs-built_in">cat</span> /app/logs/combined-*.<span class="hljs-built_in">log</span> | grep <span class="hljs-string">"query"</span>
+</code></pre>
+</li>
+<li><p><strong>Check Connection Pool</strong></p>
+<pre><code class="lang-javascript"><span class="hljs-comment">// Backend/config/mysql-database.js</span>
+<span class="hljs-attr">connectionLimit</span>: <span class="hljs-number">10</span> <span class="hljs-comment">// Adjust as needed</span>
+</code></pre>
+</li>
+</ol>
+<h2 id="🔧-docker-issues">🔧 Docker Issues</h2>
+<h3 id="issue-container-keeps-restarting">Issue: Container Keeps Restarting</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>Container status shows "restarting"</li>
+<li>Logs show repeated startup messages</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><p><strong>Check Container Logs</strong></p>
+<pre><code class="lang-bash">docker-compose logs --<span class="hljs-built_in">tail</span>=100 backend
+docker-compose logs --<span class="hljs-built_in">tail</span>=100 frontend
+docker-compose logs --<span class="hljs-built_in">tail</span>=100 mysql
+</code></pre>
+</li>
+<li><p><strong>Check for Port Conflicts</strong></p>
+<pre><code class="lang-powershell">netstat <span class="hljs-literal">-ano</span> | findstr :<span class="hljs-number">80</span>
+netstat <span class="hljs-literal">-ano</span> | findstr :<span class="hljs-number">5000</span>
+netstat <span class="hljs-literal">-ano</span> | findstr :<span class="hljs-number">3306</span>
+</code></pre>
+</li>
+<li><p><strong>Remove and Recreate</strong></p>
+<pre><code class="lang-bash">docker-compose down
+docker-compose up -d
+</code></pre>
+</li>
+</ol>
+<h3 id="issue-volume-permission-errors">Issue: Volume Permission Errors</h3>
+<p><strong>Symptoms:</strong></p>
+<ul>
+<li>"Permission denied" errors</li>
+<li>Cannot write to volumes</li>
+<li>Log files not created</li>
+</ul>
+<p><strong>Solutions:</strong></p>
+<ol>
+<li><p><strong>Check Volume Mounts</strong></p>
+<pre><code class="lang-bash">docker-compose config
+</code></pre>
+</li>
+<li><p><strong>Reset Volumes</strong></p>
+<pre><code class="lang-bash">docker-compose down -v
+docker volume prune
+docker-compose up -d
+</code></pre>
+</li>
+</ol>
+<h2 id="📞-getting-more-help">📞 Getting More Help</h2>
+<p>If your issue isn't covered here:</p>
+<ol>
+<li><p><strong>Check Detailed Logs</strong></p>
+<pre><code class="lang-bash">docker-compose logs --<span class="hljs-built_in">tail</span>=200 &gt; debug.log
+</code></pre>
+</li>
+<li><p><strong>Search Existing Issues</strong></p>
+<ul>
+<li><a href="https://github.com/Mega-Zinyz/Sentiment-Analysis/issues" target="_blank">GitHub Issues</a></li>
+</ul>
+</li>
+<li><p><strong>Create New Issue</strong>
+Include:</p>
+<ul>
+<li>Exact error message</li>
+<li>Steps to reproduce</li>
+<li>System info (OS, Docker version)</li>
+<li>Relevant logs</li>
+</ul>
+</li>
+<li><p><strong>Check Documentation</strong></p>
+<ul>
+<li><a href="../development/PRODUCTION_DEBUGGING.html">Production Debugging</a></li>
+<li><a href="../development/LOGGING_GUIDE.html">Logging Guide</a></li>
+</ul>
+</li>
+</ol>
+<hr></hr>
+<p><strong>Last Updated</strong>: November 12, 2025</p>
+
+                                
+                                </section>
+                            
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="../CLEANUP_PLAN.html" class="navigation navigation-prev " aria-label="Previous page: Cleanup Plan">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="../reference/GLOSSARY.html" class="navigation navigation-next " aria-label="Next page: Glossary">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"Common Issues","level":"10.1","depth":1,"next":{"title":"Glossary","level":"11.1","depth":1,"path":"docs/reference/GLOSSARY.md","ref":"docs/reference/GLOSSARY.md","articles":[]},"previous":{"title":"Cleanup Plan","level":"9.2","depth":1,"path":"docs/CLEANUP_PLAN.md","ref":"docs/CLEANUP_PLAN.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-search","-sharing","-fontsettings"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":true},"highlight":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false}},"theme":"default","author":"Mega-Zinyz","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56},"embedFonts":false},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{"version":"1.0.0","lastUpdated":"November 12, 2025"},"title":"Indonesian Sentiment Analysis System","language":"en","links":{"sidebar":{"Home":"https://github.com/Mega-Zinyz/Sentiment-Analysis","Documentation":"https://mega-zinyz.github.io/Sentiment-Analysis","Issues":"https://github.com/Mega-Zinyz/Sentiment-Analysis/issues"}},"gitbook":">=3.0.0","description":"Comprehensive documentation for production-ready Indonesian Sentiment Analysis application with Docker deployment"},"file":{"path":"docs/troubleshooting/COMMON_ISSUES.md","mtime":"2025-11-12T10:47:36.259Z","type":"markdown"},"gitbook":{"version":"6.1.4","time":"2025-11-12T10:47:54.086Z"},"basePath":"../..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    <noscript>
+        <style>
+            .honkit-cloak {
+                display: block !important;
+            }
+        </style>
+    </noscript>
+    <script>
+        // Restore sidebar state as critical path for prevent layout shift
+        function __init__getSidebarState(defaultValue){
+            var baseKey = "";
+            var key = baseKey + ":sidebar";
+            try {
+                var value = localStorage[key];
+                if (value === undefined) {
+                    return defaultValue;
+                }
+                var parsed = JSON.parse(value);
+                return parsed == null ? defaultValue : parsed;
+            } catch (e) {
+                return defaultValue;
+            }
+        }
+        function __init__restoreLastSidebarState() {
+            var isMobile = window.matchMedia("(max-width: 600px)").matches;
+            if (isMobile) {
+                // Init last state if not mobile
+                return;
+            }
+            var sidebarState = __init__getSidebarState(true);
+            var book = document.querySelector(".book");
+            // Show sidebar if it enabled
+            if (sidebarState && book) {
+                book.classList.add("without-animation", "with-summary");
+            }
+        }
+
+        try {
+            __init__restoreLastSidebarState();
+        } finally {
+            var book = document.querySelector(".book");
+            book.classList.remove("honkit-cloak");
+        }
+    </script>
+    <script src="../../gitbook/gitbook.js"></script>
+    <script src="../../gitbook/theme.js"></script>
+    
+        
+        <script src="../../gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+
+    </body>
+</html>
+

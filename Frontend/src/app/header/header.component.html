@@ -1,0 +1,73 @@
+<nav class="main-nav">
+  <div class="nav-brand">
+    <h1>📊 Sentiment Analysis</h1>
+  </div>
+  
+  <!-- Navigation Links (shown when authenticated) -->
+  <div class="nav-links" *ngIf="isAuthenticated">
+    <a routerLink="/analysis" routerLinkActive="active" class="nav-link">
+      <span class="nav-icon">🤖</span>
+      <span class="nav-text">Analysis</span>
+    </a>
+    <a routerLink="/tweets" routerLinkActive="active" class="nav-link">
+      <span class="nav-icon">🐦</span>
+      <span class="nav-text">Tweet Collection</span>
+    </a>
+    <a routerLink="/home" routerLinkActive="active" class="nav-link">
+      <span class="nav-icon">⚡</span>
+      <span class="nav-text">Quick Analysis</span>
+    </a>
+    <a routerLink="/train-data" routerLinkActive="active" class="nav-link">
+      <span class="nav-icon">📝</span>
+      <span class="nav-text">Training Data</span>
+    </a>
+    <a routerLink="/analysis-history" routerLinkActive="active" class="nav-link">
+      <span class="nav-icon">📈</span>
+      <span class="nav-text">History</span>
+    </a>
+    <a routerLink="/admin" routerLinkActive="active" class="nav-link admin-nav" *ngIf="isAdmin">
+      <span class="nav-icon">🛡️</span>
+      <span class="nav-text">Admin Panel</span>
+    </a>
+  </div>
+
+  <!-- User Menu -->
+  <div class="user-menu" *ngIf="isAuthenticated">
+    <div class="user-info" (click)="toggleMenu()">
+      <span class="user-icon">👤</span>
+      <span class="username">{{ currentUser?.username }}</span>
+      <span class="admin-badge" *ngIf="isAdmin">🛡️</span>
+      <span class="dropdown-arrow" [class.open]="isMenuOpen">▼</span>
+    </div>
+    
+    <div class="dropdown-menu" *ngIf="isMenuOpen">
+      <div class="dropdown-item user-details">
+        <strong>{{ currentUser?.username }}</strong>
+        <small>{{ currentUser?.email }}</small>
+        <span class="role-badge" [class.admin]="isAdmin">{{ currentUser?.role }}</span>
+      </div>
+      <div class="dropdown-divider"></div>
+      <a routerLink="/profile" class="dropdown-item profile-link" (click)="toggleMenu()">
+        <span class="profile-icon">⚙️</span>
+        Profile Settings
+      </a>
+      <div class="dropdown-divider"></div>
+      <button class="dropdown-item logout-btn" (click)="logout()">
+        <span class="logout-icon">🚪</span>
+        Logout
+      </button>
+    </div>
+  </div>
+
+  <!-- Login Links (shown when not authenticated) -->
+  <div class="auth-links" *ngIf="!isAuthenticated">
+    <a routerLink="/login" class="auth-link login-link">
+      <span class="auth-icon">🔐</span>
+      Login
+    </a>
+    <a routerLink="/register" class="auth-link register-link">
+      <span class="auth-icon">📝</span>
+      Register
+    </a>
+  </div>
+</nav>

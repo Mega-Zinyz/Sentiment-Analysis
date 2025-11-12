@@ -1,0 +1,1192 @@
+
+<!DOCTYPE HTML>
+<html lang="en" >
+    <head>
+        <meta charset="UTF-8">
+        <title>Raw Data Analysis API · Indonesian Sentiment Analysis System</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="HonKit 6.1.4">
+        <meta name="author" content="Mega-Zinyz">
+        
+        
+    
+    <link rel="stylesheet" href="../../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../../gitbook/@honkit/honkit-plugin-highlight/website.css">
+                
+            
+        
+
+    
+
+    
+        
+        <link rel="stylesheet" href="../../styles/website.css">
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="SECURITY_ANALYSIS.html" />
+    
+    
+    <link rel="prev" href="../api/AUTHENTICATION.html" />
+    
+
+    </head>
+    <body>
+        
+<div class="book honkit-cloak">
+    <div class="book-summary">
+        
+            
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+    
+        
+        <li>
+            <a href="https://github.com/Mega-Zinyz/Sentiment-Analysis" target="_blank" class="custom-link">Home</a>
+        </li>
+    
+        
+        <li>
+            <a href="https://mega-zinyz.github.io/Sentiment-Analysis" target="_blank" class="custom-link">Documentation</a>
+        </li>
+    
+        
+        <li>
+            <a href="https://github.com/Mega-Zinyz/Sentiment-Analysis/issues" target="_blank" class="custom-link">Issues</a>
+        </li>
+    
+    
+
+    
+    <li class="divider"></li>
+    
+
+    
+        
+        <li class="header">Introduction</li>
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../../">
+            
+                <a href="../../">
+            
+                    
+                        <b>1.1.</b>
+                    
+                    Welcome
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>1.2.</b>
+                    
+                    Overview
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>1.3.</b>
+                    
+                    Quick Start
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4" data-path="../../PRODUCTION_READY.html">
+            
+                <a href="../../PRODUCTION_READY.html">
+            
+                    
+                        <b>1.4.</b>
+                    
+                    Production Ready Status
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Getting Started</li>
+        
+        
+    
+        <li class="chapter " data-level="2.1" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>2.1.</b>
+                    
+                    Installation
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.2" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>2.2.</b>
+                    
+                    Configuration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.3" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>2.3.</b>
+                    
+                    First Time Setup
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.4" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>2.4.</b>
+                    
+                    Default Credentials
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Architecture & Design</li>
+        
+        
+    
+        <li class="chapter " data-level="3.1" data-path="../architecture/SYSTEM_ARCHITECTURE.html">
+            
+                <a href="../architecture/SYSTEM_ARCHITECTURE.html">
+            
+                    
+                        <b>3.1.</b>
+                    
+                    System Architecture
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="3.2" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>3.2.</b>
+                    
+                    Project Structure
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="3.3" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>3.3.</b>
+                    
+                    Technology Stack
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="3.4" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>3.4.</b>
+                    
+                    Performance Metrics
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">User Guide</li>
+        
+        
+    
+        <li class="chapter " data-level="4.1" data-path="../../user-guide/manual-csv-analysis.html">
+            
+                <a href="../../user-guide/manual-csv-analysis.html">
+            
+                    
+                        <b>4.1.</b>
+                    
+                    Manual CSV Analysis
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="4.2" data-path="../../user-guide/twitter-x-integration.html">
+            
+                <a href="../../user-guide/twitter-x-integration.html">
+            
+                    
+                        <b>4.2.</b>
+                    
+                    Twitter/X Integration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="4.3" data-path="../../user-guide/word-library-management.html">
+            
+                <a href="../../user-guide/word-library-management.html">
+            
+                    
+                        <b>4.3.</b>
+                    
+                    Word Library Management
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="4.4" data-path="../../user-guide/analysis-history.html">
+            
+                <a href="../../user-guide/analysis-history.html">
+            
+                    
+                        <b>4.4.</b>
+                    
+                    Analysis History
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">API Reference</li>
+        
+        
+    
+        <li class="chapter " data-level="5.1" data-path="../api/AUTHENTICATION.html">
+            
+                <a href="../api/AUTHENTICATION.html">
+            
+                    
+                        <b>5.1.</b>
+                    
+                    API Overview
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="5.2" data-path="RAW_DATA_ANALYSIS_API.html">
+            
+                <a href="RAW_DATA_ANALYSIS_API.html">
+            
+                    
+                        <b>5.2.</b>
+                    
+                    Raw Data Analysis API
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="5.3" data-path="SECURITY_ANALYSIS.html">
+            
+                <a href="SECURITY_ANALYSIS.html">
+            
+                    
+                        <b>5.3.</b>
+                    
+                    Security Analysis
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Deployment</li>
+        
+        
+    
+        <li class="chapter " data-level="6.1" data-path="../../PRODUCTION_CHECKLIST.html">
+            
+                <a href="../../PRODUCTION_CHECKLIST.html">
+            
+                    
+                        <b>6.1.</b>
+                    
+                    Production Checklist
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.2" data-path="../deployment/DOCKER_README.html">
+            
+                <a href="../deployment/DOCKER_README.html">
+            
+                    
+                        <b>6.2.</b>
+                    
+                    Docker Deployment
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.3" data-path="../deployment/DOCKER_INTEGRATION.html">
+            
+                <a href="../deployment/DOCKER_INTEGRATION.html">
+            
+                    
+                        <b>6.3.</b>
+                    
+                    Docker Integration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.4" data-path="../deployment/ENVIRONMENT_CONFIG_GUIDE.html">
+            
+                <a href="../deployment/ENVIRONMENT_CONFIG_GUIDE.html">
+            
+                    
+                        <b>6.4.</b>
+                    
+                    Environment Configuration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.5" data-path="../deployment/HOSTING_DEPLOYMENT_GUIDE.html">
+            
+                <a href="../deployment/HOSTING_DEPLOYMENT_GUIDE.html">
+            
+                    
+                        <b>6.5.</b>
+                    
+                    Hosting Providers
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.6" data-path="../deployment/PRODUCTION_SECURITY.html">
+            
+                <a href="../deployment/PRODUCTION_SECURITY.html">
+            
+                    
+                        <b>6.6.</b>
+                    
+                    Production Security
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.7" data-path="../deployment/CORS_CONFIGURATION.html">
+            
+                <a href="../deployment/CORS_CONFIGURATION.html">
+            
+                    
+                        <b>6.7.</b>
+                    
+                    CORS Configuration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.8" data-path="../GITHUB_PAGES_SETUP.html">
+            
+                <a href="../GITHUB_PAGES_SETUP.html">
+            
+                    
+                        <b>6.8.</b>
+                    
+                    GitHub Pages Setup
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Development</li>
+        
+        
+    
+        <li class="chapter " data-level="7.1" data-path="../development/LOGGING_GUIDE.html">
+            
+                <a href="../development/LOGGING_GUIDE.html">
+            
+                    
+                        <b>7.1.</b>
+                    
+                    Logging Guide
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="7.2" data-path="../development/PRODUCTION_DEBUGGING.html">
+            
+                <a href="../development/PRODUCTION_DEBUGGING.html">
+            
+                    
+                        <b>7.2.</b>
+                    
+                    Production Debugging
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Security</li>
+        
+        
+    
+        <li class="chapter " data-level="8.1" data-path="../deployment/PRODUCTION_SECURITY.html">
+            
+                <a href="../deployment/PRODUCTION_SECURITY.html">
+            
+                    
+                        <b>8.1.</b>
+                    
+                    Security Overview
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="8.2" data-path="SECURITY_ANALYSIS.html">
+            
+                <a href="SECURITY_ANALYSIS.html">
+            
+                    
+                        <b>8.2.</b>
+                    
+                    Security Analysis
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="8.3" data-path="../../SECURITY_FIXES.html">
+            
+                <a href="../../SECURITY_FIXES.html">
+            
+                    
+                        <b>8.3.</b>
+                    
+                    Security Fixes
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Monitoring & Maintenance</li>
+        
+        
+    
+        <li class="chapter " data-level="9.1" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>9.1.</b>
+                    
+                    Error Logs
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="9.2" data-path="../CLEANUP_PLAN.html">
+            
+                <a href="../CLEANUP_PLAN.html">
+            
+                    
+                        <b>9.2.</b>
+                    
+                    Cleanup Plan
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Troubleshooting</li>
+        
+        
+    
+        <li class="chapter " data-level="10.1" data-path="../troubleshooting/COMMON_ISSUES.html">
+            
+                <a href="../troubleshooting/COMMON_ISSUES.html">
+            
+                    
+                        <b>10.1.</b>
+                    
+                    Common Issues
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Reference</li>
+        
+        
+    
+        <li class="chapter " data-level="11.1" data-path="../reference/GLOSSARY.html">
+            
+                <a href="../reference/GLOSSARY.html">
+            
+                    
+                        <b>11.1.</b>
+                    
+                    Glossary
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="11.2" data-path="../reference/FAQ.html">
+            
+                <a href="../reference/FAQ.html">
+            
+                    
+                        <b>11.2.</b>
+                    
+                    FAQ
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="11.3" data-path="../../CHANGELOG.html">
+            
+                <a href="../../CHANGELOG.html">
+            
+                    
+                        <b>11.3.</b>
+                    
+                    Changelog
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Contributing</li>
+        
+        
+    
+        <li class="chapter " data-level="12.1" data-path="../../GITBOOK_SETUP.html">
+            
+                <a href="../../GITBOOK_SETUP.html">
+            
+                    
+                        <b>12.1.</b>
+                    
+                    GitBook Setup
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="12.2" data-path="../">
+            
+                <a href="../">
+            
+                    
+                        <b>12.2.</b>
+                    
+                    Documentation
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Support</li>
+        
+        
+    
+        <li class="chapter " data-level="13.1" >
+            
+                <a target="_blank" href="https://github.com/Mega-Zinyz/Sentiment-Analysis/issues">
+            
+                    
+                        <b>13.1.</b>
+                    
+                    GitHub Issues
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="13.2" >
+            
+                <a target="_blank" href="https://github.com/Mega-Zinyz/Sentiment-Analysis">
+            
+                    
+                        <b>13.2.</b>
+                    
+                    GitHub Repository
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://github.com/honkit/honkit" target="blank" class="gitbook-link">
+            Published with HonKit
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="../.." >Raw Data Analysis API</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="raw-twitter-data-sentiment-analysis">Raw Twitter Data Sentiment Analysis</h1>
+<p>This system allows you to analyze sentiment from raw Twitter data by automatically cleaning it, manually labeling training samples, and then predicting sentiment for the remaining data.</p>
+<h2 id="workflow-overview">Workflow Overview</h2>
+<ol>
+<li><strong>Upload Raw Data</strong> - Input raw Twitter data in the specified format</li>
+<li><strong>Data Cleaning</strong> - System automatically extracts and cleans the message text</li>
+<li><strong>Manual Labeling</strong> - Label 15 samples (5 positive, 5 negative, 5 neutral) for training</li>
+<li><strong>Sentiment Analysis</strong> - Train model and predict sentiment for remaining data</li>
+<li><strong>View Results</strong> - Display analysis results with predictions</li>
+</ol>
+<h2 id="api-endpoints">API Endpoints</h2>
+<h3 id="1-upload-raw-data">1. Upload Raw Data</h3>
+<p><strong>POST</strong> <code>/api/raw-data/upload</code></p>
+<p>Upload and process raw Twitter data.</p>
+<p><strong>Request Body:</strong></p>
+<pre><code class="lang-json">{
+  <span class="hljs-string">"rawDataArray"</span>: [
+    <span class="hljs-string">"2022-03-31 14:32:04+00:00 pikobar_jabar Ketahui informasi pembagian #PPKM di wilayah Jabar berdasarkan level 3, 2 dan 1 di #PikoData https://t.co/o2RnI7eDue 1"</span>,
+    <span class="hljs-string">"2022-03-31 09:26:00+00:00 inewsdotid \"Tempat Ibadah di Wilayah PPKM Level 1 Boleh Berkapasitas 100 Persen. Baca Selengkapnya di https://t.co/JfIG6nIimN\" #Ramadhan #PPKM #inews https://t.co/ky1G5xYLQB\" 1"</span>
+  ],
+  <span class="hljs-string">"sessionName"</span>: <span class="hljs-string">"ppkm_analysis_session"</span>
+}
+</code></pre>
+<p><strong>Response:</strong></p>
+<pre><code class="lang-json">{
+  <span class="hljs-string">"success"</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-string">"message"</span>: <span class="hljs-string">"Successfully processed 20 items"</span>,
+  <span class="hljs-string">"sessionId"</span>: <span class="hljs-string">"ppkm_analysis_session_1698765432"</span>,
+  <span class="hljs-string">"stats"</span>: {
+    <span class="hljs-string">"totalInput"</span>: <span class="hljs-number">25</span>,
+    <span class="hljs-string">"validAfterProcessing"</span>: <span class="hljs-number">20</span>,
+    <span class="hljs-string">"filtered"</span>: <span class="hljs-number">5</span>,
+    <span class="hljs-string">"readyForLabeling"</span>: <span class="hljs-literal">true</span>
+  },
+  <span class="hljs-string">"nextStep"</span>: <span class="hljs-string">"Label 15 training samples (5 positive, 5 negative, 5 neutral)"</span>
+}
+</code></pre>
+<h3 id="2-get-sessions">2. Get Sessions</h3>
+<p><strong>GET</strong> <code>/api/raw-data/sessions</code></p>
+<p>Get all sessions for the current user.</p>
+<p><strong>Response:</strong></p>
+<pre><code class="lang-json">{
+  <span class="hljs-string">"success"</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-string">"sessions"</span>: [
+    {
+      <span class="hljs-string">"session_id"</span>: <span class="hljs-string">"ppkm_analysis_session_1698765432"</span>,
+      <span class="hljs-string">"total_items"</span>: <span class="hljs-number">20</span>,
+      <span class="hljs-string">"labeled_items"</span>: <span class="hljs-number">15</span>,
+      <span class="hljs-string">"predicted_items"</span>: <span class="hljs-number">5</span>,
+      <span class="hljs-string">"status"</span>: <span class="hljs-string">"ready_for_analysis"</span>,
+      <span class="hljs-string">"can_analyze"</span>: <span class="hljs-literal">true</span>,
+      <span class="hljs-string">"created_at"</span>: <span class="hljs-string">"2024-10-30T10:00:00Z"</span>
+    }
+  ]
+}
+</code></pre>
+<h3 id="3-get-labeling-data">3. Get Labeling Data</h3>
+<p><strong>GET</strong> <code>/api/raw-data/labeling/:sessionId</code></p>
+<p>Get unlabeled data for manual labeling.</p>
+<p><strong>Response:</strong></p>
+<pre><code class="lang-json">{
+  <span class="hljs-string">"success"</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-string">"sessionId"</span>: <span class="hljs-string">"ppkm_analysis_session_1698765432"</span>,
+  <span class="hljs-string">"unlabeledData"</span>: [
+    {
+      <span class="hljs-string">"id"</span>: <span class="hljs-number">1</span>,
+      <span class="hljs-string">"clean_text"</span>: <span class="hljs-string">"ketahui informasi pembagian ppkm wilayah jabar berdasarkan level"</span>,
+      <span class="hljs-string">"raw_data"</span>: <span class="hljs-string">"2022-03-31 14:32:04+00:00 pikobar_jabar Ketahui informasi..."</span>,
+      <span class="hljs-string">"timestamp_extracted"</span>: <span class="hljs-string">"2022-03-31T14:32:04.000Z"</span>,
+      <span class="hljs-string">"username_extracted"</span>: <span class="hljs-string">"pikobar_jabar"</span>
+    }
+  ],
+  <span class="hljs-string">"currentLabels"</span>: {
+    <span class="hljs-string">"Positive"</span>: <span class="hljs-number">0</span>,
+    <span class="hljs-string">"Negative"</span>: <span class="hljs-number">0</span>,
+    <span class="hljs-string">"Neutral"</span>: <span class="hljs-number">0</span>
+  },
+  <span class="hljs-string">"needsLabeling"</span>: {
+    <span class="hljs-string">"Positive"</span>: <span class="hljs-number">5</span>,
+    <span class="hljs-string">"Negative"</span>: <span class="hljs-number">5</span>,
+    <span class="hljs-string">"Neutral"</span>: <span class="hljs-number">5</span>
+  },
+  <span class="hljs-string">"totalNeeded"</span>: <span class="hljs-number">15</span>
+}
+</code></pre>
+<h3 id="4-submit-labels">4. Submit Labels</h3>
+<p><strong>POST</strong> <code>/api/raw-data/labeling/:sessionId</code></p>
+<p>Submit manual labels for training data.</p>
+<p><strong>Request Body:</strong></p>
+<pre><code class="lang-json">{
+  <span class="hljs-string">"labels"</span>: [
+    {<span class="hljs-string">"id"</span>: <span class="hljs-number">1</span>, <span class="hljs-string">"sentiment_label"</span>: <span class="hljs-string">"Neutral"</span>},
+    {<span class="hljs-string">"id"</span>: <span class="hljs-number">2</span>, <span class="hljs-string">"sentiment_label"</span>: <span class="hljs-string">"Positive"</span>},
+    {<span class="hljs-string">"id"</span>: <span class="hljs-number">3</span>, <span class="hljs-string">"sentiment_label"</span>: <span class="hljs-string">"Negative"</span>}
+  ]
+}
+</code></pre>
+<p><strong>Response:</strong></p>
+<pre><code class="lang-json">{
+  <span class="hljs-string">"success"</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-string">"message"</span>: <span class="hljs-string">"Successfully labeled 3 items"</span>,
+  <span class="hljs-string">"currentLabels"</span>: {
+    <span class="hljs-string">"Positive"</span>: <span class="hljs-number">1</span>,
+    <span class="hljs-string">"Negative"</span>: <span class="hljs-number">1</span>,
+    <span class="hljs-string">"Neutral"</span>: <span class="hljs-number">1</span>
+  },
+  <span class="hljs-string">"totalLabeled"</span>: <span class="hljs-number">3</span>,
+  <span class="hljs-string">"isComplete"</span>: <span class="hljs-literal">false</span>,
+  <span class="hljs-string">"nextStep"</span>: <span class="hljs-string">"Continue labeling remaining samples"</span>
+}
+</code></pre>
+<h3 id="5-analyze-sentiment">5. Analyze Sentiment</h3>
+<p><strong>POST</strong> <code>/api/raw-data/analyze/:sessionId</code></p>
+<p>Train model and predict sentiment for remaining data.</p>
+<p><strong>Response:</strong></p>
+<pre><code class="lang-json">{
+  <span class="hljs-string">"success"</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-string">"message"</span>: <span class="hljs-string">"Sentiment analysis completed successfully"</span>,
+  <span class="hljs-string">"sessionId"</span>: <span class="hljs-string">"ppkm_analysis_session_1698765432"</span>,
+  <span class="hljs-string">"modelMetrics"</span>: {
+    <span class="hljs-string">"training_accuracy"</span>: <span class="hljs-number">0.9333</span>,
+    <span class="hljs-string">"cross_validation_mean"</span>: <span class="hljs-number">0.8667</span>,
+    <span class="hljs-string">"training_samples"</span>: <span class="hljs-number">15</span>
+  },
+  <span class="hljs-string">"analysisStats"</span>: {
+    <span class="hljs-string">"totalItems"</span>: <span class="hljs-number">20</span>,
+    <span class="hljs-string">"trainingSamples"</span>: <span class="hljs-number">15</span>,
+    <span class="hljs-string">"predictedItems"</span>: <span class="hljs-number">5</span>,
+    <span class="hljs-string">"sentimentDistribution"</span>: {
+      <span class="hljs-string">"positive"</span>: <span class="hljs-number">2</span>,
+      <span class="hljs-string">"negative"</span>: <span class="hljs-number">1</span>,
+      <span class="hljs-string">"neutral"</span>: <span class="hljs-number">2</span>
+    },
+    <span class="hljs-string">"averageConfidence"</span>: <span class="hljs-string">"0.7245"</span>
+  }
+}
+</code></pre>
+<h3 id="6-get-analysis-results">6. Get Analysis Results</h3>
+<p><strong>GET</strong> <code>/api/raw-data/results/:sessionId</code></p>
+<p>Get analysis results with pagination and filtering.</p>
+<p><strong>Query Parameters:</strong></p>
+<ul>
+<li><code>page</code> - Page number (default: 1)</li>
+<li><code>limit</code> - Items per page (default: 20)</li>
+<li><code>sentiment_filter</code> - Filter by sentiment (Positive, Negative, Neutral)</li>
+<li><code>confidence_min</code> - Minimum confidence threshold</li>
+</ul>
+<p><strong>Response:</strong></p>
+<pre><code class="lang-json">{
+  <span class="hljs-string">"success"</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-string">"sessionId"</span>: <span class="hljs-string">"ppkm_analysis_session_1698765432"</span>,
+  <span class="hljs-string">"data"</span>: [
+    {
+      <span class="hljs-string">"id"</span>: <span class="hljs-number">1</span>,
+      <span class="hljs-string">"clean_text"</span>: <span class="hljs-string">"ketahui informasi pembagian ppkm wilayah jabar"</span>,
+      <span class="hljs-string">"sentiment_label"</span>: <span class="hljs-string">"Neutral"</span>,
+      <span class="hljs-string">"is_training_sample"</span>: <span class="hljs-literal">true</span>,
+      <span class="hljs-string">"predicted_sentiment"</span>: <span class="hljs-literal">null</span>,
+      <span class="hljs-string">"prediction_confidence"</span>: <span class="hljs-literal">null</span>
+    },
+    {
+      <span class="hljs-string">"id"</span>: <span class="hljs-number">16</span>,
+      <span class="hljs-string">"clean_text"</span>: <span class="hljs-string">"tempat ibadah wilayah ppkm level boleh berkapasitas persen"</span>,
+      <span class="hljs-string">"sentiment_label"</span>: <span class="hljs-literal">null</span>,
+      <span class="hljs-string">"is_training_sample"</span>: <span class="hljs-literal">false</span>,
+      <span class="hljs-string">"predicted_sentiment"</span>: <span class="hljs-string">"Positive"</span>,
+      <span class="hljs-string">"prediction_confidence"</span>: <span class="hljs-number">0.7234</span>
+    }
+  ],
+  <span class="hljs-string">"statistics"</span>: {
+    <span class="hljs-string">"total"</span>: <span class="hljs-number">20</span>,
+    <span class="hljs-string">"trainingSamples"</span>: <span class="hljs-number">15</span>,
+    <span class="hljs-string">"predictedItems"</span>: <span class="hljs-number">5</span>,
+    <span class="hljs-string">"sentimentDistribution"</span>: {
+      <span class="hljs-string">"positive"</span>: <span class="hljs-number">2</span>,
+      <span class="hljs-string">"negative"</span>: <span class="hljs-number">1</span>,
+      <span class="hljs-string">"neutral"</span>: <span class="hljs-number">2</span>
+    }
+  }
+}
+</code></pre>
+<h3 id="7-export-results">7. Export Results</h3>
+<p><strong>GET</strong> <code>/api/raw-data/export/:sessionId</code></p>
+<p>Export analysis results as CSV file.</p>
+<p><strong>Response:</strong> CSV file download</p>
+<h2 id="raw-data-format">Raw Data Format</h2>
+<p>The system expects raw Twitter data in this format:</p>
+<pre><code>"YYYY-MM-DD HH:MM:SS+TZ username message_text number"
+</code></pre><p><strong>Example:</strong></p>
+<pre><code>"2022-03-31 14:32:04+00:00 pikobar_jabar Ketahui informasi pembagian #PPKM di wilayah Jabar berdasarkan level 3, 2 dan 1 di #PikoData https://t.co/o2RnI7eDue 1"
+</code></pre><h2 id="data-processing">Data Processing</h2>
+<p>The system automatically:</p>
+<ol>
+<li><strong>Parses</strong> timestamp, username, and message from raw data</li>
+<li><strong>Cleans</strong> message text by removing:<ul>
+<li>URLs (http/https links, t.co links)</li>
+<li>@mentions</li>
+<li>Hashtag symbols (keeps text)</li>
+<li>Extra quotes and whitespace</li>
+<li>Retweet indicators (RT)</li>
+</ul>
+</li>
+<li><strong>Applies</strong> Indonesian text preprocessing</li>
+<li><strong>Filters</strong> out empty or very short content</li>
+</ol>
+<h2 id="training-requirements">Training Requirements</h2>
+<ul>
+<li><strong>Minimum 20 data points</strong> total (15 for training + 5 for prediction)</li>
+<li><strong>Exactly 15 training samples</strong> required:<ul>
+<li>5 Positive samples</li>
+<li>5 Negative samples  </li>
+<li>5 Neutral samples</li>
+</ul>
+</li>
+</ul>
+<h2 id="error-handling">Error Handling</h2>
+<p>The system provides detailed error messages for:</p>
+<ul>
+<li>Invalid data format</li>
+<li>Insufficient data points</li>
+<li>Incomplete labeling</li>
+<li>Processing failures</li>
+</ul>
+<h2 id="usage-example">Usage Example</h2>
+<ol>
+<li><strong>Prepare your raw Twitter data</strong> in the correct format</li>
+<li><strong>Upload</strong> using <code>/api/raw-data/upload</code></li>
+<li><strong>Get unlabeled data</strong> using <code>/api/raw-data/labeling/:sessionId</code></li>
+<li><strong>Label 15 samples</strong> using <code>/api/raw-data/labeling/:sessionId</code></li>
+<li><strong>Run analysis</strong> using <code>/api/raw-data/analyze/:sessionId</code></li>
+<li><strong>View results</strong> using <code>/api/raw-data/results/:sessionId</code></li>
+<li><strong>Export</strong> using <code>/api/raw-data/export/:sessionId</code></li>
+</ol>
+<h2 id="frontend-integration">Frontend Integration</h2>
+<p>The system is designed to work with your existing Angular frontend. You can create new components for:</p>
+<ul>
+<li>Raw data upload form</li>
+<li>Manual labeling interface</li>
+<li>Results visualization</li>
+<li>Progress tracking</li>
+</ul>
+<h2 id="authentication">Authentication</h2>
+<p>All endpoints require authentication using JWT tokens through the existing auth system.</p>
+
+                                
+                                </section>
+                            
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="../api/AUTHENTICATION.html" class="navigation navigation-prev " aria-label="Previous page: API Overview">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="SECURITY_ANALYSIS.html" class="navigation navigation-next " aria-label="Next page: Security Analysis">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"Raw Data Analysis API","level":"5.2","depth":1,"next":{"title":"Security Analysis","level":"5.3","depth":1,"path":"docs/api-reference/SECURITY_ANALYSIS.md","ref":"docs/api-reference/SECURITY_ANALYSIS.md","articles":[]},"previous":{"title":"API Overview","level":"5.1","depth":1,"path":"docs/api/AUTHENTICATION.md","ref":"docs/api/AUTHENTICATION.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-search","-sharing","-fontsettings"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":true},"highlight":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false}},"theme":"default","author":"Mega-Zinyz","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56},"embedFonts":false},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{"version":"1.0.0","lastUpdated":"November 12, 2025"},"title":"Indonesian Sentiment Analysis System","language":"en","links":{"sidebar":{"Home":"https://github.com/Mega-Zinyz/Sentiment-Analysis","Documentation":"https://mega-zinyz.github.io/Sentiment-Analysis","Issues":"https://github.com/Mega-Zinyz/Sentiment-Analysis/issues"}},"gitbook":">=3.0.0","description":"Comprehensive documentation for production-ready Indonesian Sentiment Analysis application with Docker deployment"},"file":{"path":"docs/api-reference/RAW_DATA_ANALYSIS_API.md","mtime":"2025-11-12T10:47:36.258Z","type":"markdown"},"gitbook":{"version":"6.1.4","time":"2025-11-12T10:47:54.086Z"},"basePath":"../..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    <noscript>
+        <style>
+            .honkit-cloak {
+                display: block !important;
+            }
+        </style>
+    </noscript>
+    <script>
+        // Restore sidebar state as critical path for prevent layout shift
+        function __init__getSidebarState(defaultValue){
+            var baseKey = "";
+            var key = baseKey + ":sidebar";
+            try {
+                var value = localStorage[key];
+                if (value === undefined) {
+                    return defaultValue;
+                }
+                var parsed = JSON.parse(value);
+                return parsed == null ? defaultValue : parsed;
+            } catch (e) {
+                return defaultValue;
+            }
+        }
+        function __init__restoreLastSidebarState() {
+            var isMobile = window.matchMedia("(max-width: 600px)").matches;
+            if (isMobile) {
+                // Init last state if not mobile
+                return;
+            }
+            var sidebarState = __init__getSidebarState(true);
+            var book = document.querySelector(".book");
+            // Show sidebar if it enabled
+            if (sidebarState && book) {
+                book.classList.add("without-animation", "with-summary");
+            }
+        }
+
+        try {
+            __init__restoreLastSidebarState();
+        } finally {
+            var book = document.querySelector(".book");
+            book.classList.remove("honkit-cloak");
+        }
+    </script>
+    <script src="../../gitbook/gitbook.js"></script>
+    <script src="../../gitbook/theme.js"></script>
+    
+        
+        <script src="../../gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+
+    </body>
+</html>
+

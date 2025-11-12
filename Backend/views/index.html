@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sentiment Analysis API</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-width: 800px;
+      width: 100%;
+      padding: 40px;
+    }
+    h1 {
+      color: #667eea;
+      margin-bottom: 10px;
+      font-size: 2.5em;
+    }
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 1.1em;
+    }
+    .status {
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      font-weight: 500;
+    }
+    .section {
+      margin-bottom: 30px;
+    }
+    .section h2 {
+      color: #333;
+      margin-bottom: 15px;
+      font-size: 1.5em;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 10px;
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+    .info-item {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 10px;
+      border-left: 4px solid #667eea;
+    }
+    .info-label {
+      color: #666;
+      font-size: 0.9em;
+      margin-bottom: 8px;
+    }
+    .info-value {
+      color: #333;
+      font-size: 1.1em;
+      font-weight: 600;
+      word-break: break-all;
+    }
+    .service-list {
+      margin-top: 15px;
+    }
+    .service-item {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 15px;
+      background: #f8f9fa;
+      margin: 10px 0;
+      border-radius: 10px;
+    }
+    .service-item.online {
+      border-left: 4px solid #28a745;
+    }
+    .service-icon {
+      width: 30px;
+      height: 30px;
+      background: #28a745;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+    .service-name {
+      flex: 1;
+      color: #333;
+      font-weight: 500;
+    }
+    .service-status {
+      color: #28a745;
+      font-weight: 600;
+      padding: 5px 15px;
+      background: #d4edda;
+      border-radius: 20px;
+      font-size: 0.9em;
+    }
+    .service-status.checking {
+      color: #856404;
+      background: #fff3cd;
+    }
+    .service-status.offline {
+      color: #721c24;
+      background: #f8d7da;
+    }
+    .service-item.offline {
+      border-left: 4px solid #dc3545;
+    }
+    .service-item.offline .service-icon {
+      background: #dc3545;
+    }
+    .service-icon.loading {
+      animation: spin 1s linear infinite;
+      background: #ffc107;
+      color: #333;
+    }
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .refresh-btn {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .refresh-btn:hover {
+      background: #5568d3;
+    }
+    .refresh-btn:active {
+      transform: scale(0.98);
+    }
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #ddd;
+      color: #666;
+    }
+    .badge {
+      display: inline-block;
+      padding: 5px 10px;
+      background: #667eea;
+      color: white;
+      border-radius: 5px;
+      font-size: 0.9em;
+      margin-right: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 Sentiment Analysis API</h1>
+    <p class="subtitle">Backend Server Status</p>
+    
+    <div class="status">
+      ✅ Server is running and ready to accept requests
+    </div>
+
+    <div class="section">
+      <h2>🌐 Server Information</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-label">🔌 Server Port</div>
+          <div class="info-value" id="server-port">Loading...</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">🔗 API Endpoint</div>
+          <div class="info-value" id="api-endpoint">Loading...</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">⚙️ Environment</div>
+          <div class="info-value" id="environment">Loading...</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">📦 Version</div>
+          <div class="info-value" id="version">Loading...</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">⏱️ Uptime</div>
+          <div class="info-value" id="uptime">Loading...</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">🕐 Last Check</div>
+          <div class="info-value" id="last-check">Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>📡 Service Status</h2>
+      <div class="service-list" id="service-list">
+        <div class="service-item">
+          <span class="service-icon loading">⟳</span>
+          <span class="service-name">Checking services...</span>
+          <span class="service-status checking">Checking</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <p id="footer-status">💡 Checking services status...</p>
+      <p>📖 For API documentation, check the <code>/docs</code> folder</p>
+      <button onclick="checkStatus()" class="refresh-btn">🔄 Refresh Status</button>
+    </div>
+  </div>
+
+  <script>
+    function formatUptime(seconds) {
+      const days = Math.floor(seconds / 86400);
+      const hours = Math.floor((seconds % 86400) / 3600);
+      const minutes = Math.floor((seconds % 3600) / 60);
+      const secs = Math.floor(seconds % 60);
+      
+      if (days > 0) return `${days}d ${hours}h ${minutes}m`;
+      if (hours > 0) return `${hours}h ${minutes}m ${secs}s`;
+      if (minutes > 0) return `${minutes}m ${secs}s`;
+      return `${secs}s`;
+    }
+
+    function formatTime(isoString) {
+      const date = new Date(isoString);
+      return date.toLocaleTimeString();
+    }
+
+    async function checkStatus() {
+      try {
+        const response = await fetch('/health');
+        const health = await response.json();
+        
+        // Update server information
+        document.getElementById('server-port').textContent = health.server.port;
+        // Use current host instead of hardcoding localhost
+        const apiEndpoint = `${window.location.protocol}//${window.location.hostname}:${health.server.port}/api`;
+        document.getElementById('api-endpoint').textContent = apiEndpoint;
+        document.getElementById('environment').textContent = health.server.environment;
+        document.getElementById('version').textContent = `${health.server.version} (Node ${health.server.nodeVersion})`;
+        document.getElementById('uptime').textContent = formatUptime(health.uptime);
+        document.getElementById('last-check').textContent = formatTime(health.timestamp);
+        
+        // Update service status
+        const serviceList = document.getElementById('service-list');
+        serviceList.innerHTML = '';
+        
+        const services = [
+          { name: 'Backend API', key: 'api' },
+          { name: 'Database Connection', key: 'database' },
+          { name: 'Authentication Service', key: 'authentication' }
+        ];
+        
+        let allOnline = true;
+        services.forEach(service => {
+          const serviceData = health.services[service.key];
+          const isOnline = serviceData.status === 'online';
+          if (!isOnline) allOnline = false;
+          
+          const serviceItem = document.createElement('div');
+          serviceItem.className = `service-item ${isOnline ? 'online' : 'offline'}`;
+          serviceItem.innerHTML = `
+            <span class="service-icon">${isOnline ? '✓' : '✗'}</span>
+            <span class="service-name">${service.name}</span>
+            <span class="service-status ${isOnline ? '' : 'offline'}">${serviceData.message}</span>
+          `;
+          serviceList.appendChild(serviceItem);
+        });
+        
+        // Update footer status
+        const footerStatus = document.getElementById('footer-status');
+        if (allOnline) {
+          footerStatus.textContent = '💡 All services are running normally';
+        } else {
+          footerStatus.textContent = '⚠️ Some services are experiencing issues';
+        }
+        
+      } catch (error) {
+        console.error('Failed to fetch health status:', error);
+        document.getElementById('footer-status').textContent = '❌ Failed to check server status';
+      }
+    }
+
+    // Check status on page load
+    checkStatus();
+    
+    // Auto-refresh every 10 seconds
+    setInterval(checkStatus, 10000);
+  </script>
+</body>
+</html>

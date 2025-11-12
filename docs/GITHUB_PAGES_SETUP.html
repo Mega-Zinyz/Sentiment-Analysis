@@ -1,0 +1,1337 @@
+
+<!DOCTYPE HTML>
+<html lang="en" >
+    <head>
+        <meta charset="UTF-8">
+        <title>GitHub Pages Setup · Indonesian Sentiment Analysis System</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="HonKit 6.1.4">
+        <meta name="author" content="Mega-Zinyz">
+        
+        
+    
+    <link rel="stylesheet" href="../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../gitbook/@honkit/honkit-plugin-highlight/website.css">
+                
+            
+        
+
+    
+
+    
+        
+        <link rel="stylesheet" href="../styles/website.css">
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="development/LOGGING_GUIDE.html" />
+    
+    
+    <link rel="prev" href="deployment/CORS_CONFIGURATION.html" />
+    
+
+    </head>
+    <body>
+        
+<div class="book honkit-cloak">
+    <div class="book-summary">
+        
+            
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+    
+        
+        <li>
+            <a href="https://github.com/Mega-Zinyz/Sentiment-Analysis" target="_blank" class="custom-link">Home</a>
+        </li>
+    
+        
+        <li>
+            <a href="https://mega-zinyz.github.io/Sentiment-Analysis" target="_blank" class="custom-link">Documentation</a>
+        </li>
+    
+        
+        <li>
+            <a href="https://github.com/Mega-Zinyz/Sentiment-Analysis/issues" target="_blank" class="custom-link">Issues</a>
+        </li>
+    
+    
+
+    
+    <li class="divider"></li>
+    
+
+    
+        
+        <li class="header">Introduction</li>
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../">
+            
+                <a href="../">
+            
+                    
+                        <b>1.1.</b>
+                    
+                    Welcome
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="../README (1">
+            
+                <span>
+            
+                    
+                        <b>1.2.</b>
+                    
+                    Overview
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" data-path="../README (1">
+            
+                <span>
+            
+                    
+                        <b>1.3.</b>
+                    
+                    Quick Start
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4" data-path="../PRODUCTION_READY.html">
+            
+                <a href="../PRODUCTION_READY.html">
+            
+                    
+                        <b>1.4.</b>
+                    
+                    Production Ready Status
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Getting Started</li>
+        
+        
+    
+        <li class="chapter " data-level="2.1" data-path="../README (1">
+            
+                <span>
+            
+                    
+                        <b>2.1.</b>
+                    
+                    Installation
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.2" data-path="../README (1">
+            
+                <span>
+            
+                    
+                        <b>2.2.</b>
+                    
+                    Configuration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.3" data-path="../README (1">
+            
+                <span>
+            
+                    
+                        <b>2.3.</b>
+                    
+                    First Time Setup
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.4" data-path="../README (1">
+            
+                <span>
+            
+                    
+                        <b>2.4.</b>
+                    
+                    Default Credentials
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Architecture & Design</li>
+        
+        
+    
+        <li class="chapter " data-level="3.1" data-path="architecture/SYSTEM_ARCHITECTURE.html">
+            
+                <a href="architecture/SYSTEM_ARCHITECTURE.html">
+            
+                    
+                        <b>3.1.</b>
+                    
+                    System Architecture
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="3.2" data-path="../README (1">
+            
+                <span>
+            
+                    
+                        <b>3.2.</b>
+                    
+                    Project Structure
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="3.3" data-path="../README (1">
+            
+                <span>
+            
+                    
+                        <b>3.3.</b>
+                    
+                    Technology Stack
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="3.4" data-path="../README (1">
+            
+                <span>
+            
+                    
+                        <b>3.4.</b>
+                    
+                    Performance Metrics
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">User Guide</li>
+        
+        
+    
+        <li class="chapter " data-level="4.1" data-path="../user-guide/manual-csv-analysis.html">
+            
+                <a href="../user-guide/manual-csv-analysis.html">
+            
+                    
+                        <b>4.1.</b>
+                    
+                    Manual CSV Analysis
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="4.2" data-path="../user-guide/twitter-x-integration.html">
+            
+                <a href="../user-guide/twitter-x-integration.html">
+            
+                    
+                        <b>4.2.</b>
+                    
+                    Twitter/X Integration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="4.3" data-path="../user-guide/word-library-management.html">
+            
+                <a href="../user-guide/word-library-management.html">
+            
+                    
+                        <b>4.3.</b>
+                    
+                    Word Library Management
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="4.4" data-path="../user-guide/analysis-history.html">
+            
+                <a href="../user-guide/analysis-history.html">
+            
+                    
+                        <b>4.4.</b>
+                    
+                    Analysis History
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">API Reference</li>
+        
+        
+    
+        <li class="chapter " data-level="5.1" data-path="api/AUTHENTICATION.html">
+            
+                <a href="api/AUTHENTICATION.html">
+            
+                    
+                        <b>5.1.</b>
+                    
+                    API Overview
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="5.2" data-path="api-reference/RAW_DATA_ANALYSIS_API.html">
+            
+                <a href="api-reference/RAW_DATA_ANALYSIS_API.html">
+            
+                    
+                        <b>5.2.</b>
+                    
+                    Raw Data Analysis API
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="5.3" data-path="api-reference/SECURITY_ANALYSIS.html">
+            
+                <a href="api-reference/SECURITY_ANALYSIS.html">
+            
+                    
+                        <b>5.3.</b>
+                    
+                    Security Analysis
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Deployment</li>
+        
+        
+    
+        <li class="chapter " data-level="6.1" data-path="../PRODUCTION_CHECKLIST.html">
+            
+                <a href="../PRODUCTION_CHECKLIST.html">
+            
+                    
+                        <b>6.1.</b>
+                    
+                    Production Checklist
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.2" data-path="deployment/DOCKER_README.html">
+            
+                <a href="deployment/DOCKER_README.html">
+            
+                    
+                        <b>6.2.</b>
+                    
+                    Docker Deployment
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.3" data-path="deployment/DOCKER_INTEGRATION.html">
+            
+                <a href="deployment/DOCKER_INTEGRATION.html">
+            
+                    
+                        <b>6.3.</b>
+                    
+                    Docker Integration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.4" data-path="deployment/ENVIRONMENT_CONFIG_GUIDE.html">
+            
+                <a href="deployment/ENVIRONMENT_CONFIG_GUIDE.html">
+            
+                    
+                        <b>6.4.</b>
+                    
+                    Environment Configuration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.5" data-path="deployment/HOSTING_DEPLOYMENT_GUIDE.html">
+            
+                <a href="deployment/HOSTING_DEPLOYMENT_GUIDE.html">
+            
+                    
+                        <b>6.5.</b>
+                    
+                    Hosting Providers
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.6" data-path="deployment/PRODUCTION_SECURITY.html">
+            
+                <a href="deployment/PRODUCTION_SECURITY.html">
+            
+                    
+                        <b>6.6.</b>
+                    
+                    Production Security
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.7" data-path="deployment/CORS_CONFIGURATION.html">
+            
+                <a href="deployment/CORS_CONFIGURATION.html">
+            
+                    
+                        <b>6.7.</b>
+                    
+                    CORS Configuration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="6.8" data-path="GITHUB_PAGES_SETUP.html">
+            
+                <a href="GITHUB_PAGES_SETUP.html">
+            
+                    
+                        <b>6.8.</b>
+                    
+                    GitHub Pages Setup
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Development</li>
+        
+        
+    
+        <li class="chapter " data-level="7.1" data-path="development/LOGGING_GUIDE.html">
+            
+                <a href="development/LOGGING_GUIDE.html">
+            
+                    
+                        <b>7.1.</b>
+                    
+                    Logging Guide
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="7.2" data-path="development/PRODUCTION_DEBUGGING.html">
+            
+                <a href="development/PRODUCTION_DEBUGGING.html">
+            
+                    
+                        <b>7.2.</b>
+                    
+                    Production Debugging
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Security</li>
+        
+        
+    
+        <li class="chapter " data-level="8.1" data-path="deployment/PRODUCTION_SECURITY.html">
+            
+                <a href="deployment/PRODUCTION_SECURITY.html">
+            
+                    
+                        <b>8.1.</b>
+                    
+                    Security Overview
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="8.2" data-path="api-reference/SECURITY_ANALYSIS.html">
+            
+                <a href="api-reference/SECURITY_ANALYSIS.html">
+            
+                    
+                        <b>8.2.</b>
+                    
+                    Security Analysis
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="8.3" data-path="../SECURITY_FIXES.html">
+            
+                <a href="../SECURITY_FIXES.html">
+            
+                    
+                        <b>8.3.</b>
+                    
+                    Security Fixes
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Monitoring & Maintenance</li>
+        
+        
+    
+        <li class="chapter " data-level="9.1" data-path="../README (1">
+            
+                <span>
+            
+                    
+                        <b>9.1.</b>
+                    
+                    Error Logs
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="9.2" data-path="CLEANUP_PLAN.html">
+            
+                <a href="CLEANUP_PLAN.html">
+            
+                    
+                        <b>9.2.</b>
+                    
+                    Cleanup Plan
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Troubleshooting</li>
+        
+        
+    
+        <li class="chapter " data-level="10.1" data-path="troubleshooting/COMMON_ISSUES.html">
+            
+                <a href="troubleshooting/COMMON_ISSUES.html">
+            
+                    
+                        <b>10.1.</b>
+                    
+                    Common Issues
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Reference</li>
+        
+        
+    
+        <li class="chapter " data-level="11.1" data-path="reference/GLOSSARY.html">
+            
+                <a href="reference/GLOSSARY.html">
+            
+                    
+                        <b>11.1.</b>
+                    
+                    Glossary
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="11.2" data-path="reference/FAQ.html">
+            
+                <a href="reference/FAQ.html">
+            
+                    
+                        <b>11.2.</b>
+                    
+                    FAQ
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="11.3" data-path="../CHANGELOG.html">
+            
+                <a href="../CHANGELOG.html">
+            
+                    
+                        <b>11.3.</b>
+                    
+                    Changelog
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Contributing</li>
+        
+        
+    
+        <li class="chapter " data-level="12.1" data-path="../GITBOOK_SETUP.html">
+            
+                <a href="../GITBOOK_SETUP.html">
+            
+                    
+                        <b>12.1.</b>
+                    
+                    GitBook Setup
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="12.2" data-path="./">
+            
+                <a href="./">
+            
+                    
+                        <b>12.2.</b>
+                    
+                    Documentation
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Support</li>
+        
+        
+    
+        <li class="chapter " data-level="13.1" >
+            
+                <a target="_blank" href="https://github.com/Mega-Zinyz/Sentiment-Analysis/issues">
+            
+                    
+                        <b>13.1.</b>
+                    
+                    GitHub Issues
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="13.2" >
+            
+                <a target="_blank" href="https://github.com/Mega-Zinyz/Sentiment-Analysis">
+            
+                    
+                        <b>13.2.</b>
+                    
+                    GitHub Repository
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://github.com/honkit/honkit" target="blank" class="gitbook-link">
+            Published with HonKit
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href=".." >GitHub Pages Setup</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="github-pages--gitbook-deployment-guide">GitHub Pages &amp; GitBook Deployment Guide</h1>
+<p>Complete guide for deploying your documentation to GitHub Pages.</p>
+<h2 id="🚀-quick-deploy">🚀 Quick Deploy</h2>
+<p>Your documentation is now configured for automatic deployment! Just push to GitHub:</p>
+<pre><code class="lang-bash">git add .
+git commit -m <span class="hljs-string">"docs: Update GitBook documentation"</span>
+git push origin main
+</code></pre>
+<p>The GitHub Actions workflow will automatically build and deploy to GitHub Pages.</p>
+<h2 id="📋-setup-requirements">📋 Setup Requirements</h2>
+<h3 id="1-enable-github-pages">1. Enable GitHub Pages</h3>
+<ol>
+<li>Go to your repository on GitHub</li>
+<li>Click <strong>Settings</strong> → <strong>Pages</strong></li>
+<li>Under <strong>Source</strong>, select:<ul>
+<li><strong>Source</strong>: Deploy from a branch</li>
+<li><strong>Branch</strong>: <code>gh-pages</code></li>
+<li><strong>Folder</strong>: <code>/ (root)</code></li>
+</ul>
+</li>
+<li>Click <strong>Save</strong></li>
+</ol>
+<h3 id="2-verify-workflow-permissions">2. Verify Workflow Permissions</h3>
+<ol>
+<li>Go to <strong>Settings</strong> → <strong>Actions</strong> → <strong>General</strong></li>
+<li>Under <strong>Workflow permissions</strong>, select:<ul>
+<li>✅ <strong>Read and write permissions</strong></li>
+</ul>
+</li>
+<li>Click <strong>Save</strong></li>
+</ol>
+<h2 id="🔧-how-it-works">🔧 How It Works</h2>
+<h3 id="automated-workflow">Automated Workflow</h3>
+<p>The <code>.github/workflows/deploy-gitbook.yml</code> workflow:</p>
+<ol>
+<li><strong>Triggers</strong> on push to <code>main</code> branch (when docs change)</li>
+<li><strong>Uses Node.js 20</strong> (required for Honkit dependencies)</li>
+<li><strong>Uses Honkit</strong> (modern GitBook alternative)</li>
+<li><strong>Builds</strong> documentation to <code>_book/</code> directory</li>
+<li><strong>Deploys</strong> to <code>gh-pages</code> branch</li>
+<li><strong>Published</strong> at: <code>https://mega-zinyz.github.io/Sentiment-Analysis</code></li>
+</ol>
+<h3 id="what-triggers-deployment">What Triggers Deployment</h3>
+<p>Documentation builds automatically when you update:</p>
+<ul>
+<li>Any <code>.md</code> files in root directory</li>
+<li>Any files in <code>docs/</code> directory</li>
+<li><code>book.json</code> configuration</li>
+<li><code>SUMMARY.md</code> table of contents</li>
+<li><code>styles/</code> CSS files</li>
+<li>The workflow file itself</li>
+</ul>
+<h3 id="build-process">Build Process</h3>
+<pre><code>Push to main
+    ↓
+GitHub Actions Triggered
+    ↓
+Checkout Repository
+    ↓
+Setup Node.js 18
+    ↓
+Install Honkit
+    ↓
+Install Plugins
+    ↓
+Build Documentation
+    ↓
+Deploy to gh-pages Branch
+    ↓
+Live at GitHub Pages
+</code></pre><h2 id="🧪-local-testing">🧪 Local Testing</h2>
+<h3 id="option-1-using-npm-recommended">Option 1: Using npm (Recommended)</h3>
+<pre><code class="lang-bash"><span class="hljs-comment"># Install dependencies</span>
+npm install
+
+<span class="hljs-comment"># Install Honkit plugins</span>
+npm run docs:install
+
+<span class="hljs-comment"># Serve locally at http://localhost:4000</span>
+npm run docs:serve
+
+<span class="hljs-comment"># Build to _book/ directory</span>
+npm run docs:build
+</code></pre>
+<h3 id="option-2-using-honkit-directly">Option 2: Using Honkit Directly</h3>
+<pre><code class="lang-bash"><span class="hljs-comment"># Install Honkit globally</span>
+npm install -g honkit
+
+<span class="hljs-comment"># Install plugins</span>
+honkit install
+
+<span class="hljs-comment"># Serve locally</span>
+honkit serve
+
+<span class="hljs-comment"># Build</span>
+honkit build
+</code></pre>
+<h3 id="preview-built-site">Preview Built Site</h3>
+<p>After building:</p>
+<pre><code class="lang-bash"><span class="hljs-comment"># Using Python</span>
+<span class="hljs-built_in">cd</span> _book
+python -m http.server 8000
+
+<span class="hljs-comment"># Or using Node.js</span>
+npx http-server _book
+</code></pre>
+<p>Then open: <a href="http://localhost:8000" target="_blank">http://localhost:8000</a></p>
+<h2 id="🐛-troubleshooting">🐛 Troubleshooting</h2>
+<h3 id="build-fails-referenceerror-file-is-not-defined">Build Fails: "ReferenceError: File is not defined"</h3>
+<p><strong>Error</strong>: </p>
+<pre><code>ReferenceError: File is not defined
+  at undici/lib/web/webidl/index.js
+</code></pre><p><strong>Cause</strong>: Honkit's dependency <code>undici</code> requires Node.js 20+, but workflow is using an older version.</p>
+<p><strong>Solution</strong>: Update workflow to use Node.js 20:</p>
+<pre><code class="lang-yaml"><span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">Setup</span> <span class="hljs-string">Node.js</span>
+  <span class="hljs-attr">uses:</span> <span class="hljs-string">actions/setup-node@v4</span>
+  <span class="hljs-attr">with:</span>
+    <span class="hljs-attr">node-version:</span> <span class="hljs-string">'20'</span>  <span class="hljs-comment"># Changed from 18</span>
+</code></pre>
+<h3 id="build-fails-ebadengine-unsupported-engine">Build Fails: "EBADENGINE Unsupported engine"</h3>
+<p><strong>Error</strong>: <code>npm warn EBADENGINE required: { node: '&gt;=20.18.1' }</code></p>
+<p><strong>Cause</strong>: Node.js version too old for Honkit dependencies.</p>
+<p><strong>Solution</strong>: </p>
+<ul>
+<li><strong>GitHub Actions</strong>: Update workflow to Node.js 20+</li>
+<li><strong>Local</strong>: Install Node.js 20+ from <a href="https://nodejs.org/" target="_blank">https://nodejs.org/</a></li>
+</ul>
+<h3 id="build-fails-dependencies-lock-file-is-not-found">Build Fails: "Dependencies lock file is not found"</h3>
+<p><strong>Error</strong>: <code>Dependencies lock file is not found in /home/runner/work/Sentiment-Analysis/Sentiment-Analysis</code></p>
+<p><strong>Cause</strong>: GitHub Actions cache requires a lock file.</p>
+<p><strong>Solution</strong>: The workflow has been updated to remove caching. If you want to re-enable caching:</p>
+<ol>
+<li><p>Generate lock file locally:</p>
+<pre><code class="lang-bash">npm install
+git add package-lock.json
+git commit -m <span class="hljs-string">"chore: Add package-lock.json for GitHub Actions cache"</span>
+git push
+</code></pre>
+</li>
+<li><p>Update workflow to use cache:</p>
+<pre><code class="lang-yaml"><span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">Setup</span> <span class="hljs-string">Node.js</span>
+  <span class="hljs-attr">uses:</span> <span class="hljs-string">actions/setup-node@v4</span>
+  <span class="hljs-attr">with:</span>
+    <span class="hljs-attr">node-version:</span> <span class="hljs-string">'18'</span>
+    <span class="hljs-attr">cache:</span> <span class="hljs-string">'npm'</span>  <span class="hljs-comment"># This requires package-lock.json</span>
+</code></pre>
+</li>
+</ol>
+<h3 id="build-fails-plugin-not-found">Build Fails: "Plugin not found"</h3>
+<p><strong>Error</strong>: <code>ReferenceError: Failed to load HonKit's plugin module: "anchors" is not found</code></p>
+<p><strong>Cause</strong>: Honkit plugins need to be installed as npm packages (e.g., <code>gitbook-plugin-anchors</code>), which adds complexity.</p>
+<p><strong>Solution</strong>: Use only built-in plugins in <code>book.json</code>:</p>
+<pre><code class="lang-json">{
+  <span class="hljs-string">"plugins"</span>: [
+    <span class="hljs-string">"search"</span>,
+    <span class="hljs-string">"-sharing"</span>,
+    <span class="hljs-string">"-fontsettings"</span>
+  ]
+}
+</code></pre>
+<p><strong>Note</strong>: Built-in plugins (search, sharing, fontsettings) work without installation. External plugins require:</p>
+<pre><code class="lang-bash">npm install --save gitbook-plugin-anchors
+npm install --save gitbook-plugin-github
+<span class="hljs-comment"># etc.</span>
+</code></pre>
+<h3 id="build-fails-file-cannot-be-parsed">Build Fails: "File cannot be parsed"</h3>
+<p><strong>Error</strong>: <code>Error [FileNotParsableError]: "docs/api-reference/database_schema.sql" file cannot be parsed</code></p>
+<p><strong>Cause</strong>: Honkit only processes Markdown files. SQL, HTML, or other non-Markdown files cannot be parsed.</p>
+<p><strong>Solution</strong>: </p>
+<ol>
+<li>Remove SQL files from <code>SUMMARY.md</code></li>
+<li>Keep SQL files in docs folder (they'll be copied to output)</li>
+<li>Link to them from Markdown files if needed</li>
+</ol>
+<pre><code class="lang-markdown">&lt;!-- Good: Link to SQL file --&gt;
+See [<span class="hljs-string">database schema</span>](<span class="hljs-link">api-reference/database_schema.sql</span>) for details.
+
+&lt;!-- Bad: Include in SUMMARY.md --&gt;
+<span class="hljs-bullet">*</span> [<span class="hljs-string">Database Schema</span>](<span class="hljs-link">docs/api-reference/database_schema.sql</span>)
+</code></pre>
+<h3 id="build-fails-unknown-language">Build Fails: "Unknown language"</h3>
+<p><strong>Error</strong>: <code>Could not find the language 'env', did you forget to load/include a language module?</code></p>
+<p><strong>Cause</strong>: Honkit's syntax highlighter (highlight.js) doesn't recognize certain language identifiers like <code>env</code>, <code>csv</code>, <code>gitignore</code>.</p>
+<p><strong>Solution</strong>: Replace unsupported language identifiers in code blocks:</p>
+<pre><code class="lang-markdown">&lt;!-- Replace these --&gt;
+<span class="hljs-code">```env          →  ```</span>bash
+<span class="hljs-code">```csv          →  ```</span>text  
+<span class="hljs-code">```gitignore    →  ```</span>text
+</code></pre>
+<p><strong>Bulk fix for all Markdown files</strong> (PowerShell):</p>
+<pre><code class="lang-powershell"><span class="hljs-built_in">Get-ChildItem</span> <span class="hljs-literal">-Include</span> *.md <span class="hljs-literal">-Recurse</span> | <span class="hljs-built_in">ForEach-Object</span> { 
+  (<span class="hljs-built_in">Get-Content</span> <span class="hljs-variable">$_</span>.FullName <span class="hljs-literal">-Raw</span>) <span class="hljs-operator">-replace</span> <span class="hljs-string">'```env'</span>, <span class="hljs-string">'```bash'</span> `
+    <span class="hljs-operator">-replace</span> <span class="hljs-string">'```csv'</span>, <span class="hljs-string">'```text'</span> `
+    <span class="hljs-operator">-replace</span> <span class="hljs-string">'```gitignore'</span>, <span class="hljs-string">'```text'</span> | 
+  <span class="hljs-built_in">Set-Content</span> <span class="hljs-variable">$_</span>.FullName <span class="hljs-literal">-NoNewline</span> 
+}
+</code></pre>
+<h3 id="build-fails-cannot-find-module">Build Fails: "Cannot find module"</h3>
+<p><strong>Solution</strong>: Install dependencies:</p>
+<pre><code class="lang-bash">npm install
+npm run docs:install
+</code></pre>
+<h3 id="github-pages-shows-404">GitHub Pages Shows 404</h3>
+<p><strong>Possible causes</strong>:</p>
+<ol>
+<li><p><strong>gh-pages branch doesn't exist</strong></p>
+<ul>
+<li>Wait for first successful workflow run</li>
+<li>Check Actions tab for build status</li>
+</ul>
+</li>
+<li><p><strong>GitHub Pages not enabled</strong></p>
+<ul>
+<li>Enable in Settings → Pages</li>
+<li>Select <code>gh-pages</code> branch</li>
+</ul>
+</li>
+<li><p><strong>.nojekyll file missing</strong></p>
+<ul>
+<li>Workflow adds it automatically</li>
+<li>If missing, create empty <code>.nojekyll</code> in gh-pages branch</li>
+</ul>
+</li>
+</ol>
+<h3 id="workflow-permission-denied">Workflow Permission Denied</h3>
+<p><strong>Solution</strong>:</p>
+<ol>
+<li>Go to Settings → Actions → General</li>
+<li>Enable "Read and write permissions"</li>
+<li>Re-run workflow</li>
+</ol>
+<h3 id="custom-domain-issues">Custom Domain Issues</h3>
+<p>If using custom domain:</p>
+<ol>
+<li><p>Add <code>CNAME</code> file to root:</p>
+<pre><code>docs.yourdomain.com
+</code></pre></li>
+<li><p>Configure DNS:</p>
+<pre><code>CNAME record: docs → mega-zinyz.github.io
+</code></pre></li>
+<li><p>Enable HTTPS in GitHub Pages settings</p>
+</li>
+</ol>
+<h2 id="📝-configuration">📝 Configuration</h2>
+<h3 id="customize-workflow">Customize Workflow</h3>
+<p>Edit <code>.github/workflows/deploy-gitbook.yml</code>:</p>
+<pre><code class="lang-yaml"><span class="hljs-comment"># Change Node.js version (minimum 20 required for Honkit)</span>
+<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">Setup</span> <span class="hljs-string">Node.js</span>
+  <span class="hljs-attr">uses:</span> <span class="hljs-string">actions/setup-node@v4</span>
+  <span class="hljs-attr">with:</span>
+    <span class="hljs-attr">node-version:</span> <span class="hljs-string">'20'</span>  <span class="hljs-comment"># or '22' (18 not supported)</span>
+
+<span class="hljs-comment"># Add custom domain</span>
+<span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">Deploy</span> <span class="hljs-string">to</span> <span class="hljs-string">GitHub</span> <span class="hljs-string">Pages</span>
+  <span class="hljs-attr">uses:</span> <span class="hljs-string">peaceiris/actions-gh-pages@v4</span>
+  <span class="hljs-attr">with:</span>
+    <span class="hljs-attr">cname:</span> <span class="hljs-string">docs.yourdomain.com</span>  <span class="hljs-comment"># Add your domain</span>
+</code></pre>
+<h3 id="customize-book-config">Customize Book Config</h3>
+<p>Edit <code>book.json</code>:</p>
+<pre><code class="lang-json">{
+  <span class="hljs-string">"title"</span>: <span class="hljs-string">"Your Title"</span>,
+  <span class="hljs-string">"description"</span>: <span class="hljs-string">"Your description"</span>,
+  <span class="hljs-string">"author"</span>: <span class="hljs-string">"Your Name"</span>,
+  <span class="hljs-string">"plugins"</span>: [
+    <span class="hljs-comment">// Add or remove plugins</span>
+  ],
+  <span class="hljs-string">"links"</span>: {
+    <span class="hljs-string">"sidebar"</span>: {
+      <span class="hljs-string">"Your Link"</span>: <span class="hljs-string">"https://yoursite.com"</span>
+    }
+  }
+}
+</code></pre>
+<h3 id="add-custom-styling">Add Custom Styling</h3>
+<p>Edit <code>styles/website.css</code> for custom CSS.</p>
+<h2 id="🔒-security-best-practices">🔒 Security Best Practices</h2>
+<h3 id="what-to-commit">What to Commit</h3>
+<p>✅ <strong>DO commit</strong>:</p>
+<ul>
+<li>Documentation files (<code>.md</code>)</li>
+<li>Configuration files (<code>book.json</code>, <code>SUMMARY.md</code>)</li>
+<li>Styles (<code>styles/website.css</code>)</li>
+<li>Workflow files (<code>.github/workflows/</code>)</li>
+<li>Package.json</li>
+</ul>
+<p>❌ <strong>DON'T commit</strong>:</p>
+<ul>
+<li>Built files (<code>_book/</code>)</li>
+<li>Node modules (<code>node_modules/</code>)</li>
+<li>Environment files (<code>.env</code>)</li>
+<li>Backup files (<code>*.backup</code>)</li>
+</ul>
+<h3 id="secrets-management">Secrets Management</h3>
+<p>Never commit:</p>
+<ul>
+<li>API keys</li>
+<li>Database passwords</li>
+<li>JWT secrets</li>
+<li>Private credentials</li>
+</ul>
+<p>Use GitHub Secrets for sensitive data in workflows.</p>
+<h2 id="📊-monitoring-deployments">📊 Monitoring Deployments</h2>
+<h3 id="check-build-status">Check Build Status</h3>
+<ol>
+<li>Go to repository <strong>Actions</strong> tab</li>
+<li>Click on latest workflow run</li>
+<li>View build logs</li>
+<li>Check for errors</li>
+</ol>
+<h3 id="view-live-site">View Live Site</h3>
+<ul>
+<li><strong>Production URL</strong>: <a href="https://mega-zinyz.github.io/Sentiment-Analysis" target="_blank">https://mega-zinyz.github.io/Sentiment-Analysis</a></li>
+<li><strong>Check Status</strong>: Green checkmark in Actions tab</li>
+<li><strong>View Logs</strong>: Click workflow run for details</li>
+</ul>
+<h3 id="build-history">Build History</h3>
+<p>GitHub keeps:</p>
+<ul>
+<li>Last 90 days of workflow runs</li>
+<li>All workflow logs</li>
+<li>Deployment history</li>
+</ul>
+<h2 id="🎨-customization-tips">🎨 Customization Tips</h2>
+<h3 id="add-logo">Add Logo</h3>
+<ol>
+<li>Add logo to <code>docs/assets/logo.png</code></li>
+<li>Update <code>README.md</code>:<pre><code class="lang-markdown">![<span class="hljs-string">Logo</span>](<span class="hljs-link">docs/assets/logo.png</span>)
+</code></pre>
+</li>
+</ol>
+<h3 id="custom-favicon">Custom Favicon</h3>
+<ol>
+<li>Add favicon to <code>styles/images/favicon.ico</code></li>
+<li>Honkit will use it automatically</li>
+</ol>
+<h3 id="theme-customization">Theme Customization</h3>
+<p>Edit <code>styles/website.css</code>:</p>
+<pre><code class="lang-css"><span class="hljs-comment">/* Custom colors */</span>
+<span class="hljs-selector-pseudo">:root</span> {
+  <span class="hljs-attr">--primary-color</span>: <span class="hljs-number">#0366d6</span>;
+  <span class="hljs-attr">--text-color</span>: <span class="hljs-number">#24292e</span>;
+}
+
+<span class="hljs-comment">/* Custom sidebar */</span>
+<span class="hljs-selector-class">.book-summary</span> {
+  <span class="hljs-attribute">background-color</span>: <span class="hljs-number">#f6f8fa</span>;
+}
+</code></pre>
+<h2 id="📚-advanced-features">📚 Advanced Features</h2>
+<h3 id="multi-version-documentation">Multi-version Documentation</h3>
+<p>Create branches for versions:</p>
+<pre><code class="lang-bash">git checkout -b docs-v1.0
+git checkout -b docs-v2.0
+</code></pre>
+<p>Deploy each version to different paths.</p>
+<h3 id="analytics-integration">Analytics Integration</h3>
+<p>Add Google Analytics to <code>book.json</code>:</p>
+<pre><code class="lang-json">{
+  <span class="hljs-string">"plugins"</span>: [<span class="hljs-string">"ga"</span>],
+  <span class="hljs-string">"pluginsConfig"</span>: {
+    <span class="hljs-string">"ga"</span>: {
+      <span class="hljs-string">"token"</span>: <span class="hljs-string">"UA-XXXXXX-X"</span>
+    }
+  }
+}
+</code></pre>
+<h3 id="search-optimization">Search Optimization</h3>
+<p>Plugins already included:</p>
+<ul>
+<li>✅ Full-text search</li>
+<li>✅ Heading anchors</li>
+<li>✅ Code copy buttons</li>
+</ul>
+<h2 id="🆘-getting-help">🆘 Getting Help</h2>
+<h3 id="resources">Resources</h3>
+<ul>
+<li><a href="https://github.com/honkit/honkit" target="_blank">Honkit Documentation</a></li>
+<li><a href="https://docs.github.com/pages" target="_blank">GitHub Pages Docs</a></li>
+<li><a href="https://docs.github.com/actions" target="_blank">GitHub Actions Docs</a></li>
+</ul>
+<h3 id="common-issues">Common Issues</h3>
+<p>See our <a href="../troubleshooting/COMMON_ISSUES.md">Troubleshooting Guide</a></p>
+<h3 id="report-issues">Report Issues</h3>
+<p><a href="https://github.com/Mega-Zinyz/Sentiment-Analysis/issues" target="_blank">Create an issue</a> if you encounter problems.</p>
+<hr></hr>
+<p><strong>Your documentation is ready to deploy! Just push to GitHub and watch it build automatically.</strong> 🚀</p>
+<p><strong>Last Updated</strong>: November 12, 2025</p>
+
+                                
+                                </section>
+                            
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="deployment/CORS_CONFIGURATION.html" class="navigation navigation-prev " aria-label="Previous page: CORS Configuration">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="development/LOGGING_GUIDE.html" class="navigation navigation-next " aria-label="Next page: Logging Guide">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"GitHub Pages Setup","level":"6.8","depth":1,"next":{"title":"Logging Guide","level":"7.1","depth":1,"path":"docs/development/LOGGING_GUIDE.md","ref":"docs/development/LOGGING_GUIDE.md","articles":[]},"previous":{"title":"CORS Configuration","level":"6.7","depth":1,"path":"docs/deployment/CORS_CONFIGURATION.md","ref":"docs/deployment/CORS_CONFIGURATION.md","articles":[]},"dir":"ltr"},"config":{"plugins":["-search","-sharing","-fontsettings"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":true},"highlight":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false}},"theme":"default","author":"Mega-Zinyz","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56},"embedFonts":false},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{"version":"1.0.0","lastUpdated":"November 12, 2025"},"title":"Indonesian Sentiment Analysis System","language":"en","links":{"sidebar":{"Home":"https://github.com/Mega-Zinyz/Sentiment-Analysis","Documentation":"https://mega-zinyz.github.io/Sentiment-Analysis","Issues":"https://github.com/Mega-Zinyz/Sentiment-Analysis/issues"}},"gitbook":">=3.0.0","description":"Comprehensive documentation for production-ready Indonesian Sentiment Analysis application with Docker deployment"},"file":{"path":"docs/GITHUB_PAGES_SETUP.md","mtime":"2025-11-12T10:47:36.258Z","type":"markdown"},"gitbook":{"version":"6.1.4","time":"2025-11-12T10:47:54.086Z"},"basePath":"..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    <noscript>
+        <style>
+            .honkit-cloak {
+                display: block !important;
+            }
+        </style>
+    </noscript>
+    <script>
+        // Restore sidebar state as critical path for prevent layout shift
+        function __init__getSidebarState(defaultValue){
+            var baseKey = "";
+            var key = baseKey + ":sidebar";
+            try {
+                var value = localStorage[key];
+                if (value === undefined) {
+                    return defaultValue;
+                }
+                var parsed = JSON.parse(value);
+                return parsed == null ? defaultValue : parsed;
+            } catch (e) {
+                return defaultValue;
+            }
+        }
+        function __init__restoreLastSidebarState() {
+            var isMobile = window.matchMedia("(max-width: 600px)").matches;
+            if (isMobile) {
+                // Init last state if not mobile
+                return;
+            }
+            var sidebarState = __init__getSidebarState(true);
+            var book = document.querySelector(".book");
+            // Show sidebar if it enabled
+            if (sidebarState && book) {
+                book.classList.add("without-animation", "with-summary");
+            }
+        }
+
+        try {
+            __init__restoreLastSidebarState();
+        } finally {
+            var book = document.querySelector(".book");
+            book.classList.remove("honkit-cloak");
+        }
+    </script>
+    <script src="../gitbook/gitbook.js"></script>
+    <script src="../gitbook/theme.js"></script>
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+
+    </body>
+</html>
+

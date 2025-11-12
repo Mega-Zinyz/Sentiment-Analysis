@@ -1,0 +1,800 @@
+<!-- Main Container -->
+<div class="raw-data-analysis-container">
+  
+  <!-- Header -->
+  <div class="analysis-header">
+    <h1>📊 Sentiment Analysis</h1>
+    <p class="header-subtitle">Choose your analysis method or continue with an existing session</p>
+  </div>
+
+  <!-- Error/Success Messages -->
+  <div *ngIf="error" class="alert alert-error">
+    <span class="alert-icon">❌</span>
+    {{ error }}
+  </div>
+  
+  <div *ngIf="success" class="alert alert-success">
+    <span class="alert-icon">✅</span>
+    {{ success }}
+  </div>
+
+  <!-- Mode Selection -->
+  <div *ngIf="analysisMode === 'choose'" class="mode-selection">
+    <h2>Choose Analysis Method</h2>
+    
+    <div class="mode-cards">
+      <!-- Direct API Card -->
+      <div class="mode-card" (click)="selectDirectApi()">
+        <div class="card-icon">🐦</div>
+        <h3>Direct Twitter API</h3>
+        <p>Fetch tweets directly from Twitter API using keywords and analyze sentiment in real-time</p>
+        <div class="card-features">
+          <span class="feature">✓ Real-time data</span>
+          <span class="feature">✓ Keyword search</span>
+          <span class="feature">✓ Live analysis</span>
+        </div>
+        <button class="card-button primary">Use Twitter API</button>
+      </div>
+
+      <!-- Upload File Card -->
+      <div class="mode-card" (click)="selectUploadFile()">
+        <div class="card-icon">📄</div>
+        <h3>Upload Raw Data</h3>
+        <p>Upload your own raw Twitter data file (.txt or .csv) and train a custom sentiment analysis model</p>
+        <div class="card-features">
+          <span class="feature">✓ TXT & CSV files</span>
+          <span class="feature">✓ Manual training</span>
+          <span class="feature">✓ Auto-conversion</span>
+        </div>
+        <button class="card-button secondary">Upload File</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Raw Data Upload Mode -->
+  <div *ngIf="analysisMode === 'upload-file'" class="upload-mode">
+    
+    <!-- Back Button -->
+    <button class="back-button" (click)="backToModeSelection()">
+      ← Back to Mode Selection
+    </button>
+
+    <!-- Progress Steps -->
+    <div class="progress-steps">
+      <div class="step" [class.active]="currentStep === 'upload'" [class.completed]="currentStep !== 'upload'">
+        <div class="step-number">1</div>
+        <div class="step-label">Upload Data</div>
+      </div>
+      <div class="step" [class.active]="currentStep === 'library-selection'" [class.completed]="currentStep === 'labeling' || currentStep === 'analyzing' || currentStep === 'results'">
+        <div class="step-number">2</div>
+        <div class="step-label">Choose Library</div>
+      </div>
+      <div class="step" [class.active]="currentStep === 'labeling'" [class.completed]="currentStep === 'analyzing' || currentStep === 'results'">
+        <div class="step-number">3</div>
+        <div class="step-label">Label / Analyze</div>
+      </div>
+      <div class="step" [class.active]="currentStep === 'analyzing' || currentStep === 'results'">
+        <div class="step-number">4</div>
+        <div class="step-label">Results</div>
+      </div>
+    </div>
+
+    <!-- Existing Sessions -->
+    <div *ngIf="sessions && sessions.length > 0" class="existing-sessions">
+      <h3>📋 Existing Sessions</h3>
+      <div class="sessions-grid">
+        <div *ngFor="let session of sessions" class="session-card" (click)="selectSession(session)">
+          <div class="session-header">
+            <h4>{{ session.session_id }}</h4>
+            <div class="session-status" [class]="session.status">{{ getStatusLabel(session.status) }}</div>
+          </div>
+          <div class="session-stats">
+            <span class="stat">📊 {{ session.total_items }} items</span>
+            <span class="stat" *ngIf="session.labeled_items > 0">🏷️ {{ session.labeled_items }} labeled</span>
+            <span class="stat library-info" *ngIf="session.library_name">📁 {{ session.library_name }}</span>
+          </div>
+          <div class="session-actions">
+            <button class="btn-continue" [disabled]="loading.sessions">Continue</button>
+            <button class="btn-secondary small" (click)="viewSessionData(session); $event.stopPropagation()" title="View raw data">👁️ View Data</button>
+            <button class="btn-delete" (click)="deleteSession(session); $event.stopPropagation()">🗑️</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Raw Data Viewer Modal -->
+    <div *ngIf="viewingDataSession" class="modal-overlay" (click)="closeDataViewer()">
+      <div class="modal-content data-viewer" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>📊 Raw Data: {{ viewingDataSession.session_id }}</h3>
+          <button class="btn-close" (click)="closeDataViewer()">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="data-viewer-controls">
+            <span class="data-stats">
+              Showing {{ ((dataCurrentPage - 1) * dataPageSize) + 1 }} - {{ Math.min(dataCurrentPage * dataPageSize, viewingDataSession.total_items) }} of {{ viewingDataSession.total_items }} items
+            </span>
+            <div class="pagination-controls">
+              <button class="btn-secondary small" (click)="loadDataPage(1)" [disabled]="dataCurrentPage === 1" title="First page">⏮️</button>
+              <button class="btn-secondary small" (click)="loadDataPage(dataCurrentPage - 1)" [disabled]="dataCurrentPage === 1">◀️ Previous</button>
+              <span class="page-indicator">Page {{ dataCurrentPage }} of {{ dataTotalPages }}</span>
+              <button class="btn-secondary small" (click)="loadDataPage(dataCurrentPage + 1)" [disabled]="dataCurrentPage === dataTotalPages">Next ▶️</button>
+              <button class="btn-secondary small" (click)="loadDataPage(dataTotalPages)" [disabled]="dataCurrentPage === dataTotalPages" title="Last page">⏭️</button>
+            </div>
+          </div>
+          
+          <div class="data-table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width: 60px;">ID</th>
+                  <th>Text</th>
+                  <th style="width: 130px;">Username</th>
+                  <th style="width: 150px;">Timestamp</th>
+                  <th style="width: 100px;">Label</th>
+                  <th style="width: 120px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of viewingDataList">
+                  <td>{{ item.id }}</td>
+                  <td class="text-cell">
+                    <div *ngIf="editingItemId !== item.id">{{ item.clean_text || item.raw_data }}</div>
+                    <textarea *ngIf="editingItemId === item.id" 
+                              [(ngModel)]="editingItemText" 
+                              class="edit-textarea"
+                              rows="3"></textarea>
+                  </td>
+                  <td>{{ item.username_extracted || '-' }}</td>
+                  <td>{{ item.timestamp_extracted ? formatDate(item.timestamp_extracted) : '-' }}</td>
+                  <td>
+                    <span *ngIf="item.sentiment_label" class="label-badge" [class]="item.sentiment_label.toLowerCase()">
+                      {{ item.sentiment_label }}
+                    </span>
+                    <span *ngIf="!item.sentiment_label">-</span>
+                  </td>
+                  <td>
+                    <div class="action-buttons">
+                      <button *ngIf="editingItemId !== item.id" 
+                              class="btn-icon edit" 
+                              (click)="startEditItem(item)" 
+                              title="Edit">✏️</button>
+                      <button *ngIf="editingItemId === item.id" 
+                              class="btn-icon save" 
+                              (click)="saveEditItem(item)" 
+                              title="Save">💾</button>
+                      <button *ngIf="editingItemId === item.id" 
+                              class="btn-icon cancel" 
+                              (click)="cancelEditItem()" 
+                              title="Cancel">❌</button>
+                      <button *ngIf="editingItemId !== item.id" 
+                              class="btn-icon delete" 
+                              (click)="deleteItem(item)" 
+                              title="Delete">🗑️</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <div *ngIf="loadingData" class="loading-overlay">
+            <div class="spinner"></div>
+            <p>Loading data...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Background Processing History -->
+    <div *ngIf="processingHistory && processingHistory.length > 0" class="processing-history">
+      <div class="processing-header">
+        <h3>🔄 Processing History</h3>
+        <div class="header-buttons">
+          <button class="btn-warning small" (click)="clearAllProcessingData()" title="Clear all processing history">🧹 Clear All</button>
+        </div>
+      </div>
+      <div class="processing-grid">
+        <div *ngFor="let process of processingHistory; trackBy: trackByProcessId" 
+             class="process-card" 
+             [class.active]="process.isActive"
+             [class.completed]="process.status === 'completed'"
+             [class.error]="process.status === 'error'">
+          
+          <div class="process-header">
+            <h4>{{ process.sessionName }}</h4>
+            <div class="process-status" [class]="process.status">
+              <span *ngIf="process.status === 'processing'">🔄 Processing Data</span>
+              <span *ngIf="process.status === 'paused'">⏸️ Paused</span>
+              <span *ngIf="process.status === 'ready_for_upload'">📤 Ready to Upload</span>
+              <span *ngIf="process.status === 'uploading'">⬆️ Uploading to Server</span>
+              <span *ngIf="process.status === 'server_processing'">🔄 Server Processing</span>
+              <span *ngIf="process.status === 'completed'">✅ Completed</span>
+              <span *ngIf="process.status === 'error'">❌ Error</span>
+            </div>
+          </div>
+
+          <div class="process-progress">
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="process.status === 'server_processing' ? (process.serverProgress || 0) : process.progress"></div>
+            </div>
+            <div class="progress-text">
+              <span *ngIf="process.status === 'server_processing'">Server: {{ process.serverProgress || 0 }} %</span>
+              <span *ngIf="process.status !== 'server_processing'">{{ process.progress }} %</span>
+            </div>
+          </div>
+
+          <div class="process-stats">
+            <span class="stat" *ngIf="process.status !== 'server_processing'">📊 {{ process.processedItems }}/{{ process.totalItems }} processed</span>
+            <span class="stat" *ngIf="process.status === 'server_processing'">🖥️ Server processing {{ process.serverResponse?.stats?.validAfterProcessing || process.validItems }} items</span>
+            <span class="stat valid" *ngIf="process.status !== 'server_processing'">✅ {{ process.validItems }} valid</span>
+            <span class="stat invalid" *ngIf="process.invalidItems > 0 && process.status !== 'server_processing'">❌ {{ process.invalidItems }} invalid</span>
+            <span class="stat time" *ngIf="process.estimatedTimeRemaining && process.status !== 'server_processing'">
+              ⏱️ {{ formatTimeRemaining(process.estimatedTimeRemaining) }} remaining
+            </span>
+          </div>
+
+          <div *ngIf="process.errorMessage" class="process-error">
+            <span class="error-icon">⚠️</span>
+            {{ process.errorMessage }}
+          </div>
+
+          <div class="process-actions">
+            <button *ngIf="process.status === 'processing'" 
+                    class="btn-secondary small" 
+                    (click)="pauseBackgroundProcessing(process.id); $event.stopPropagation()">
+              ⏸️ Pause
+            </button>
+            
+            <button *ngIf="process.status === 'paused'" 
+                    class="btn-primary small" 
+                    (click)="resumeBackgroundProcessing(process.id); $event.stopPropagation()">
+              ▶️ Resume
+            </button>
+            
+            <button *ngIf="process.status === 'ready_for_upload'" 
+                    class="btn-primary small" 
+                    (click)="uploadProcessedData(process.id); $event.stopPropagation()">
+              📤 Upload to Server
+            </button>
+            
+            <button *ngIf="process.status === 'completed'" 
+                    class="btn-outline small" 
+                    (click)="viewProcessResults(process); $event.stopPropagation()">
+              👁️ View Results
+            </button>
+            
+            <button *ngIf="process.status !== 'processing' && process.status !== 'uploading'" 
+                    class="btn-delete small" 
+                    (click)="deleteBackgroundProcess(process.id); $event.stopPropagation()">
+              🗑️ Delete
+            </button>
+          </div>
+
+          <div class="process-timeline">
+            <div class="timeline-item">
+              <span class="timeline-label">Started:</span>
+              <span class="timeline-value">{{ formatDate(process.startTime) }}</span>
+            </div>
+            <div *ngIf="process.completedTime" class="timeline-item">
+              <span class="timeline-label">Completed:</span>
+              <span class="timeline-value">{{ formatDate(process.completedTime) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 1: Upload Data -->
+    <div *ngIf="currentStep === 'upload'" class="upload-step">
+      <h3>📤 Upload Raw Twitter Data</h3>
+      
+      <form [formGroup]="uploadForm" (ngSubmit)="uploadRawData()">
+        <div class="form-group">
+          <label for="sessionName">Session Name</label>
+          <input 
+            id="sessionName"
+            type="text" 
+            formControlName="sessionName"
+            placeholder="e.g., COVID Analysis March 2022"
+            class="form-input">
+          <div *ngIf="uploadForm.get('sessionName')?.invalid && uploadForm.get('sessionName')?.touched" class="form-error">
+            Session name is required (minimum 3 characters)
+          </div>
+        </div>
+
+        <!-- File Upload -->
+        <div class="form-group">
+          <label>Data Source</label>
+          <div class="file-upload-options">
+            <div class="upload-option">
+              <input 
+                type="file" 
+                id="fileInput" 
+                accept=".txt,.csv,.tsv"
+                (change)="onFileSelected($event)"
+                [disabled]="loading.upload"
+                style="display: none">
+              <label for="fileInput" class="file-upload-button" [class.disabled]="loading.upload">
+                📁 Choose .txt, .csv, or .tsv File
+              </label>
+              <div *ngIf="selectedFile" class="file-selected-info">
+                <span class="file-name">{{ selectedFile.name }}</span>
+                <span class="file-size">({{ (selectedFile.size / 1024 / 1024).toFixed(1) }}MB)</span>
+                <span *ngIf="loading.upload" class="processing-badge">🔄 Processing</span>
+              </div>
+            </div>
+            <div class="upload-divider">OR</div>
+            <div class="upload-option">
+              <label>Paste raw data directly:</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Raw Data Text Area -->
+        <div class="form-group">
+          <label for="rawDataText">Raw Twitter Data</label>
+          <textarea 
+            id="rawDataText"
+            formControlName="rawDataText"
+            placeholder="Paste your Twitter data here:
+
+Twitter API JSON format (recommended):
+[
+  {{ '{' }}
+    &quot;id&quot;: &quot;1234567890123456789&quot;,
+    &quot;text&quot;: &quot;Ketahui informasi pembagian #PPKM di wilayah Jabar berdasarkan level 3, 2 dan 1 di #PikoData https://t.co/o2RnI7eDue&quot;,
+    &quot;created_at&quot;: &quot;2022-03-31T14:32:04.000Z&quot;,
+    &quot;author_id&quot;: &quot;987654321&quot;
+  {{ '}' }}
+]
+
+Or legacy text format (one per line):
+&quot;2022-03-31 14:32:04+00:00 pikobar_jabar Ketahui informasi pembagian #PPKM di wilayah Jabar berdasarkan level 3, 2 dan 1 di #PikoData https://t.co/o2RnI7eDue 1&quot;"
+            rows="8"
+            class="form-textarea"></textarea>
+          <div class="form-help">
+            <strong>💡 Getting More Data (Twitter API Free Tier = 100 tweets/month):</strong>
+            <ul style="margin: 0.5rem 0; padding-left: 1.5rem; background: #f0f8ff; padding: 0.5rem; border-radius: 4px;">
+              <li><strong>🔑 Multiple API Keys:</strong> Create multiple developer accounts for 300-500 tweets/month</li>
+              <li><strong>🎓 Academic Access:</strong> Apply for Twitter Academic Research (10M tweets/month FREE)</li>
+              <li><strong>📱 Manual Collection:</strong> Use browser extensions or scraping tools (legal gray area)</li>
+              <li><strong>🗂️ Existing Datasets:</strong> Use Kaggle, GitHub, or research datasets</li>
+            </ul>
+            
+            <strong>Accepted formats:</strong> 
+            <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
+              <li><strong>Twitter API JSON:</strong> JSON array with {{ '{' }}id, text, created_at, author_id{{ '}' }} objects (recommended)</li>
+              <li><strong>Text files (.txt):</strong> "YYYY-MM-DD HH:MM:SS+TZ username message number"</li>
+              <li><strong>CSV files (.csv):</strong> timestamp,username,message (comma or tab separated)</li>
+              <li><strong>TSV files:</strong> date\tuser\ttweet (tab separated, auto-detected)</li>
+            </ul>
+            <strong>Minimum:</strong> 20 data points (15 for training + 5 for prediction) | <strong>Recommended:</strong> 500+ for better accuracy
+          </div>
+          <div *ngIf="uploadForm.get('rawDataText')?.invalid && uploadForm.get('rawDataText')?.touched" class="form-error">
+            Raw data is required (minimum 50 characters)
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button 
+            type="submit" 
+            class="btn-primary"
+            [disabled]="uploadForm.invalid || loading.upload || cleaningProgress.isActive || uploadProgress.isActive">
+            <span *ngIf="cleaningProgress.isActive">🧹 Cleaning Data...</span>
+            <span *ngIf="uploadProgress.isActive && uploadProgress.status === 'uploading'">⬆️ Uploading {{ uploadProgress.percentComplete }} %...</span>
+            <span *ngIf="loading.upload && !cleaningProgress.isActive && !uploadProgress.isActive">⏳ Starting Upload...</span>
+            <span *ngIf="!loading.upload && !cleaningProgress.isActive && !uploadProgress.isActive">🚀 Upload & Process Data</span>
+          </button>
+
+          <!-- Cancel button for active processes -->
+          <button 
+            *ngIf="loading.upload || cleaningProgress.isActive || uploadProgress.isActive"
+            type="button" 
+            class="btn-secondary cancel-btn"
+            (click)="cancelUpload()">
+            ❌ Cancel Upload
+          </button>
+        </div>
+      </form>
+
+      <!-- Data Cleaning Progress Display -->
+      <div *ngIf="cleaningProgress.isActive" class="cleaning-progress-container">
+        <div class="cleaning-header">
+          <h3>🧹 Data Cleaning in Progress</h3>
+          <div class="progress-stats">
+            <span class="stat">📊 {{ cleaningProgress.processedItems }}/{{ cleaningProgress.totalItems }} processed</span>
+            <span class="stat valid">✅ {{ cleaningProgress.validItems }} valid</span>
+            <span class="stat invalid">❌ {{ cleaningProgress.invalidItems }} invalid</span>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-bar-container">
+          <div class="progress-bar">
+            <div class="progress-fill" 
+                 [style.width.%]="(cleaningProgress.processedItems / cleaningProgress.totalItems) * 100">
+            </div>
+          </div>
+          <div class="progress-text">
+            {{ Math.round((cleaningProgress.processedItems / cleaningProgress.totalItems) * 100) }}%
+          </div>
+        </div>
+
+        <!-- Current Item Being Processed -->
+        <div *ngIf="cleaningProgress.currentItem" class="current-item">
+          <h4>Currently Processing Item #{{ cleaningProgress.currentItem.index }}</h4>
+          <div class="item-comparison">
+            <div class="original-data">
+              <h5>📥 Original Data:</h5>
+              <div class="data-preview">{{ cleaningProgress.currentItem.original }}</div>
+            </div>
+            <div class="arrow">➡️</div>
+            <div class="cleaned-data">
+              <h5>🧹 Cleaned Data:</h5>
+              <div class="data-preview" [class.valid]="cleaningProgress.currentItem.isValid" 
+                   [class.invalid]="!cleaningProgress.currentItem.isValid">
+                <div *ngIf="cleaningProgress.currentItem.isValid">
+                  <strong>Timestamp:</strong> {{ cleaningProgress.currentItem.timestamp }}<br>
+                  <strong>Username:</strong> {{ cleaningProgress.currentItem.username }}<br>
+                  <strong>Message:</strong> {{ cleaningProgress.currentItem.message }}
+                </div>
+                <div *ngIf="!cleaningProgress.currentItem.isValid" class="invalid-reason">
+                  ❌ Invalid format or too short
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Cleaned Items -->
+        <div *ngIf="cleaningProgress.recentCleanedItems && cleaningProgress.recentCleanedItems.length > 0" class="recent-items">
+          <h4>🎯 Recently Cleaned Items:</h4>
+          <div class="recent-items-list">
+            <div *ngFor="let item of cleaningProgress.recentCleanedItems; trackBy: trackByIndex" 
+                 class="recent-item" [class.fade-in]="true">
+              <div class="item-number">#{{ item.index }}</div>
+              <div class="item-content">
+                <div class="username">👤 {{ item.username }}</div>
+                <div class="message">💬 {{ item.message }}</div>
+              </div>
+              <div class="item-status">✅</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upload Progress Display -->
+      <div *ngIf="uploadProgress.isActive" class="upload-progress-container">
+        <div class="upload-header">
+          <h3>⬆️ Upload Progress</h3>
+          <div class="progress-stats">
+            <span class="stat">📊 {{ uploadProgress.processedItems }}/{{ uploadProgress.totalItems }} items uploaded</span>
+            <span class="stat chunk" *ngIf="uploadProgress.totalChunks > 1">
+              📦 Chunk {{ uploadProgress.currentChunk }}/{{ uploadProgress.totalChunks }}
+            </span>
+            <span class="stat time" *ngIf="uploadProgress.elapsedTime > 0">
+              ⏱️ {{ uploadProgress.elapsedTime }}s elapsed
+            </span>
+            <span class="stat eta" *ngIf="uploadProgress.estimatedTimeRemaining">
+              🎯 ~{{ uploadProgress.estimatedTimeRemaining }}s remaining
+            </span>
+          </div>
+        </div>
+
+        <!-- Upload Progress Bar -->
+        <div class="progress-bar-container">
+          <div class="progress-bar upload">
+            <div class="progress-fill upload" 
+                 [style.width.%]="uploadProgress.percentComplete">
+            </div>
+          </div>
+          <div class="progress-text">
+            {{ uploadProgress.percentComplete }}%
+          </div>
+        </div>
+
+        <!-- Upload Status -->
+        <div class="upload-status">
+          <div class="status-message" [class]="uploadProgress.status">
+            <span *ngIf="uploadProgress.status === 'uploading'">⬆️ Uploading data to server...</span>
+            <span *ngIf="uploadProgress.status === 'completed'">✅ Upload completed successfully!</span>
+            <span *ngIf="uploadProgress.status === 'error'">❌ Upload failed: {{ uploadProgress.errorMessage }}</span>
+          </div>
+          
+          <div *ngIf="uploadProgress.lastUpdate" class="last-update">
+            Last update: {{ uploadProgress.lastUpdate | date:'medium' }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Manual Labeling -->
+    <div *ngIf="currentStep === 'labeling'" class="labeling-step">
+      <h3>🏷️ Manual Labeling</h3>
+      <p class="step-description">Label 15 training samples (5 positive, 5 negative, 5 neutral) to train the sentiment analysis model</p>
+
+      <!-- Labeling Progress -->
+      <div class="labeling-progress">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <h4 style="margin: 0;">Progress: {{ 15 - totalLabelingNeeded }}/15 labeled ({{ labelingProgressPercent }}%)</h4>
+          <button 
+            class="btn-secondary" 
+            (click)="resetLabeling()"
+            [disabled]="resettingLabels || (15 - totalLabelingNeeded) === 0"
+            style="padding: 8px 16px; font-size: 0.9em;">
+            <span *ngIf="!resettingLabels">🔄 Reset All Labels</span>
+            <span *ngIf="resettingLabels">⏳ Resetting...</span>
+          </button>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="labelingProgressPercent"></div>
+        </div>
+        <div class="label-counts">
+          <span class="count positive">✅ Positive: {{ labelingProgress.positive }}/5</span>
+          <span class="count negative">❌ Negative: {{ labelingProgress.negative }}/5</span>
+          <span class="count neutral">⚪ Neutral: {{ labelingProgress.neutral }}/5</span>
+        </div>
+      </div>
+
+      <!-- Labeling Interface -->
+      <div *ngIf="labelingData && labelingData.length > 0" class="labeling-interface">
+        <div *ngFor="let item of labelingData; let i = index" class="labeling-item" [style.display]="i < 10 ? 'block' : 'none'">
+          <div class="item-content">
+            <div class="item-text">{{ item.clean_text }}</div>
+            <div class="item-meta">
+              <span *ngIf="item.username_extracted">👤 {{ item.username_extracted }}</span>
+              <span *ngIf="item.timestamp_extracted">📅 {{ formatDate(item.timestamp_extracted) }}</span>
+            </div>
+          </div>
+          <div class="labeling-buttons">
+            <button 
+              class="label-btn positive" 
+              (click)="labelItem(item, 'Positive')"
+              [disabled]="labelingProgress.needed.positive <= 0">
+              👍 Positive
+            </button>
+            <button 
+              class="label-btn negative" 
+              (click)="labelItem(item, 'Negative')"
+              [disabled]="labelingProgress.needed.negative <= 0">
+              👎 Negative
+            </button>
+            <button 
+              class="label-btn neutral" 
+              (click)="labelItem(item, 'Neutral')"
+              [disabled]="labelingProgress.needed.neutral <= 0">
+              ⚪ Neutral
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="totalLabelingNeeded === 0" class="labeling-complete">
+        <h4>🎉 Labeling Complete!</h4>
+        <p>You've labeled all 15 training samples. Click below to import them to your selected Training Data library.</p>
+        <button 
+          class="btn-primary" 
+          (click)="proceedWithLabeledImport()" 
+          [disabled]="importingToLibrary">
+          <span *ngIf="importingToLibrary">⏳ Importing...</span>
+          <span *ngIf="!importingToLibrary">✅ Import Labeled Data to Training Library</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 2: Library Selection & Import Method -->
+    <div *ngIf="currentStep === 'library-selection'" class="library-selection-step">
+      <h3>📚 Choose Training Data Library & Import Method</h3>
+      <p class="step-description">Select where to save your data and how you want to import it</p>
+
+      <!-- Library Selection -->
+      <div class="library-options">
+        <h4 class="section-title">1️⃣ Select Training Data Library</h4>
+        
+        <!-- Show selection only if user has existing libraries -->
+        <div *ngIf="wordLibraries.length > 0" class="option-tabs">
+          <button 
+            [class.active]="librarySelectionMode === 'existing'"
+            (click)="librarySelectionMode = 'existing'">
+            📁 Use Existing Library
+          </button>
+          <button 
+            [class.active]="librarySelectionMode === 'new'"
+            (click)="librarySelectionMode = 'new'">
+            ➕ Create New Library
+          </button>
+        </div>
+
+        <!-- No Libraries Available - Force Create New -->
+        <div *ngIf="wordLibraries.length === 0" class="no-libraries-message">
+          <p>📂 You don't have any training data libraries yet. Create your first one below:</p>
+        </div>
+
+        <!-- Existing Library Selection - Card View -->
+        <div *ngIf="librarySelectionMode === 'existing' && wordLibraries.length > 0" class="existing-library">
+          <p class="info-text">Select a library to add your data to:</p>
+          <div class="library-cards-grid">
+            <div 
+              *ngFor="let lib of wordLibraries" 
+              class="library-card"
+              [class.selected]="selectedLibraryId === lib.id"
+              (click)="selectedLibraryId = lib.id">
+              <div class="card-header">
+                <h5>📁 {{ lib.name }}</h5>
+                <div class="selection-indicator" *ngIf="selectedLibraryId === lib.id">✓</div>
+              </div>
+              <p class="card-description" *ngIf="lib.description">{{ lib.description }}</p>
+              <p class="card-description empty" *ngIf="!lib.description">No description</p>
+              <div class="card-stats">
+                <div class="stat">
+                  <span class="stat-value">{{ lib.word_count || 0 }}</span>
+                  <span class="stat-label">Words</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-value">{{ lib.sample_count || 0 }}</span>
+                  <span class="stat-label">Samples</span>
+                </div>
+              </div>
+              <div class="card-date">
+                Created {{ formatDate(lib.created_at) }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- New Library Creation -->
+        <div *ngIf="librarySelectionMode === 'new' || wordLibraries.length === 0" class="new-library">
+          <div class="form-group">
+            <label>Library Name: <span class="required">*</span></label>
+            <input 
+              type="text" 
+              [(ngModel)]="newLibraryName" 
+              placeholder="e.g., Indonesian Sentiment Words"
+              class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Description (Optional):</label>
+            <textarea 
+              [(ngModel)]="newLibraryDescription" 
+              placeholder="Describe your training data library..."
+              class="form-control"
+              rows="3"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Next Step Info - Only show when creating new library -->
+      <div *ngIf="librarySelectionMode === 'new' || wordLibraries.length === 0" class="next-step-info">
+        <h4 class="section-title">2️⃣ Label Training Samples</h4>
+        <p class="info-text">
+          You'll need to manually label 15 samples (5 positive, 5 negative, 5 neutral) to train the sentiment analysis model. 
+          These labeled samples will be saved to your new library.
+        </p>
+      </div>
+
+      <!-- Info for existing library -->
+      <div *ngIf="librarySelectionMode === 'existing' && wordLibraries.length > 0" class="next-step-info">
+        <h4 class="section-title">2️⃣ Label Training Samples (Optional)</h4>
+        <p class="info-text">
+          You can optionally label additional samples to add to <strong>{{ getSelectedLibraryName() }}</strong>.
+          If your library already has enough training data, you can skip this step.
+        </p>
+      </div>
+
+      <div class="library-actions">
+        <button class="btn-secondary" (click)="skipLibraryImport()">
+          ⏩ Skip & Go to Training Data
+        </button>
+        <button 
+          class="btn-accent" 
+          (click)="runSentimentAnalysis()"
+          [disabled]="!selectedLibraryId || importingToLibrary"
+          *ngIf="librarySelectionMode === 'existing' && wordLibraries.length > 0">
+          <span *ngIf="!importingToLibrary">🤖 Analyze Sentiment with Library</span>
+          <span *ngIf="importingToLibrary">⏳ Analyzing...</span>
+        </button>
+        <button 
+          class="btn-primary" 
+          (click)="proceedToLabeling()">
+          🏷️ Label Training Samples
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 4: Analyzing Progress -->
+    <div *ngIf="currentStep === 'analyzing'" class="analyzing-step">
+      <h2>🤖 Analyzing Sentiment with {{ analysisProgress.libraryName }}</h2>
+      
+      <div class="analysis-progress-container">
+        <div class="progress-header">
+          <h3>Processing your data...</h3>
+          <p>Using Naive Bayes classification with your selected word library</p>
+        </div>
+
+        <div class="progress-bar-container">
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="getAnalysisPercentage()"></div>
+          </div>
+          <div class="progress-text">
+            {{ analysisProgress.processedItems }} / {{ analysisProgress.totalItems }} tweets analyzed
+            ({{ getAnalysisPercentage() }}%)
+          </div>
+        </div>
+
+        <div class="batch-info" *ngIf="analysisProgress.totalBatches > 1">
+          <span>📦 Batch {{ analysisProgress.currentBatch }} of {{ analysisProgress.totalBatches }}</span>
+        </div>
+
+        <div class="analysis-status">
+          <div class="status-icon">⏳</div>
+          <p>Please wait while we analyze your tweets. This may take a few moments for large datasets.</p>
+        </div>
+
+        <div class="cancel-button-container">
+          <button type="button" class="back-btn" (click)="returnToSessionsWhileAnalyzing()">
+            <span class="btn-icon">◀️</span>
+            <span>Back to Sessions</span>
+          </button>
+          <button type="button" class="cancel-analysis-btn" (click)="cancelAnalysis()">
+            <span class="btn-icon">🛑</span>
+            <span>Cancel Analysis</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 5: Analysis Results -->
+    <div *ngIf="currentStep === 'results'" class="results-step">
+      <div class="success-animation">
+        <div class="checkmark-circle">
+          <div class="checkmark">✓</div>
+        </div>
+      </div>
+
+      <h2>✅ Analysis Complete!</h2>
+      <p class="results-summary">Successfully analyzed {{ analysisProgress.totalItems }} tweets using <strong>{{ analysisProgress.libraryName }}</strong></p>
+
+      <div class="sentiment-distribution">
+        <h3>📊 Sentiment Distribution</h3>
+        <div class="distribution-cards">
+          <div class="sentiment-card positive">
+            <div class="sentiment-icon">😊</div>
+            <div class="sentiment-label">Positive</div>
+            <div class="sentiment-count">{{ analysisProgress.sentimentCounts.positive }}</div>
+            <div class="sentiment-percentage">
+              {{ ((analysisProgress.sentimentCounts.positive / analysisProgress.totalItems) * 100).toFixed(1) }}%
+            </div>
+          </div>
+          <div class="sentiment-card negative">
+            <div class="sentiment-icon">😞</div>
+            <div class="sentiment-label">Negative</div>
+            <div class="sentiment-count">{{ analysisProgress.sentimentCounts.negative }}</div>
+            <div class="sentiment-percentage">
+              {{ ((analysisProgress.sentimentCounts.negative / analysisProgress.totalItems) * 100).toFixed(1) }}%
+            </div>
+          </div>
+          <div class="sentiment-card neutral">
+            <div class="sentiment-icon">😐</div>
+            <div class="sentiment-label">Neutral</div>
+            <div class="sentiment-count">{{ analysisProgress.sentimentCounts.neutral }}</div>
+            <div class="sentiment-percentage">
+              {{ ((analysisProgress.sentimentCounts.neutral / analysisProgress.totalItems) * 100).toFixed(1) }}%
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="results-actions">
+        <button class="btn-primary" (click)="viewAnalysisHistory()">
+          📝 View Analysis History
+        </button>
+        <button class="btn-secondary" (click)="startNewAnalysis()">
+          🔄 Analyze New Data
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+</div>

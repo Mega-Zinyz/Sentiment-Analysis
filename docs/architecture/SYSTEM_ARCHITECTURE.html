@@ -1,0 +1,1425 @@
+
+<!DOCTYPE HTML>
+<html lang="en" >
+    <head>
+        <meta charset="UTF-8">
+        <title>System Architecture · Indonesian Sentiment Analysis System</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="HonKit 6.1.4">
+        <meta name="author" content="Mega-Zinyz">
+        
+        
+    
+    <link rel="stylesheet" href="../../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../../gitbook/@honkit/honkit-plugin-highlight/website.css">
+                
+            
+        
+
+    
+
+    
+        
+        <link rel="stylesheet" href="../../styles/website.css">
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="../../README (1" />
+    
+    
+    <link rel="prev" href="../../README (1" />
+    
+
+    </head>
+    <body>
+        
+<div class="book honkit-cloak">
+    <div class="book-summary">
+        
+            
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+    
+        
+        <li>
+            <a href="https://github.com/Mega-Zinyz/Sentiment-Analysis" target="_blank" class="custom-link">Home</a>
+        </li>
+    
+        
+        <li>
+            <a href="https://mega-zinyz.github.io/Sentiment-Analysis" target="_blank" class="custom-link">Documentation</a>
+        </li>
+    
+        
+        <li>
+            <a href="https://github.com/Mega-Zinyz/Sentiment-Analysis/issues" target="_blank" class="custom-link">Issues</a>
+        </li>
+    
+    
+
+    
+    <li class="divider"></li>
+    
+
+    
+        
+        <li class="header">Introduction</li>
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../../">
+            
+                <a href="../../">
+            
+                    
+                        <b>1.1.</b>
+                    
+                    Welcome
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>1.2.</b>
+                    
+                    Overview
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>1.3.</b>
+                    
+                    Quick Start
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4" data-path="../../PRODUCTION_READY.html">
+            
+                <a href="../../PRODUCTION_READY.html">
+            
+                    
+                        <b>1.4.</b>
+                    
+                    Production Ready Status
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Getting Started</li>
+        
+        
+    
+        <li class="chapter " data-level="2.1" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>2.1.</b>
+                    
+                    Installation
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.2" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>2.2.</b>
+                    
+                    Configuration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.3" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>2.3.</b>
+                    
+                    First Time Setup
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.4" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>2.4.</b>
+                    
+                    Default Credentials
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Architecture & Design</li>
+        
+        
+    
+        <li class="chapter active" data-level="3.1" data-path="SYSTEM_ARCHITECTURE.html">
+            
+                <a href="SYSTEM_ARCHITECTURE.html">
+            
+                    
+                        <b>3.1.</b>
+                    
+                    System Architecture
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="3.2" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>3.2.</b>
+                    
+                    Project Structure
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="3.3" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>3.3.</b>
+                    
+                    Technology Stack
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="3.4" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>3.4.</b>
+                    
+                    Performance Metrics
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">User Guide</li>
+        
+        
+    
+        <li class="chapter " data-level="4.1" data-path="../../user-guide/manual-csv-analysis.html">
+            
+                <a href="../../user-guide/manual-csv-analysis.html">
+            
+                    
+                        <b>4.1.</b>
+                    
+                    Manual CSV Analysis
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="4.2" data-path="../../user-guide/twitter-x-integration.html">
+            
+                <a href="../../user-guide/twitter-x-integration.html">
+            
+                    
+                        <b>4.2.</b>
+                    
+                    Twitter/X Integration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="4.3" data-path="../../user-guide/word-library-management.html">
+            
+                <a href="../../user-guide/word-library-management.html">
+            
+                    
+                        <b>4.3.</b>
+                    
+                    Word Library Management
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="4.4" data-path="../../user-guide/analysis-history.html">
+            
+                <a href="../../user-guide/analysis-history.html">
+            
+                    
+                        <b>4.4.</b>
+                    
+                    Analysis History
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">API Reference</li>
+        
+        
+    
+        <li class="chapter " data-level="5.1" data-path="../api/AUTHENTICATION.html">
+            
+                <a href="../api/AUTHENTICATION.html">
+            
+                    
+                        <b>5.1.</b>
+                    
+                    API Overview
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="5.2" data-path="../api-reference/RAW_DATA_ANALYSIS_API.html">
+            
+                <a href="../api-reference/RAW_DATA_ANALYSIS_API.html">
+            
+                    
+                        <b>5.2.</b>
+                    
+                    Raw Data Analysis API
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="5.3" data-path="../api-reference/SECURITY_ANALYSIS.html">
+            
+                <a href="../api-reference/SECURITY_ANALYSIS.html">
+            
+                    
+                        <b>5.3.</b>
+                    
+                    Security Analysis
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Deployment</li>
+        
+        
+    
+        <li class="chapter " data-level="6.1" data-path="../../PRODUCTION_CHECKLIST.html">
+            
+                <a href="../../PRODUCTION_CHECKLIST.html">
+            
+                    
+                        <b>6.1.</b>
+                    
+                    Production Checklist
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.2" data-path="../deployment/DOCKER_README.html">
+            
+                <a href="../deployment/DOCKER_README.html">
+            
+                    
+                        <b>6.2.</b>
+                    
+                    Docker Deployment
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.3" data-path="../deployment/DOCKER_INTEGRATION.html">
+            
+                <a href="../deployment/DOCKER_INTEGRATION.html">
+            
+                    
+                        <b>6.3.</b>
+                    
+                    Docker Integration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.4" data-path="../deployment/ENVIRONMENT_CONFIG_GUIDE.html">
+            
+                <a href="../deployment/ENVIRONMENT_CONFIG_GUIDE.html">
+            
+                    
+                        <b>6.4.</b>
+                    
+                    Environment Configuration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.5" data-path="../deployment/HOSTING_DEPLOYMENT_GUIDE.html">
+            
+                <a href="../deployment/HOSTING_DEPLOYMENT_GUIDE.html">
+            
+                    
+                        <b>6.5.</b>
+                    
+                    Hosting Providers
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.6" data-path="../deployment/PRODUCTION_SECURITY.html">
+            
+                <a href="../deployment/PRODUCTION_SECURITY.html">
+            
+                    
+                        <b>6.6.</b>
+                    
+                    Production Security
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.7" data-path="../deployment/CORS_CONFIGURATION.html">
+            
+                <a href="../deployment/CORS_CONFIGURATION.html">
+            
+                    
+                        <b>6.7.</b>
+                    
+                    CORS Configuration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="6.8" data-path="../GITHUB_PAGES_SETUP.html">
+            
+                <a href="../GITHUB_PAGES_SETUP.html">
+            
+                    
+                        <b>6.8.</b>
+                    
+                    GitHub Pages Setup
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Development</li>
+        
+        
+    
+        <li class="chapter " data-level="7.1" data-path="../development/LOGGING_GUIDE.html">
+            
+                <a href="../development/LOGGING_GUIDE.html">
+            
+                    
+                        <b>7.1.</b>
+                    
+                    Logging Guide
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="7.2" data-path="../development/PRODUCTION_DEBUGGING.html">
+            
+                <a href="../development/PRODUCTION_DEBUGGING.html">
+            
+                    
+                        <b>7.2.</b>
+                    
+                    Production Debugging
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Security</li>
+        
+        
+    
+        <li class="chapter " data-level="8.1" data-path="../deployment/PRODUCTION_SECURITY.html">
+            
+                <a href="../deployment/PRODUCTION_SECURITY.html">
+            
+                    
+                        <b>8.1.</b>
+                    
+                    Security Overview
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="8.2" data-path="../api-reference/SECURITY_ANALYSIS.html">
+            
+                <a href="../api-reference/SECURITY_ANALYSIS.html">
+            
+                    
+                        <b>8.2.</b>
+                    
+                    Security Analysis
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="8.3" data-path="../../SECURITY_FIXES.html">
+            
+                <a href="../../SECURITY_FIXES.html">
+            
+                    
+                        <b>8.3.</b>
+                    
+                    Security Fixes
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Monitoring & Maintenance</li>
+        
+        
+    
+        <li class="chapter " data-level="9.1" data-path="../../README (1">
+            
+                <span>
+            
+                    
+                        <b>9.1.</b>
+                    
+                    Error Logs
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="9.2" data-path="../CLEANUP_PLAN.html">
+            
+                <a href="../CLEANUP_PLAN.html">
+            
+                    
+                        <b>9.2.</b>
+                    
+                    Cleanup Plan
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Troubleshooting</li>
+        
+        
+    
+        <li class="chapter " data-level="10.1" data-path="../troubleshooting/COMMON_ISSUES.html">
+            
+                <a href="../troubleshooting/COMMON_ISSUES.html">
+            
+                    
+                        <b>10.1.</b>
+                    
+                    Common Issues
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Reference</li>
+        
+        
+    
+        <li class="chapter " data-level="11.1" data-path="../reference/GLOSSARY.html">
+            
+                <a href="../reference/GLOSSARY.html">
+            
+                    
+                        <b>11.1.</b>
+                    
+                    Glossary
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="11.2" data-path="../reference/FAQ.html">
+            
+                <a href="../reference/FAQ.html">
+            
+                    
+                        <b>11.2.</b>
+                    
+                    FAQ
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="11.3" data-path="../../CHANGELOG.html">
+            
+                <a href="../../CHANGELOG.html">
+            
+                    
+                        <b>11.3.</b>
+                    
+                    Changelog
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Contributing</li>
+        
+        
+    
+        <li class="chapter " data-level="12.1" data-path="../../GITBOOK_SETUP.html">
+            
+                <a href="../../GITBOOK_SETUP.html">
+            
+                    
+                        <b>12.1.</b>
+                    
+                    GitBook Setup
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="12.2" data-path="../">
+            
+                <a href="../">
+            
+                    
+                        <b>12.2.</b>
+                    
+                    Documentation
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+        
+        <li class="header">Support</li>
+        
+        
+    
+        <li class="chapter " data-level="13.1" >
+            
+                <a target="_blank" href="https://github.com/Mega-Zinyz/Sentiment-Analysis/issues">
+            
+                    
+                        <b>13.1.</b>
+                    
+                    GitHub Issues
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="13.2" >
+            
+                <a target="_blank" href="https://github.com/Mega-Zinyz/Sentiment-Analysis">
+            
+                    
+                        <b>13.2.</b>
+                    
+                    GitHub Repository
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://github.com/honkit/honkit" target="blank" class="gitbook-link">
+            Published with HonKit
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="../.." >System Architecture</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="system-architecture">System Architecture</h1>
+<p>This document provides a comprehensive overview of the Indonesian Sentiment Analysis System architecture, components, and data flow.</p>
+<h2 id="🏗️-architecture-overview">🏗️ Architecture Overview</h2>
+<p>The system follows a <strong>3-tier architecture</strong> pattern with clear separation of concerns:</p>
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│                        CLIENT LAYER                          │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │         Angular 18 Frontend (Port 80/443)              │ │
+│  │  - TypeScript Components                               │ │
+│  │  - Bootstrap UI                                        │ │
+│  │  - JWT Token Management                                │ │
+│  │  - Nginx Web Server (Production)                       │ │
+│  └────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+                            ↓ HTTP/HTTPS
+┌─────────────────────────────────────────────────────────────┐
+│                     APPLICATION LAYER                        │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │        Node.js + Express Backend (Port 5000)           │ │
+│  │  ┌──────────────┐  ┌──────────────┐  ┌─────────────┐ │ │
+│  │  │  API Routes  │  │  Middleware  │  │   Utils     │ │ │
+│  │  │  - Auth      │  │  - JWT Auth  │  │  - Logger   │ │ │
+│  │  │  - Analysis  │  │  - CORS      │  │  - Crypto   │ │ │
+│  │  │  - Libraries │  │  - Rate Lim  │  │  - Error    │ │ │
+│  │  └──────────────┘  └──────────────┘  └─────────────┘ │ │
+│  │                                                        │ │
+│  │  ┌────────────────────────────────────────────────┐   │ │
+│  │  │     Python Worker Pool (6 Workers)             │   │ │
+│  │  │  - Sentiment Analysis Engine                   │   │ │
+│  │  │  - Sastrawi Stemmer                           │   │ │
+│  │  │  - Naive Bayes Classifier                     │   │ │
+│  │  │  - Batch Processing (300 tweets/batch)        │   │ │
+│  │  └────────────────────────────────────────────────┘   │ │
+│  └────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+                            ↓ SQL
+┌─────────────────────────────────────────────────────────────┐
+│                        DATA LAYER                            │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │             MySQL 8.0 Database (Port 3306)             │ │
+│  │  - User Management                                     │ │
+│  │  - Word Libraries                                      │ │
+│  │  - Analysis Results                                    │ │
+│  │  - Twitter Data                                        │ │
+│  │  - Audit Logs                                          │ │
+│  └────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+</code></pre><h2 id="📦-component-architecture">📦 Component Architecture</h2>
+<h3 id="frontend-angular-18">Frontend (Angular 18)</h3>
+<h4 id="core-modules">Core Modules</h4>
+<ul>
+<li><strong>Authentication Module</strong> - Login, registration, JWT management</li>
+<li><strong>Admin Module</strong> - User management, system configuration</li>
+<li><strong>Analysis Module</strong> - CSV upload, Twitter collection, results viewing</li>
+<li><strong>Library Module</strong> - Word library CRUD operations</li>
+<li><strong>History Module</strong> - Analysis history and insights</li>
+</ul>
+<h4 id="key-features">Key Features</h4>
+<ul>
+<li><strong>Reactive Forms</strong> - Form validation and handling</li>
+<li><strong>HTTP Interceptors</strong> - Automatic JWT token attachment</li>
+<li><strong>Route Guards</strong> - Authentication and authorization</li>
+<li><strong>Error Handling</strong> - Global error interceptor</li>
+<li><strong>State Management</strong> - Service-based state</li>
+</ul>
+<h4 id="production-build">Production Build</h4>
+<ul>
+<li><strong>Nginx</strong> - High-performance web server</li>
+<li><strong>Static Assets</strong> - Pre-compiled and minified</li>
+<li><strong>Gzip Compression</strong> - Reduced bandwidth</li>
+<li><strong>Caching Headers</strong> - Improved performance</li>
+</ul>
+<h3 id="backend-nodejs--express">Backend (Node.js + Express)</h3>
+<h4 id="layered-architecture">Layered Architecture</h4>
+<pre><code>┌─────────────────────────────────────┐
+│         Routes Layer                │
+│  - Define endpoints                 │
+│  - Request validation               │
+│  - Response formatting              │
+└─────────────────────────────────────┘
+              ↓
+┌─────────────────────────────────────┐
+│      Middleware Layer               │
+│  - Authentication (JWT)             │
+│  - Authorization (Roles)            │
+│  - CORS validation                  │
+│  - Rate limiting                    │
+│  - Error handling                   │
+└─────────────────────────────────────┘
+              ↓
+┌─────────────────────────────────────┐
+│       Business Logic Layer          │
+│  - Data processing                  │
+│  - Business rules                   │
+│  - Validation logic                 │
+│  - Integration with Python workers  │
+└─────────────────────────────────────┘
+              ↓
+┌─────────────────────────────────────┐
+│        Data Access Layer            │
+│  - Database queries                 │
+│  - Connection pooling               │
+│  - Transaction management           │
+│  - Query optimization               │
+└─────────────────────────────────────┘
+</code></pre><h4 id="core-components">Core Components</h4>
+<p><strong>Authentication System</strong></p>
+<ul>
+<li>JWT token generation and validation</li>
+<li>Refresh token mechanism</li>
+<li>Password hashing with bcrypt</li>
+<li>Session management</li>
+</ul>
+<p><strong>Analysis Engine</strong></p>
+<ul>
+<li>Worker pool management (6 Python workers)</li>
+<li>Batch processing (300 tweets per batch)</li>
+<li>Progress tracking</li>
+<li>Error handling and retry logic</li>
+<li>Result aggregation</li>
+</ul>
+<p><strong>Data Processing</strong></p>
+<ul>
+<li>CSV parsing and validation</li>
+<li>Text preprocessing</li>
+<li>Data normalization</li>
+<li>Result formatting</li>
+</ul>
+<p><strong>Logging System</strong></p>
+<ul>
+<li>Winston logger with rotation</li>
+<li>Multiple log levels (error, warn, info, debug)</li>
+<li>Separate error logs</li>
+<li>Production-ready log management</li>
+</ul>
+<h3 id="machine-learning-layer-python">Machine Learning Layer (Python)</h3>
+<h4 id="sentiment-analysis-pipeline">Sentiment Analysis Pipeline</h4>
+<pre><code>Input Text
+    ↓
+┌─────────────────────────┐
+│  Text Preprocessing     │
+│  - Lowercase            │
+│  - Remove punctuation   │
+│  - Remove numbers       │
+│  - Remove URLs          │
+└─────────────────────────┘
+    ↓
+┌─────────────────────────┐
+│  Sastrawi Stemming      │
+│  - Indonesian stemmer   │
+│  - Root word extraction │
+└─────────────────────────┘
+    ↓
+┌─────────────────────────┐
+│  Feature Extraction     │
+│  - TF-IDF vectorization │
+│  - Word frequency       │
+└─────────────────────────┘
+    ↓
+┌─────────────────────────┐
+│  Naive Bayes Classifier │
+│  - Training/Prediction  │
+│  - Probability scores   │
+└─────────────────────────┘
+    ↓
+Sentiment Result
+(Positive/Negative)
+</code></pre><h4 id="worker-pool-architecture">Worker Pool Architecture</h4>
+<pre><code>┌──────────────────────────────────────────────┐
+│           SentimentWorkerPool                │
+│  ┌────────────────────────────────────────┐  │
+│  │  Worker 1  │  Worker 2  │  Worker 3   │  │
+│  │  (Batch 1) │  (Batch 2) │  (Batch 3)  │  │
+│  ├────────────┼────────────┼─────────────┤  │
+│  │  Worker 4  │  Worker 5  │  Worker 6   │  │
+│  │  (Batch 4) │  (Batch 5) │  (Batch 6)  │  │
+│  └────────────────────────────────────────┘  │
+│                                              │
+│  - Load balancing                            │
+│  - Error handling                            │
+│  - Progress tracking                         │
+│  - Timeout management (240s)                 │
+└──────────────────────────────────────────────┘
+</code></pre><h3 id="database-layer-mysql-80">Database Layer (MySQL 8.0)</h3>
+<h4 id="database-schema">Database Schema</h4>
+<p><strong>Core Tables</strong></p>
+<ul>
+<li><code>users</code> - User accounts and authentication</li>
+<li><code>word_libraries</code> - Custom word dictionaries</li>
+<li><code>positive_words</code> - Positive sentiment words</li>
+<li><code>negative_words</code> - Negative sentiment words</li>
+<li><code>analysis_sessions</code> - Analysis metadata</li>
+<li><code>analysis_results</code> - Sentiment analysis results</li>
+<li><code>raw_twitter_data</code> - Collected tweets</li>
+<li><code>audit_logs</code> - Security and activity logs</li>
+</ul>
+<p><strong>Relationships</strong></p>
+<pre><code>users (1) ──────────&gt; (N) word_libraries
+              creates
+
+word_libraries (1) ──&gt; (N) positive_words
+                   ──&gt; (N) negative_words
+
+users (1) ──────────&gt; (N) analysis_sessions
+              performs
+
+analysis_sessions (1)─&gt; (N) analysis_results
+                   contains
+</code></pre><h4 id="indexes--optimization">Indexes &amp; Optimization</h4>
+<ul>
+<li>Primary keys on all tables</li>
+<li>Foreign key constraints</li>
+<li>Indexes on frequently queried columns</li>
+<li>Connection pooling for performance</li>
+<li>Query optimization for large datasets</li>
+</ul>
+<h2 id="🔄-data-flow">🔄 Data Flow</h2>
+<h3 id="user-authentication-flow">User Authentication Flow</h3>
+<pre><code>1. User → Frontend: Login credentials
+2. Frontend → Backend: POST /api/auth/login
+3. Backend → Database: Validate credentials
+4. Database → Backend: User data (if valid)
+5. Backend: Generate JWT + Refresh Token
+6. Backend → Frontend: Tokens + User info
+7. Frontend: Store tokens (sessionStorage)
+8. Frontend → Backend: Subsequent requests with JWT
+9. Backend: Validate JWT on each request
+</code></pre><h3 id="sentiment-analysis-flow">Sentiment Analysis Flow</h3>
+<pre><code>1. User uploads CSV/collects tweets
+2. Frontend → Backend: POST /api/raw-data/upload
+3. Backend: Validate and store data
+4. Frontend → Backend: POST /api/sentiment-analysis/analyze
+5. Backend: Create analysis session
+6. Backend: Split data into batches (300/batch)
+7. Backend: Distribute to worker pool (6 workers)
+8. Python Workers: Process batches in parallel
+   - Preprocess text
+   - Apply stemming
+   - Classify sentiment
+9. Workers → Backend: Return results
+10. Backend: Aggregate results
+11. Backend → Database: Store results
+12. Backend → Frontend: Analysis complete
+13. User views results in History
+</code></pre><h3 id="real-time-progress-tracking">Real-time Progress Tracking</h3>
+<pre><code>Frontend (Polling every 2s)
+    ↓
+GET /api/sentiment-analysis/progress/:sessionId
+    ↓
+Backend calculates:
+- Total tweets processed
+- Current batch progress
+- Estimated time remaining
+- Worker status
+    ↓
+Return progress JSON
+    ↓
+Frontend updates progress bar
+</code></pre><h2 id="🔐-security-architecture">🔐 Security Architecture</h2>
+<h3 id="authentication--authorization">Authentication &amp; Authorization</h3>
+<pre><code>┌────────────────────────────────────┐
+│      JWT Authentication            │
+│  - Access Token (24h)              │
+│  - Refresh Token (7d)              │
+│  - Secure HTTP-only cookies        │
+└────────────────────────────────────┘
+         ↓
+┌────────────────────────────────────┐
+│   Authorization Middleware         │
+│  - Verify JWT signature            │
+│  - Check token expiration          │
+│  - Validate user permissions       │
+└────────────────────────────────────┘
+         ↓
+┌────────────────────────────────────┐
+│      Protected Resources           │
+│  - User-specific data              │
+│  - Admin-only endpoints            │
+└────────────────────────────────────┘
+</code></pre><h3 id="data-protection-layers">Data Protection Layers</h3>
+<ol>
+<li><strong>Transport Layer</strong> - HTTPS/TLS encryption</li>
+<li><strong>Authentication</strong> - JWT with strong secrets</li>
+<li><strong>Authorization</strong> - Role-based access control</li>
+<li><strong>Data Encryption</strong> - AES-256-GCM for sensitive data</li>
+<li><strong>Password Security</strong> - bcrypt hashing (10 rounds)</li>
+<li><strong>SQL Injection</strong> - Parameterized queries</li>
+<li><strong>CORS</strong> - Pattern-based origin validation</li>
+<li><strong>Rate Limiting</strong> - Prevent brute force attacks</li>
+</ol>
+<h2 id="📊-performance-architecture">📊 Performance Architecture</h2>
+<h3 id="optimization-strategies">Optimization Strategies</h3>
+<p><strong>Frontend</strong></p>
+<ul>
+<li>Code splitting</li>
+<li>Lazy loading modules</li>
+<li>AOT compilation</li>
+<li>Tree shaking</li>
+<li>Minification</li>
+<li>Gzip compression</li>
+</ul>
+<p><strong>Backend</strong></p>
+<ul>
+<li>Connection pooling</li>
+<li>Query optimization</li>
+<li>Caching strategies</li>
+<li>Async/await patterns</li>
+<li>Worker pool parallelization</li>
+</ul>
+<p><strong>Database</strong></p>
+<ul>
+<li>Indexed columns</li>
+<li>Query optimization</li>
+<li>Connection limits</li>
+<li>Transaction management</li>
+</ul>
+<h3 id="scalability">Scalability</h3>
+<p><strong>Horizontal Scaling</strong></p>
+<ul>
+<li>Stateless backend (scales easily)</li>
+<li>Load balancer ready</li>
+<li>Database read replicas</li>
+<li>Shared session storage</li>
+</ul>
+<p><strong>Vertical Scaling</strong></p>
+<ul>
+<li>Increase worker count</li>
+<li>Larger batch sizes</li>
+<li>More database connections</li>
+<li>Higher resource limits</li>
+</ul>
+<h2 id="🐳-docker-architecture">🐳 Docker Architecture</h2>
+<h3 id="container-structure">Container Structure</h3>
+<pre><code>┌─────────────────────────────────────────────────┐
+│              Docker Network (bridge)            │
+│                                                 │
+│  ┌──────────────┐  ┌──────────────┐  ┌───────┐│
+│  │   Frontend   │  │   Backend    │  │ MySQL ││
+│  │  Container   │  │  Container   │  │Container││
+│  │ (Angular +   │  │ (Node.js +   │  │       ││
+│  │  Nginx)      │  │  Python)     │  │       ││
+│  │              │  │              │  │       ││
+│  │ Port: 80     │  │ Port: 5000   │  │ Port: ││
+│  │              │  │              │  │ 3306  ││
+│  └──────────────┘  └──────────────┘  └───────┘│
+│         ↓                  ↓              ↓    │
+│  ┌──────────────────────────────────────────┐ │
+│  │        Shared Volumes                    │ │
+│  │  - Backend logs                          │ │
+│  │  - MySQL data (persistent)               │ │
+│  │  - Upload temp files                     │ │
+│  └──────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────┘
+</code></pre><h3 id="container-communication">Container Communication</h3>
+<ul>
+<li><strong>Frontend → Backend</strong>: HTTP on internal network</li>
+<li><strong>Backend → MySQL</strong>: TCP on port 3306</li>
+<li><strong>External → Frontend</strong>: Port 80 (HTTP) / 443 (HTTPS)</li>
+<li><strong>External → Backend</strong>: Port 5000 (API)</li>
+</ul>
+<h2 id="🔧-configuration-management">🔧 Configuration Management</h2>
+<h3 id="environment-based-configuration">Environment-based Configuration</h3>
+<pre><code>┌──────────────────────────────┐
+│      .env File               │
+│  - NODE_ENV                  │
+│  - Database credentials      │
+│  - JWT secrets               │
+│  - API keys                  │
+│  - CORS origins              │
+│  - Logging level             │
+└──────────────────────────────┘
+        ↓
+┌──────────────────────────────┐
+│   Application Runtime        │
+│  - Development mode          │
+│  - Production mode           │
+│  - Testing mode              │
+└──────────────────────────────┘
+</code></pre><h2 id="📈-monitoring-architecture">📈 Monitoring Architecture</h2>
+<h3 id="logging-pipeline">Logging Pipeline</h3>
+<pre><code>Application Logs
+    ↓
+Winston Logger
+    ↓
+┌─────────────────────┐
+│  Log Transports     │
+│  - Console (dev)    │
+│  - File (prod)      │
+│  - Error file       │
+└─────────────────────┘
+    ↓
+Log Files (Rotated)
+- combined-YYYY-MM-DD.log
+- error-YYYY-MM-DD.log
+</code></pre><h3 id="health-check-system">Health Check System</h3>
+<pre><code>/health endpoint
+    ↓
+Check Components:
+- Database connection
+- Python workers status
+- Disk space
+- Memory usage
+    ↓
+Return Status:
+- healthy / unhealthy
+- Component details
+- Timestamp
+</code></pre><h2 id="🚀-deployment-architecture">🚀 Deployment Architecture</h2>
+<h3 id="production-deployment">Production Deployment</h3>
+<pre><code>┌───────────────────────────────────────┐
+│         Load Balancer / CDN           │
+│         (Optional)                    │
+└───────────────────────────────────────┘
+              ↓ HTTPS
+┌───────────────────────────────────────┐
+│         Docker Host / VM              │
+│  ┌────────────────────────────────┐   │
+│  │   Docker Compose               │   │
+│  │  - Frontend container          │   │
+│  │  - Backend container           │   │
+│  │  - MySQL container             │   │
+│  └────────────────────────────────┘   │
+└───────────────────────────────────────┘
+              ↓
+┌───────────────────────────────────────┐
+│      Persistent Storage               │
+│  - MySQL data volume                  │
+│  - Application logs                   │
+│  - User uploads                       │
+└───────────────────────────────────────┘
+</code></pre><h2 id="🔍-technology-decisions">🔍 Technology Decisions</h2>
+<h3 id="why-these-technologies">Why These Technologies?</h3>
+<p><strong>Angular</strong></p>
+<ul>
+<li>Strong TypeScript support</li>
+<li>Comprehensive framework</li>
+<li>Enterprise-ready</li>
+<li>Great tooling</li>
+</ul>
+<p><strong>Node.js + Express</strong></p>
+<ul>
+<li>JavaScript everywhere</li>
+<li>High performance</li>
+<li>Large ecosystem</li>
+<li>Easy Python integration</li>
+</ul>
+<p><strong>Python</strong></p>
+<ul>
+<li>Rich ML/NLP libraries</li>
+<li>Sastrawi for Indonesian</li>
+<li>scikit-learn ecosystem</li>
+<li>Easy to maintain</li>
+</ul>
+<p><strong>MySQL</strong></p>
+<ul>
+<li>ACID compliance</li>
+<li>Reliable and stable</li>
+<li>Good performance</li>
+<li>Wide hosting support</li>
+</ul>
+<p><strong>Docker</strong></p>
+<ul>
+<li>Consistent environments</li>
+<li>Easy deployment</li>
+<li>Isolation</li>
+<li>Portability</li>
+</ul>
+<h2 id="📚-further-reading">📚 Further Reading</h2>
+<ul>
+<li><a href="../api-reference/RAW_DATA_ANALYSIS_API.html">API Documentation</a></li>
+<li><a href="../deployment/PRODUCTION_SECURITY.html">Security Guide</a></li>
+<li><a href="../../README%20(1">Performance Tuning</a>.md#-performance-tuning&gt;)</li>
+<li><a href="../api-reference/database_schema.sql">Database Schema</a></li>
+</ul>
+<hr></hr>
+<p><strong>Last Updated</strong>: November 12, 2025</p>
+
+                                
+                                </section>
+                            
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="../../README (1" class="navigation navigation-prev " aria-label="Previous page: Default Credentials">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="../../README (1" class="navigation navigation-next " aria-label="Next page: Project Structure">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"System Architecture","level":"3.1","depth":1,"next":{"title":"Project Structure","level":"3.2","depth":1,"path":"README (1","ref":"README (1","articles":[]},"previous":{"title":"Default Credentials","level":"2.4","depth":1,"path":"README (1","ref":"README (1","articles":[]},"dir":"ltr"},"config":{"plugins":["-search","-sharing","-fontsettings"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":true},"highlight":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false}},"theme":"default","author":"Mega-Zinyz","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56},"embedFonts":false},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{"version":"1.0.0","lastUpdated":"November 12, 2025"},"title":"Indonesian Sentiment Analysis System","language":"en","links":{"sidebar":{"Home":"https://github.com/Mega-Zinyz/Sentiment-Analysis","Documentation":"https://mega-zinyz.github.io/Sentiment-Analysis","Issues":"https://github.com/Mega-Zinyz/Sentiment-Analysis/issues"}},"gitbook":">=3.0.0","description":"Comprehensive documentation for production-ready Indonesian Sentiment Analysis application with Docker deployment"},"file":{"path":"docs/architecture/SYSTEM_ARCHITECTURE.md","mtime":"2025-11-12T10:47:36.259Z","type":"markdown"},"gitbook":{"version":"6.1.4","time":"2025-11-12T10:47:54.086Z"},"basePath":"../..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    <noscript>
+        <style>
+            .honkit-cloak {
+                display: block !important;
+            }
+        </style>
+    </noscript>
+    <script>
+        // Restore sidebar state as critical path for prevent layout shift
+        function __init__getSidebarState(defaultValue){
+            var baseKey = "";
+            var key = baseKey + ":sidebar";
+            try {
+                var value = localStorage[key];
+                if (value === undefined) {
+                    return defaultValue;
+                }
+                var parsed = JSON.parse(value);
+                return parsed == null ? defaultValue : parsed;
+            } catch (e) {
+                return defaultValue;
+            }
+        }
+        function __init__restoreLastSidebarState() {
+            var isMobile = window.matchMedia("(max-width: 600px)").matches;
+            if (isMobile) {
+                // Init last state if not mobile
+                return;
+            }
+            var sidebarState = __init__getSidebarState(true);
+            var book = document.querySelector(".book");
+            // Show sidebar if it enabled
+            if (sidebarState && book) {
+                book.classList.add("without-animation", "with-summary");
+            }
+        }
+
+        try {
+            __init__restoreLastSidebarState();
+        } finally {
+            var book = document.querySelector(".book");
+            book.classList.remove("honkit-cloak");
+        }
+    </script>
+    <script src="../../gitbook/gitbook.js"></script>
+    <script src="../../gitbook/theme.js"></script>
+    
+        
+        <script src="../../gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="../../gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+
+    </body>
+</html>
+
