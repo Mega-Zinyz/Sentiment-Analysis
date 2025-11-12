@@ -301,7 +301,7 @@ Key variables in `.env`:---
 
 
 
-```envMade with ❤️ for Indonesian NLP research
+```bashMade with ❤️ for Indonesian NLP research
 
 # Environment
 NODE_ENV=development          # Set to 'production' for deployment
@@ -328,7 +328,7 @@ LOG_LEVEL=debug              # Options: error, warn, info, debug
 
 Supports flexible pattern matching:
 
-```env
+```bash
 # Specific domains
 ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
 
@@ -426,7 +426,7 @@ docker-compose up -d
    ```
 
 3. **Set production mode**:
-   ```env
+   ```bash
    NODE_ENV=production
    ALLOWED_ORIGINS=https://yourdomain.com
    LOG_LEVEL=info

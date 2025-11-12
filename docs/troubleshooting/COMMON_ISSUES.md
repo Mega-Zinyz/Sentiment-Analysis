@@ -80,7 +80,7 @@ docker-compose logs --tail=50 backend
    ```
 
 3. **Check for Quotes**
-   ```env
+   ```bash
    # WRONG
    JWT_SECRET="your-secret-here"
    
@@ -126,7 +126,7 @@ docker-compose logs --tail=50 backend
 **Solutions:**
 
 1. **Check Token Expiration Settings**
-   ```env
+   ```bash
    JWT_EXPIRATION=24h
    JWT_REFRESH_EXPIRATION=7d
    ```
@@ -334,7 +334,7 @@ docker-compose logs --tail=50 backend
    ```
 
 2. **Update CORS Settings**
-   ```env
+   ```bash
    # For development
    ALLOWED_ORIGINS=http://localhost,http://localhost:4200
    
@@ -399,7 +399,7 @@ docker-compose logs --tail=50 backend
 
 2. **Adjust Rate Limits**
    Edit `.env`:
-   ```env
+   ```bash
    RATE_LIMIT_WINDOW_MS=900000  # 15 minutes
    RATE_LIMIT_MAX_REQUESTS=200  # Increase from 100
    ```
@@ -446,13 +446,13 @@ docker-compose logs --tail=50 backend
 
 1. **Verify CSV Format**
    Required columns:
-   ```csv
+   ```text
    timestamp,username,message
    2024-01-01 10:00:00,user123,Tweet text here
    ```
 
 2. **Check File Size**
-   ```env
+   ```bash
    # Increase in .env if needed
    MAX_FILE_SIZE=50MB
    ```

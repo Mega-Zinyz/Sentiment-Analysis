@@ -7,7 +7,7 @@ This guide explains how to configure CORS (Cross-Origin Resource Sharing) for di
 The system now supports flexible pattern matching for origins:
 
 ### 1. **Exact Match** (Most Secure)
-```env
+```bash
 ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
 ```
 ✅ **Recommended for production**
@@ -15,7 +15,7 @@ ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
 - Most secure option
 
 ### 2. **Wildcard Subdomain** (Secure for your domains)
-```env
+```bash
 ALLOWED_ORIGINS=*.yourdomain.com
 ```
 ✅ **Good for multi-subdomain deployments**
@@ -23,13 +23,13 @@ ALLOWED_ORIGINS=*.yourdomain.com
 - Blocks: `yourdomain.com` (root domain), `otherdomain.com`
 
 **Combined example**:
-```env
+```bash
 ALLOWED_ORIGINS=https://yourdomain.com,*.yourdomain.com
 ```
 - Allows root domain + all subdomains
 
 ### 3. **Protocol Wildcard** (Less Secure)
-```env
+```bash
 ALLOWED_ORIGINS=https://*
 ```
 ⚠️ **Use with caution**
@@ -38,7 +38,7 @@ ALLOWED_ORIGINS=https://*
 - Not recommended for production
 
 ### 4. **Full Wildcard** (Not Secure)
-```env
+```bash
 ALLOWED_ORIGINS=*
 ```
 ❌ **NEVER use in production**
@@ -51,7 +51,7 @@ ALLOWED_ORIGINS=*
 ## 📋 Common Scenarios
 
 ### Scenario 1: Development (Default)
-```env
+```bash
 NODE_ENV=development
 ALLOWED_ORIGINS=
 ```
@@ -62,21 +62,21 @@ ALLOWED_ORIGINS=
 - `http://127.0.0.1:4200`
 
 ### Scenario 2: Single Production Domain
-```env
+```bash
 NODE_ENV=production
 ALLOWED_ORIGINS=https://sentimentapp.com
 ```
 **Allowed**: Only `https://sentimentapp.com`
 
 ### Scenario 3: Multiple Specific Domains
-```env
+```bash
 NODE_ENV=production
 ALLOWED_ORIGINS=https://sentimentapp.com,https://www.sentimentapp.com,https://app.sentimentapp.com
 ```
 **Allowed**: Only the 3 specified domains
 
 ### Scenario 4: Root Domain + All Subdomains
-```env
+```bash
 NODE_ENV=production
 ALLOWED_ORIGINS=https://sentimentapp.com,*.sentimentapp.com
 ```
@@ -88,7 +88,7 @@ ALLOWED_ORIGINS=https://sentimentapp.com,*.sentimentapp.com
 - Any other subdomain of `sentimentapp.com`
 
 ### Scenario 5: Multiple Domains with Wildcards
-```env
+```bash
 NODE_ENV=production
 ALLOWED_ORIGINS=*.production.com,*.staging.com
 ```
@@ -97,7 +97,7 @@ ALLOWED_ORIGINS=*.production.com,*.staging.com
 - All subdomains of `staging.com`
 
 ### Scenario 6: Testing/Staging (Temporary)
-```env
+```bash
 NODE_ENV=development
 ALLOWED_ORIGINS=https://*
 ```
@@ -197,25 +197,25 @@ docker-compose logs backend | grep "CORS blocked"
 ## 📊 Examples by Hosting Provider
 
 ### AWS / Azure / Google Cloud
-```env
+```bash
 # Production domain with CDN
 ALLOWED_ORIGINS=https://myapp.com,*.myapp.com,https://cdn.myapp.com
 ```
 
 ### Vercel / Netlify Frontend
-```env
+```bash
 # Your custom domain + Vercel preview URLs
 ALLOWED_ORIGINS=https://myapp.com,*.vercel.app
 ```
 
 ### Multiple Environments
-```env
+```bash
 # Production + Staging
 ALLOWED_ORIGINS=https://app.mysite.com,https://staging.mysite.com
 ```
 
 ### Microservices Architecture
-```env
+```bash
 # Main app + API subdomain + Admin panel
 ALLOWED_ORIGINS=https://myapp.com,https://api.myapp.com,https://admin.myapp.com
 ```
@@ -226,7 +226,7 @@ ALLOWED_ORIGINS=https://myapp.com,https://api.myapp.com,https://admin.myapp.com
 
 ### Update Origins:
 1. Edit `.env` file:
-   ```env
+   ```bash
    ALLOWED_ORIGINS=https://newdomain.com
    ```
 
@@ -268,7 +268,7 @@ docker-compose restart backend
 **Cause**: Incorrect pattern syntax
 
 **Examples**:
-```env
+```bash
 ❌ Wrong: *yourdomain.com
 ✅ Correct: *.yourdomain.com
 
@@ -283,7 +283,7 @@ docker-compose restart backend
 **Cause**: `*.yourdomain.com` doesn't match `yourdomain.com`
 
 **Solution**: Add both:
-```env
+```bash
 ALLOWED_ORIGINS=https://yourdomain.com,*.yourdomain.com
 ```
 
@@ -291,7 +291,7 @@ ALLOWED_ORIGINS=https://yourdomain.com,*.yourdomain.com
 **Cause**: Using wildcard patterns like `*` or `https://*`
 
 **Solution**: Replace with specific domains or subdomain wildcards:
-```env
+```bash
 # Instead of:
 ALLOWED_ORIGINS=https://*
 

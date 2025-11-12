@@ -101,7 +101,7 @@ docker-compose logs mysql | grep "ready for connections"
 ### What CSV format is required?
 
 CSV must have these exact columns:
-```csv
+```text
 timestamp,username,message
 2024-01-01 10:00:00,user123,Tweet text here
 ```
@@ -179,7 +179,7 @@ To reduce:
 ### I'm getting CORS errors
 
 Update `.env` file:
-```env
+```bash
 # Development
 ALLOWED_ORIGINS=http://localhost,http://localhost:4200
 

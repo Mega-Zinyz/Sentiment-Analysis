@@ -19,7 +19,7 @@ This document outlines the security measures implemented and required configurat
 - **CORS Logging**: Blocked origins are logged with Winston
 
 **Configuration**:
-```env
+```bash
 # Development (default)
 ALLOWED_ORIGINS=
 
@@ -47,7 +47,7 @@ ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com,https://app.yo
 ## 🛠️ Production Setup Checklist
 
 ### Environment Variables
-```env
+```bash
 # CRITICAL: Change these in production!
 JWT_SECRET=your-unique-secret-key-here
 ENCRYPTION_KEY=your-32-byte-hex-key-here
@@ -80,17 +80,17 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ### CORS Configuration Examples
 
 **Single Domain**:
-```env
+```bash
 ALLOWED_ORIGINS=https://yourdomain.com
 ```
 
 **Multiple Domains** (frontend + API docs):
-```env
+```bash
 ALLOWED_ORIGINS=https://yourdomain.com,https://api.yourdomain.com,https://www.yourdomain.com
 ```
 
 **Development** (leave empty for localhost):
-```env
+```bash
 ALLOWED_ORIGINS=
 ```
 

@@ -143,7 +143,7 @@ file: <csv-file>
 ```
 
 **CSV Format:**
-```csv
+```text
 timestamp,username,message
 2024-01-01 10:00:00,user123,Saya sangat senang dengan produk ini
 2024-01-01 10:05:00,user456,Kualitas buruk dan mengecewakan

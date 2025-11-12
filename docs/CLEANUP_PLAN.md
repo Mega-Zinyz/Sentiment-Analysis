@@ -220,7 +220,7 @@ New-Item -ItemType File -Path Backend/temp/uploads/.gitkeep
 ```
 
 ### Step 6: Update .gitignore
-```gitignore
+```text
 # Add to Backend/.gitignore
 temp/uploads/*
 !temp/uploads/.gitkeep

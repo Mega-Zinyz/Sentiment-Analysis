@@ -40,7 +40,7 @@ NODE_ENV=production
 - CORS errors properly handled
 
 **Configuration**:
-```env
+```bash
 # Development (default)
 ALLOWED_ORIGINS=
 
@@ -104,7 +104,7 @@ curl -H "Origin: https://yourdomain.com" http://localhost:5000/api/health
 ## Production Deployment Steps
 
 1. **Set environment variables**:
-   ```env
+   ```bash
    NODE_ENV=production
    ALLOWED_ORIGINS=https://yourdomain.com
    JWT_SECRET=<generate-new-secret>
