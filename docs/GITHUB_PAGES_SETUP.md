@@ -40,10 +40,11 @@ The GitHub Actions workflow will automatically build and deploy to GitHub Pages.
 The `.github/workflows/deploy-gitbook.yml` workflow:
 
 1. **Triggers** on push to `main` branch (when docs change)
-2. **Uses Honkit** (modern GitBook alternative)
-3. **Builds** documentation to `_book/` directory
-4. **Deploys** to `gh-pages` branch
-5. **Published** at: `https://mega-zinyz.github.io/Sentiment-Analysis`
+2. **Uses Node.js 20** (required for Honkit dependencies)
+3. **Uses Honkit** (modern GitBook alternative)
+4. **Builds** documentation to `_book/` directory
+5. **Deploys** to `gh-pages` branch
+6. **Published** at: `https://mega-zinyz.github.io/Sentiment-Analysis`
 
 ### What Triggers Deployment
 
@@ -127,6 +128,35 @@ npx http-server _book
 Then open: http://localhost:8000
 
 ## 🐛 Troubleshooting
+
+### Build Fails: "ReferenceError: File is not defined"
+
+**Error**: 
+```
+ReferenceError: File is not defined
+  at undici/lib/web/webidl/index.js
+```
+
+**Cause**: Honkit's dependency `undici` requires Node.js 20+, but workflow is using an older version.
+
+**Solution**: Update workflow to use Node.js 20:
+
+```yaml
+- name: Setup Node.js
+  uses: actions/setup-node@v4
+  with:
+    node-version: '20'  # Changed from 18
+```
+
+### Build Fails: "EBADENGINE Unsupported engine"
+
+**Error**: `npm warn EBADENGINE required: { node: '>=20.18.1' }`
+
+**Cause**: Node.js version too old for Honkit dependencies.
+
+**Solution**: 
+- **GitHub Actions**: Update workflow to Node.js 20+
+- **Local**: Install Node.js 20+ from https://nodejs.org/
 
 ### Build Fails: "Dependencies lock file is not found"
 
@@ -223,11 +253,11 @@ If using custom domain:
 Edit `.github/workflows/deploy-gitbook.yml`:
 
 ```yaml
-# Change Node.js version
+# Change Node.js version (minimum 20 required for Honkit)
 - name: Setup Node.js
   uses: actions/setup-node@v4
   with:
-    node-version: '18'  # or '20', '22'
+    node-version: '20'  # or '22' (18 not supported)
 
 # Add custom domain
 - name: Deploy to GitHub Pages

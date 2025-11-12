@@ -10,6 +10,11 @@ Once published, documentation will be available at:
 
 ### Local Development
 
+#### Prerequisites
+- **Node.js 20+** (required for Honkit's dependencies)
+  - Check version: `node --version`
+  - Download: https://nodejs.org/
+
 #### Option 1: Using npm scripts (Recommended)
 ```bash
 # Install dependencies
@@ -30,7 +35,7 @@ npm run docs:clean
 
 #### Option 2: Using Honkit directly
 ```bash
-# Install Honkit globally
+# Install Honkit globally (requires Node.js 20+)
 npm install -g honkit
 
 # Install plugins
