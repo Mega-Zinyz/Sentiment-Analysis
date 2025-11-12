@@ -208,6 +208,25 @@ npm install --save gitbook-plugin-github
 # etc.
 ```
 
+### Build Fails: "File cannot be parsed"
+
+**Error**: `Error [FileNotParsableError]: "docs/api-reference/database_schema.sql" file cannot be parsed`
+
+**Cause**: Honkit only processes Markdown files. SQL, HTML, or other non-Markdown files cannot be parsed.
+
+**Solution**: 
+1. Remove SQL files from `SUMMARY.md`
+2. Keep SQL files in docs folder (they'll be copied to output)
+3. Link to them from Markdown files if needed
+
+```markdown
+<!-- Good: Link to SQL file -->
+See [database schema](api-reference/database_schema.sql) for details.
+
+<!-- Bad: Include in SUMMARY.md -->
+* [Database Schema](docs/api-reference/database_schema.sql)
+```
+
 ### Build Fails: "Cannot find module"
 
 **Solution**: Install dependencies:
