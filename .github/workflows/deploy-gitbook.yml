@@ -32,11 +32,6 @@ jobs:
           npm install -g honkit
           honkit --version
       
-      - name: Install Honkit plugins
-        run: |
-          honkit install
-        continue-on-error: true
-      
       - name: Build documentation
         run: |
           honkit build . _book

@@ -10,24 +10,11 @@
   "language": "en",
   "gitbook": ">=3.0.0",
   "plugins": [
-    "anchors",
     "search",
-    "expandable-chapters",
-    "copy-code-button",
-    "github",
-    "edit-link",
-    "back-to-top-button",
     "-sharing",
     "-fontsettings"
   ],
   "pluginsConfig": {
-    "github": {
-      "url": "https://github.com/Mega-Zinyz/Sentiment-Analysis"
-    },
-    "edit-link": {
-      "base": "https://github.com/Mega-Zinyz/Sentiment-Analysis/edit/main",
-      "label": "Edit on GitHub"
-    },
     "theme-default": {
       "showLevel": true,
       "styles": {

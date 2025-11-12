@@ -185,16 +185,27 @@ ReferenceError: File is not defined
 
 ### Build Fails: "Plugin not found"
 
-**Solution**: Some plugins may not be compatible with Honkit. Remove problematic plugins from `book.json`:
+**Error**: `ReferenceError: Failed to load HonKit's plugin module: "anchors" is not found`
+
+**Cause**: Honkit plugins need to be installed as npm packages (e.g., `gitbook-plugin-anchors`), which adds complexity.
+
+**Solution**: Use only built-in plugins in `book.json`:
 
 ```json
 {
   "plugins": [
-    "anchors",
     "search",
-    "-sharing"
+    "-sharing",
+    "-fontsettings"
   ]
 }
+```
+
+**Note**: Built-in plugins (search, sharing, fontsettings) work without installation. External plugins require:
+```bash
+npm install --save gitbook-plugin-anchors
+npm install --save gitbook-plugin-github
+# etc.
 ```
 
 ### Build Fails: "Cannot find module"
