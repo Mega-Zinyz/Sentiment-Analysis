@@ -1,36 +1,55 @@
 # GitBook Documentation Setup
 
-This project uses GitBook for comprehensive documentation.
+This project uses Honkit (modern GitBook alternative) for comprehensive documentation.
 
 ## 📚 View Documentation
 
 ### Online (Recommended)
 Once published, documentation will be available at:
-- **GitBook**: https://yourusername.gitbook.io/sentiment-analysis
 - **GitHub Pages**: https://mega-zinyz.github.io/Sentiment-Analysis
 
 ### Local Development
 
-#### Option 1: GitBook CLI (Legacy)
+#### Option 1: Using npm scripts (Recommended)
 ```bash
-# Install GitBook CLI
-npm install -g gitbook-cli
+# Install dependencies
+npm install
 
-# Install plugins
-gitbook install
+# Install Honkit plugins
+npm run docs:install
 
 # Serve locally (http://localhost:4000)
-gitbook serve
+npm run docs:serve
 
 # Build static site
-gitbook build
+npm run docs:build
+
+# Clean build directory
+npm run docs:clean
 ```
 
-#### Option 2: Modern GitBook
+#### Option 2: Using Honkit directly
+```bash
+# Install Honkit globally
+npm install -g honkit
+
+# Install plugins
+honkit install
+
+# Serve locally (http://localhost:4000)
+honkit serve
+
+# Build static site
+honkit build
+```
+
+#### Option 3: GitBook.com (Cloud)
 1. Go to [GitBook.com](https://www.gitbook.com)
 2. Sign in with GitHub
 3. Import your repository: `Mega-Zinyz/Sentiment-Analysis`
 4. GitBook will automatically detect `book.json` and `SUMMARY.md`
+
+> **Note**: We use Honkit instead of legacy GitBook CLI due to Node.js compatibility issues. Honkit is a modern, actively maintained fork of GitBook.
 
 ## 📂 Documentation Structure
 

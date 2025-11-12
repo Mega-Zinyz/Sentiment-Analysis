@@ -263,7 +263,7 @@ Create comprehensive `README.md`:
 ## Documentation
 - **Deployment**: `docs/deployment/`
 - **Development**: `docs/development/`
-- **API**: `Backend/docs/`
+- **API**: `docs/api-reference/`
 
 ## Project Structure
 - `Backend/` - Node.js API server

@@ -8,6 +8,7 @@ on:
       - '*.md'
       - 'book.json'
       - 'SUMMARY.md'
+      - 'styles/**'
       - '.github/workflows/deploy-gitbook.yml'
   workflow_dispatch:
 
@@ -17,30 +18,39 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '14'
+          node-version: '18'
+          cache: 'npm'
       
-      - name: Install GitBook CLI
+      - name: Install Honkit (GitBook alternative)
         run: |
-          npm install -g gitbook-cli
-          gitbook -V
+          npm install -g honkit
+          honkit --version
       
-      - name: Install GitBook plugins
-        run: gitbook install
+      - name: Install Honkit plugins
+        run: |
+          honkit install
+        continue-on-error: true
       
-      - name: Build GitBook
-        run: gitbook build
+      - name: Build documentation
+        run: |
+          honkit build . _book
+      
+      - name: Add .nojekyll file
+        run: touch _book/.nojekyll
       
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./_book
-          cname: docs.yourdomain.com  # Optional: Add your custom domain
           user_name: 'github-actions[bot]'
           user_email: 'github-actions[bot]@users.noreply.github.com'
-          commit_message: 'Deploy GitBook documentation'
+          commit_message: 'docs: Deploy GitBook documentation [skip ci]'
+          force_orphan: true

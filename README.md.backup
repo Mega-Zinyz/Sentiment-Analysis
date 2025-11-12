@@ -125,9 +125,9 @@ cp .env.example .env- [Hosting Providers](docs/deployment/HOSTING_DEPLOYMENT_GUI
 
 ### 3. Generate Production Secrets (Required for Production)### API Documentation
 
-```bash- [Raw Data Analysis API](docs/api-reference/RAW_DATA_ANALYSIS_API.md)
+```bash- [Raw Data Analysis API](Backend/docs/RAW_DATA_ANALYSIS_API.md)
 
-# Generate JWT_SECRET- [Security Analysis](docs/api-reference/SECURITY_ANALYSIS.md)
+# Generate JWT_SECRET- [Security Analysis](Backend/docs/SECURITY_ANALYSIS.md)
 
 node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 
