@@ -1,34 +1,32 @@
-# Summary
+# Table of contents
 
 ## Introduction
 
-* [Welcome](docs/introduction/WELCOME.md)
-* [Overview](README.md)
-* [Quick Start](README.md#-quick-start)
+* [Welcome](README.md)
+* [Overview](<README (1).md>)
+* [Quick Start](<README (1).md#-quick-start>)
 * [Production Ready Status](PRODUCTION_READY.md)
 
 ## Getting Started
 
-* [Installation](README.md#installation)
-* [Configuration](README.md#-configuration)
-  * [Environment Variables](README.md#environment-variables)
-  * [CORS Setup](README.md#cors-configuration)
-* [First Time Setup](README.md#-first-time-setup)
-* [Default Credentials](README.md#default-credentials)
+* [Installation](<README (1).md#installation>)
+* [Configuration](<README (1).md#-configuration>)
+* [First Time Setup](<README (1).md#-first-time-setup>)
+* [Default Credentials](<README (1).md#default-credentials>)
 
 ## Architecture & Design
 
 * [System Architecture](docs/architecture/SYSTEM_ARCHITECTURE.md)
-* [Project Structure](README.md#-project-structure)
-* [Technology Stack](README.md#-tech-stack)
-* [Performance Metrics](README.md#-performance-metrics)
+* [Project Structure](<README (1).md#-project-structure>)
+* [Technology Stack](<README (1).md#-tech-stack>)
+* [Performance Metrics](<README (1).md#-performance-metrics>)
 
 ## User Guide
 
-* [Manual CSV Analysis](docs/user-guide/CSV_ANALYSIS.md)
-* [Twitter/X Integration](docs/user-guide/TWITTER_INTEGRATION.md)
-* [Word Library Management](docs/user-guide/WORD_LIBRARIES.md)
-* [Analysis History](docs/user-guide/ANALYSIS_HISTORY.md)
+* [Manual CSV Analysis](user-guide/manual-csv-analysis.md)
+* [Twitter/X Integration](user-guide/twitter-x-integration.md)
+* [Word Library Management](user-guide/word-library-management.md)
+* [Analysis History](user-guide/analysis-history.md)
 
 ## API Reference
 
@@ -60,7 +58,7 @@
 
 ## Monitoring & Maintenance
 
-* [Error Logs](README.md#-monitoring--error-logs)
+* [Error Logs](<README (1).md#-monitoring--error-logs>)
 * [Cleanup Plan](docs/CLEANUP_PLAN.md)
 
 ## Troubleshooting

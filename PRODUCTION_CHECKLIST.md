@@ -1,140 +1,154 @@
-# 🚀 Production Deployment Checklist
+# Production Checklist
 
 Use this checklist before deploying to production.
 
 ## ✅ Pre-Deployment Checklist
 
 ### 1. Environment Configuration
-- [ ] Copy `.env.example` to `.env`
-- [ ] Set `NODE_ENV=production`
-- [ ] Generate new `JWT_SECRET` (64 bytes)
-  ```bash
-  node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
-  ```
-- [ ] Generate new `ENCRYPTION_KEY` (32 bytes)
-  ```bash
-  node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-  ```
-- [ ] Set strong `DB_ROOT_PASSWORD` and `DB_PASSWORD`
-- [ ] Configure `ALLOWED_ORIGINS` with your production domain(s)
-- [ ] Set `LOG_LEVEL=info` or `LOG_LEVEL=warn`
+
+* [ ] Copy `.env.example` to `.env`
+* [ ] Set `NODE_ENV=production`
+*   [ ] Generate new `JWT_SECRET` (64 bytes)
+
+    ```bash
+    node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+    ```
+*   [ ] Generate new `ENCRYPTION_KEY` (32 bytes)
+
+    ```bash
+    node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+    ```
+* [ ] Set strong `DB_ROOT_PASSWORD` and `DB_PASSWORD`
+* [ ] Configure `ALLOWED_ORIGINS` with your production domain(s)
+* [ ] Set `LOG_LEVEL=info` or `LOG_LEVEL=warn`
 
 ### 2. Security Verification
-- [ ] Verify `.env` is in `.gitignore`
-- [ ] Confirm no secrets committed to git
-  ```bash
-  git log --all --source --full-history -- "*/.env"
-  ```
-- [ ] Test CORS with production domain
-- [ ] Verify error responses are sanitized (no stack traces)
-- [ ] Check SSL/TLS certificate is valid
+
+* [ ] Verify `.env` is in `.gitignore`
+*   [ ] Confirm no secrets committed to git
+
+    ```bash
+    git log --all --source --full-history -- "*/.env"
+    ```
+* [ ] Test CORS with production domain
+* [ ] Verify error responses are sanitized (no stack traces)
+* [ ] Check SSL/TLS certificate is valid
 
 ### 3. Database
-- [ ] Backup existing data (if any)
-- [ ] Verify database credentials are strong
-- [ ] Test database connection
-- [ ] Run database migrations
-  ```bash
-  docker-compose exec backend node scripts/migration/migrate-database.js
-  ```
+
+* [ ] Backup existing data (if any)
+* [ ] Verify database credentials are strong
+* [ ] Test database connection
+*   [ ] Run database migrations
+
+    ```bash
+    docker-compose exec backend node scripts/migration/migrate-database.js
+    ```
 
 ### 4. Docker Configuration
-- [ ] Review `docker-compose.yml`
-- [ ] Verify all environment variables are passed correctly
-- [ ] Check volume mounts for persistence
-- [ ] Confirm restart policies are set
+
+* [ ] Review `docker-compose.yml`
+* [ ] Verify all environment variables are passed correctly
+* [ ] Check volume mounts for persistence
+* [ ] Confirm restart policies are set
 
 ### 5. Testing
-- [ ] Test health endpoint: `http://your-domain.com/health`
-- [ ] Test API authentication
-- [ ] Test sentiment analysis workflow
-- [ ] Verify file uploads work
-- [ ] Check logs are being written: `docker logs sentiment-backend`
+
+* [ ] Test health endpoint: `http://your-domain.com/health`
+* [ ] Test API authentication
+* [ ] Test sentiment analysis workflow
+* [ ] Verify file uploads work
+* [ ] Check logs are being written: `docker logs sentiment-backend`
 
 ### 6. Monitoring Setup
-- [ ] Configure log retention (default: 14-30 days)
-- [ ] Set up log monitoring/alerts
-- [ ] Monitor disk space for logs and uploads
-- [ ] Set up database backup schedule
+
+* [ ] Configure log retention (default: 14-30 days)
+* [ ] Set up log monitoring/alerts
+* [ ] Monitor disk space for logs and uploads
+* [ ] Set up database backup schedule
 
 ### 7. Documentation
-- [ ] Update README with production URL
-- [ ] Document deployment procedure
-- [ ] Record secret key backup location
-- [ ] Create incident response plan
+
+* [ ] Update README with production URL
+* [ ] Document deployment procedure
+* [ ] Record secret key backup location
+* [ ] Create incident response plan
 
 ## 🚀 Deployment Steps
 
 ### First Time Deployment
 
-1. **Clone repository** (or transfer files):
-   ```bash
-   git clone <your-repo> sentiment_analisis
-   cd sentiment_analisis
-   ```
+1.  **Clone repository** (or transfer files):
 
-2. **Configure environment**:
-   ```bash
-   cp .env.example .env
-   # Edit .env with production values
-   nano .env
-   ```
+    ```bash
+    git clone <your-repo> sentiment_analisis
+    cd sentiment_analisis
+    ```
+2.  **Configure environment**:
 
-3. **Generate secrets**:
-   ```bash
-   cd Backend
-   node -e "console.log('JWT_SECRET=' + require('crypto').randomBytes(64).toString('hex'))"
-   node -e "console.log('ENCRYPTION_KEY=' + require('crypto').randomBytes(32).toString('hex'))"
-   ```
+    ```bash
+    cp .env.example .env
+    # Edit .env with production values
+    nano .env
+    ```
+3.  **Generate secrets**:
 
-4. **Build and start**:
-   ```bash
-   docker-compose up -d --build
-   ```
+    ```bash
+    cd Backend
+    node -e "console.log('JWT_SECRET=' + require('crypto').randomBytes(64).toString('hex'))"
+    node -e "console.log('ENCRYPTION_KEY=' + require('crypto').randomBytes(32).toString('hex'))"
+    ```
+4.  **Build and start**:
 
-5. **Verify deployment**:
-   ```bash
-   docker-compose ps
-   curl http://localhost:5000/health
-   ```
+    ```bash
+    docker-compose up -d --build
+    ```
+5.  **Verify deployment**:
 
-6. **Check logs**:
-   ```bash
-   docker-compose logs -f backend
-   ```
+    ```bash
+    docker-compose ps
+    curl http://localhost:5000/health
+    ```
+6.  **Check logs**:
+
+    ```bash
+    docker-compose logs -f backend
+    ```
 
 ### Updates/Redeployment
 
-1. **Pull latest changes**:
-   ```bash
-   git pull origin main
-   ```
+1.  **Pull latest changes**:
 
-2. **Backup database** (if schema changes):
-   ```bash
-   docker-compose exec mysql mysqldump -u root -p sentiment_analysis > backup_$(date +%Y%m%d).sql
-   ```
+    ```bash
+    git pull origin main
+    ```
+2.  **Backup database** (if schema changes):
 
-3. **Rebuild and restart**:
-   ```bash
-   docker-compose down
-   docker-compose up -d --build
-   ```
+    ```bash
+    docker-compose exec mysql mysqldump -u root -p sentiment_analysis > backup_$(date +%Y%m%d).sql
+    ```
+3.  **Rebuild and restart**:
 
-4. **Run migrations** (if needed):
-   ```bash
-   docker-compose exec backend node scripts/migration/migrate-database.js
-   ```
+    ```bash
+    docker-compose down
+    docker-compose up -d --build
+    ```
+4.  **Run migrations** (if needed):
 
-5. **Verify**:
-   ```bash
-   docker-compose ps
-   curl http://localhost:5000/health
-   ```
+    ```bash
+    docker-compose exec backend node scripts/migration/migrate-database.js
+    ```
+5.  **Verify**:
+
+    ```bash
+    docker-compose ps
+    curl http://localhost:5000/health
+    ```
 
 ## 🔍 Post-Deployment Verification
 
 ### Health Checks
+
 ```bash
 # Backend health
 curl http://your-domain.com/health
@@ -144,6 +158,7 @@ curl http://your-domain.com/health
 ```
 
 ### Test Authentication
+
 ```bash
 # Register test user
 curl -X POST http://your-domain.com/api/auth/register \
@@ -157,6 +172,7 @@ curl -X POST http://your-domain.com/api/auth/login \
 ```
 
 ### Test CORS
+
 ```bash
 # Should be allowed (your domain)
 curl -H "Origin: https://yourdomain.com" http://your-domain.com/api/health
@@ -166,6 +182,7 @@ curl -H "Origin: https://malicious-site.com" http://your-domain.com/api/health
 ```
 
 ### Check Logs
+
 ```bash
 # View recent logs
 docker-compose logs --tail=100 backend
@@ -181,6 +198,7 @@ docker-compose exec backend tail -f /app/logs/error-*.log
 ## 📊 Monitoring Commands
 
 ### Container Status
+
 ```bash
 # All containers
 docker-compose ps
@@ -190,6 +208,7 @@ docker stats sentiment-backend sentiment-frontend sentiment-mysql
 ```
 
 ### Database
+
 ```bash
 # Connect to MySQL
 docker-compose exec mysql mysql -u root -p sentiment_analysis
@@ -199,6 +218,7 @@ docker-compose exec mysql mysql -u root -p -e "SELECT table_schema AS 'Database'
 ```
 
 ### Disk Space
+
 ```bash
 # Check Docker volumes
 docker system df -v
@@ -210,6 +230,7 @@ docker system prune -a --volumes
 ## 🆘 Troubleshooting
 
 ### Backend won't start
+
 ```bash
 # Check logs
 docker-compose logs backend
@@ -221,6 +242,7 @@ docker-compose logs backend
 ```
 
 ### Database connection failed
+
 ```bash
 # Check MySQL is running
 docker-compose ps mysql
@@ -234,6 +256,7 @@ docker-compose up -d
 ```
 
 ### CORS errors
+
 ```bash
 # Check ALLOWED_ORIGINS in .env
 cat .env | grep ALLOWED_ORIGINS
@@ -245,7 +268,7 @@ docker-compose logs backend | grep "CORS blocked"
 ## 🔐 Security Reminders
 
 1. **Never commit `.env` files** - They contain secrets!
-2. **Rotate secrets regularly** - Change JWT_SECRET periodically
+2. **Rotate secrets regularly** - Change JWT\_SECRET periodically
 3. **Use strong passwords** - Minimum 12 characters
 4. **Enable HTTPS** - Configure at hosting provider level
 5. **Monitor logs** - Check for unauthorized access attempts
@@ -255,15 +278,15 @@ docker-compose logs backend | grep "CORS blocked"
 
 ## 📝 Current Configuration
 
-- **Backend Port**: 5000
-- **Frontend Port**: 80
-- **Database Port**: 3306 (internal only)
-- **Workers**: 6 parallel workers
-- **Batch Size**: 300 tweets per batch
-- **Log Retention**: 14-30 days
-- **Performance**: ~20-25 minutes for 23,000 tweets
+* **Backend Port**: 5000
+* **Frontend Port**: 80
+* **Database Port**: 3306 (internal only)
+* **Workers**: 6 parallel workers
+* **Batch Size**: 300 tweets per batch
+* **Log Retention**: 14-30 days
+* **Performance**: \~20-25 minutes for 23,000 tweets
 
----
+***
 
 **System Status**: ✅ Production Ready
 

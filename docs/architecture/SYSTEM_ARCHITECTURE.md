@@ -57,24 +57,27 @@ The system follows a **3-tier architecture** pattern with clear separation of co
 ### Frontend (Angular 18)
 
 #### Core Modules
-- **Authentication Module** - Login, registration, JWT management
-- **Admin Module** - User management, system configuration
-- **Analysis Module** - CSV upload, Twitter collection, results viewing
-- **Library Module** - Word library CRUD operations
-- **History Module** - Analysis history and insights
+
+* **Authentication Module** - Login, registration, JWT management
+* **Admin Module** - User management, system configuration
+* **Analysis Module** - CSV upload, Twitter collection, results viewing
+* **Library Module** - Word library CRUD operations
+* **History Module** - Analysis history and insights
 
 #### Key Features
-- **Reactive Forms** - Form validation and handling
-- **HTTP Interceptors** - Automatic JWT token attachment
-- **Route Guards** - Authentication and authorization
-- **Error Handling** - Global error interceptor
-- **State Management** - Service-based state
+
+* **Reactive Forms** - Form validation and handling
+* **HTTP Interceptors** - Automatic JWT token attachment
+* **Route Guards** - Authentication and authorization
+* **Error Handling** - Global error interceptor
+* **State Management** - Service-based state
 
 #### Production Build
-- **Nginx** - High-performance web server
-- **Static Assets** - Pre-compiled and minified
-- **Gzip Compression** - Reduced bandwidth
-- **Caching Headers** - Improved performance
+
+* **Nginx** - High-performance web server
+* **Static Assets** - Pre-compiled and minified
+* **Gzip Compression** - Reduced bandwidth
+* **Caching Headers** - Improved performance
 
 ### Backend (Node.js + Express)
 
@@ -117,29 +120,33 @@ The system follows a **3-tier architecture** pattern with clear separation of co
 #### Core Components
 
 **Authentication System**
-- JWT token generation and validation
-- Refresh token mechanism
-- Password hashing with bcrypt
-- Session management
+
+* JWT token generation and validation
+* Refresh token mechanism
+* Password hashing with bcrypt
+* Session management
 
 **Analysis Engine**
-- Worker pool management (6 Python workers)
-- Batch processing (300 tweets per batch)
-- Progress tracking
-- Error handling and retry logic
-- Result aggregation
+
+* Worker pool management (6 Python workers)
+* Batch processing (300 tweets per batch)
+* Progress tracking
+* Error handling and retry logic
+* Result aggregation
 
 **Data Processing**
-- CSV parsing and validation
-- Text preprocessing
-- Data normalization
-- Result formatting
+
+* CSV parsing and validation
+* Text preprocessing
+* Data normalization
+* Result formatting
 
 **Logging System**
-- Winston logger with rotation
-- Multiple log levels (error, warn, info, debug)
-- Separate error logs
-- Production-ready log management
+
+* Winston logger with rotation
+* Multiple log levels (error, warn, info, debug)
+* Separate error logs
+* Production-ready log management
 
 ### Machine Learning Layer (Python)
 
@@ -203,16 +210,18 @@ Sentiment Result
 #### Database Schema
 
 **Core Tables**
-- `users` - User accounts and authentication
-- `word_libraries` - Custom word dictionaries
-- `positive_words` - Positive sentiment words
-- `negative_words` - Negative sentiment words
-- `analysis_sessions` - Analysis metadata
-- `analysis_results` - Sentiment analysis results
-- `raw_twitter_data` - Collected tweets
-- `audit_logs` - Security and activity logs
+
+* `users` - User accounts and authentication
+* `word_libraries` - Custom word dictionaries
+* `positive_words` - Positive sentiment words
+* `negative_words` - Negative sentiment words
+* `analysis_sessions` - Analysis metadata
+* `analysis_results` - Sentiment analysis results
+* `raw_twitter_data` - Collected tweets
+* `audit_logs` - Security and activity logs
 
 **Relationships**
+
 ```
 users (1) ──────────> (N) word_libraries
               creates
@@ -228,11 +237,12 @@ analysis_sessions (1)─> (N) analysis_results
 ```
 
 #### Indexes & Optimization
-- Primary keys on all tables
-- Foreign key constraints
-- Indexes on frequently queried columns
-- Connection pooling for performance
-- Query optimization for large datasets
+
+* Primary keys on all tables
+* Foreign key constraints
+* Indexes on frequently queried columns
+* Connection pooling for performance
+* Query optimization for large datasets
 
 ## 🔄 Data Flow
 
@@ -331,39 +341,44 @@ Frontend updates progress bar
 ### Optimization Strategies
 
 **Frontend**
-- Code splitting
-- Lazy loading modules
-- AOT compilation
-- Tree shaking
-- Minification
-- Gzip compression
+
+* Code splitting
+* Lazy loading modules
+* AOT compilation
+* Tree shaking
+* Minification
+* Gzip compression
 
 **Backend**
-- Connection pooling
-- Query optimization
-- Caching strategies
-- Async/await patterns
-- Worker pool parallelization
+
+* Connection pooling
+* Query optimization
+* Caching strategies
+* Async/await patterns
+* Worker pool parallelization
 
 **Database**
-- Indexed columns
-- Query optimization
-- Connection limits
-- Transaction management
+
+* Indexed columns
+* Query optimization
+* Connection limits
+* Transaction management
 
 ### Scalability
 
 **Horizontal Scaling**
-- Stateless backend (scales easily)
-- Load balancer ready
-- Database read replicas
-- Shared session storage
+
+* Stateless backend (scales easily)
+* Load balancer ready
+* Database read replicas
+* Shared session storage
 
 **Vertical Scaling**
-- Increase worker count
-- Larger batch sizes
-- More database connections
-- Higher resource limits
+
+* Increase worker count
+* Larger batch sizes
+* More database connections
+* Higher resource limits
 
 ## 🐳 Docker Architecture
 
@@ -394,10 +409,10 @@ Frontend updates progress bar
 
 ### Container Communication
 
-- **Frontend → Backend**: HTTP on internal network
-- **Backend → MySQL**: TCP on port 3306
-- **External → Frontend**: Port 80 (HTTP) / 443 (HTTPS)
-- **External → Backend**: Port 5000 (API)
+* **Frontend → Backend**: HTTP on internal network
+* **Backend → MySQL**: TCP on port 3306
+* **External → Frontend**: Port 80 (HTTP) / 443 (HTTPS)
+* **External → Backend**: Port 5000 (API)
 
 ## 🔧 Configuration Management
 
@@ -493,42 +508,47 @@ Return Status:
 ### Why These Technologies?
 
 **Angular**
-- Strong TypeScript support
-- Comprehensive framework
-- Enterprise-ready
-- Great tooling
+
+* Strong TypeScript support
+* Comprehensive framework
+* Enterprise-ready
+* Great tooling
 
 **Node.js + Express**
-- JavaScript everywhere
-- High performance
-- Large ecosystem
-- Easy Python integration
+
+* JavaScript everywhere
+* High performance
+* Large ecosystem
+* Easy Python integration
 
 **Python**
-- Rich ML/NLP libraries
-- Sastrawi for Indonesian
-- scikit-learn ecosystem
-- Easy to maintain
+
+* Rich ML/NLP libraries
+* Sastrawi for Indonesian
+* scikit-learn ecosystem
+* Easy to maintain
 
 **MySQL**
-- ACID compliance
-- Reliable and stable
-- Good performance
-- Wide hosting support
+
+* ACID compliance
+* Reliable and stable
+* Good performance
+* Wide hosting support
 
 **Docker**
-- Consistent environments
-- Easy deployment
-- Isolation
-- Portability
+
+* Consistent environments
+* Easy deployment
+* Isolation
+* Portability
 
 ## 📚 Further Reading
 
-- [API Documentation](../api-reference/RAW_DATA_ANALYSIS_API.md)
-- [Security Guide](../deployment/PRODUCTION_SECURITY.md)
-- [Performance Tuning](../../README.md#-performance-tuning)
-- [Database Schema](../api-reference/database_schema.sql)
+* [API Documentation](../api-reference/RAW_DATA_ANALYSIS_API.md)
+* [Security Guide](../deployment/PRODUCTION_SECURITY.md)
+* [Performance Tuning](<../../README (1).md#-performance-tuning>)
+* [Database Schema](../api-reference/database_schema.sql)
 
----
+***
 
 **Last Updated**: November 12, 2025

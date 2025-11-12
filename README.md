@@ -1,656 +1,223 @@
-# Indonesian Sentiment Analysis System
+# Welcome
 
-A comprehensive full-stack sentiment analysis application for Indonesian text using Naive Bayes classification. Built with Angular, Node.js, MySQL, and Python with production-ready Docker deployment.
+Welcome to the comprehensive documentation for the Indonesian Sentiment Analysis System - a production-ready, full-stack application designed for analyzing sentiment in Indonesian text using advanced machine learning techniques.
 
-## 🚀 Features
+## 🎯 What is This System?
 
-- 🔐 **User Authentication** - Secure JWT-based authentication with refresh tokens
-- 📊 **Sentiment Analysis** - Naive Bayes classifier optimized for Indonesian text
-- 📚 **Word Library Management** - Create and manage custom training data libraries
-- 📈 **Analysis History** - Track and view past analyses with detailed insights
-- 🐦 **Twitter/X Integration** - Collect and analyze tweets in real-time
-- 📁 **Data Management** - Upload CSV files, manual labeling, CRUD operations
-- 🐳 **Docker Deployment** - Production-ready with Docker Compose
-- 📝 **Comprehensive Logging** - Winston logger with automatic rotation
-- ⚡ **High Performance** - 6 parallel workers processing 300 tweets per batch
+This application provides a complete solution for sentiment analysis of Indonesian text, specifically designed to handle:
 
-## 📊 Performance Metrics
+* **Manual Data Analysis** - Upload CSV files containing text data for batch sentiment analysis
+* **Real-time Twitter/X Analysis** - Collect and analyze tweets directly from Twitter/X API
+* **Custom Training Data** - Create and manage your own word libraries for improved accuracy
+* **Historical Tracking** - Monitor sentiment trends over time with comprehensive history
+* **Production-Ready Deployment** - Docker-based deployment with enterprise-grade security
 
-- **Speed**: ~20-25 minutes for 23,000 tweets
-- **Workers**: 6 parallel processing workers
-- **Batch Size**: 300 tweets per batch
-- **Algorithm**: Naive Bayes with Sastrawi Indonesian text processing
+## 🌟 Who is This For?
 
-## 🎯 Quick Start
+This system is perfect for:
 
-### Prerequisites
+* **Researchers** - Conducting sentiment analysis studies on Indonesian social media
+* **Data Scientists** - Building sentiment analysis models for Indonesian text
+* **Businesses** - Monitoring brand sentiment and customer feedback in Indonesian
+* **Developers** - Learning about full-stack sentiment analysis application architecture
+* **Students** - Academic projects involving Indonesian NLP and sentiment analysis
 
-- Docker & Docker Compose (recommended)
-- Node.js 20+ (for local development)
-- Python 3.12+ (for local development)
+## ⚡ Key Capabilities
 
+### Sentiment Analysis
 
+* **Naive Bayes Classifier** optimized for Indonesian language
+* **Sastrawi Stemming** for accurate word root extraction
+* **Custom Word Libraries** for domain-specific analysis
+* **Batch Processing** with 6 parallel workers for high-speed analysis
+* **Real-time Progress Tracking** during analysis
 
-## 🛠️ Tech Stack### Run with Docker (Recommended)
+### Data Management
 
+* **CSV Upload** for bulk text analysis
+* **Twitter/X Integration** for social media monitoring
+* **Manual Labeling** for training data creation
+* **Data Export** for further analysis
+* **Analysis History** with detailed insights
 
+### Security & Production Features
 
-### Frontend```bash
+* **JWT Authentication** with refresh tokens
+* **User Management** with role-based access
+* **Rate Limiting** to prevent abuse
+* **Comprehensive Logging** with Winston
+* **Docker Deployment** for easy hosting
+* **Environment-based Configuration** for flexibility
 
-- Angular 18+# Clone repository
+## 🚀 Quick Navigation
 
-- TypeScriptgit clone <your-repo-url>
+### New Users
 
-- Nginx (production)cd sentimen_analisis
+1. [**Quick Start Guide**](docs/#-quick-start) - Get started in 5 minutes
+2. [**Installation**](docs/#installation) - Setup instructions
+3. [**First Time Usage**](docs/#-first-time-usage) - Your first analysis
 
-- Bootstrap UI
+### Deployment
 
-# Start all services
-
-### Backenddocker-compose up -d
-
-- Node.js 20
-
-- Express.js# Access application
-
-- MySQL 8.0# Frontend: http://localhost
-
-- Python 3.12 with scikit-learn# Backend API: http://localhost:5000
-
-- JWT Authentication```
-
-- Winston Logging
-
-### Default Login
-
-### Machine Learning- Username: `admin`
-
-- Naive Bayes Classifier- Password: `admin123`
-
-- Sastrawi (Indonesian stemmer)
-
-- scikit-learn## Project Structure
-
-- spaCy
-
-```
-
-## 📋 Prerequisitessentimen_analisis/
-
-├── docs/                      # 📚 All documentation
-
-- Docker Desktop│   ├── deployment/           # Deployment guides
-
-- Docker Compose│   └── development/          # Development guides
-
-- Node.js 20+ (for development)├── Backend/                  # 🚀 Node.js API
-
-- 4GB+ RAM recommended│   ├── routes/              # API endpoints
-
-│   ├── python/              # ML models
-
-## 🚀 Quick Start│   ├── scripts/             # Database & maintenance scripts
-
-│   └── docs/                # API documentation
-
-### 1. Clone Repository├── Frontend/                 # 🎨 Angular web app
-
-```bash└── docker-compose.yml        # 🐳 Docker configuration
-
-git clone https://github.com/Mega-Zinyz/Sentiment-Analysis.git```
-
-cd Sentiment-Analysis
-
-```## Documentation
-
-
-
-### 2. Configure Environment### Getting Started
-
-```bash- [Docker Deployment Guide](docs/deployment/DOCKER_README.md)
-
-# Copy environment template- [Environment Configuration](docs/deployment/ENVIRONMENT_CONFIG_GUIDE.md)
-
-cp .env.example .env- [Hosting Providers](docs/deployment/HOSTING_DEPLOYMENT_GUIDE.md)
-
-
-
-# Edit .env with your configuration### Development
-
-# IMPORTANT: Change JWT_SECRET and ENCRYPTION_KEY for production!- [Logging & Debugging](docs/development/LOGGING_GUIDE.md)
-
-```- [Production Debugging](docs/development/PRODUCTION_DEBUGGING.md)
-
-
-
-### 3. Generate Production Secrets (Required for Production)### API Documentation
-
-```bash- [Raw Data Analysis API](docs/api-reference/RAW_DATA_ANALYSIS_API.md)
-
-# Generate JWT_SECRET- [Security Analysis](docs/api-reference/SECURITY_ANALYSIS.md)
-
-node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
-
-## Technology Stack
-
-# Generate ENCRYPTION_KEY
-
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"### Backend
-
-- **Runtime**: Node.js 20
-
-# Update these values in .env file- **Framework**: Express.js
-
-```- **Database**: MySQL 8.0
-
-- **ML**: Python 3.12 with scikit-learn, Sastrawi
-
-### 4. Start Services- **Authentication**: JWT
-
-```bash- **Logging**: Winston
-
-# Start all services
-
-docker-compose up -d### Frontend
-
-- **Framework**: Angular 18+
-
-# Check status- **Language**: TypeScript
-
-docker-compose ps- **Server**: Nginx
-
-
-
-# View logs### DevOps
-
-docker-compose logs -f backend- **Containerization**: Docker
-
-```- **Orchestration**: Docker Compose
-
-- **CI/CD Ready**: GitHub Actions compatible
-
-### 5. Access Application
-
-- **Frontend**: http://localhost## Development
-
-- **Backend API**: http://localhost:5000
-
-- **Health Check**: http://localhost:5000/health### Backend Development
-
-```bash
-
-### 6. First Time Setupcd Backend
-
-1. Register a new account at http://localhost/registernpm install
-
-2. Login at http://localhost/logincp .env.example .env
-
-3. Create a word library (positive/negative words)npm run dev
-
-4. Start analyzing!```
-
-
-
-## 📁 Project Structure### Frontend Development
-
-```bash
-
-```cd Frontend
-
-Sentiment-Analysis/npm install
-
-├── Frontend/                 # Angular frontendnpm start
-
-│   ├── src/```
-
-│   │   ├── app/
-
-│   │   │   ├── admin/       # Admin panel## Configuration
-
-│   │   │   ├── login/       # Authentication
-
-│   │   │   ├── tweet-collection/  # X API integration### Environment Variables
-
-│   │   │   ├── raw-data-analysis/ # Manual CSV uploadSee `.env.example` for all configuration options.
-
-│   │   │   └── analysis-history/  # Results tracking
-
-│   │   └── environments/    # Environment configsKey variables:
-
-│   ├── Dockerfile- `NODE_ENV` - production/development
-
-│   └── nginx.conf- `DB_HOST` - MySQL host
-
-│- `JWT_SECRET` - Authentication secret
-
-├── Backend/                  # Node.js + Python backend- `LOG_LEVEL` - Logging verbosity
-
-│   ├── routes/              # API endpoints
-
-│   ├── middleware/          # Auth, rate limiting### Production Deployment
-
-│   ├── utils/               # Helpers, loggingSee [Hosting Deployment Guide](docs/deployment/HOSTING_DEPLOYMENT_GUIDE.md) for provider-specific instructions.
-
-│   ├── python/              # ML processing
-
-│   ├── scripts/             # Database utilities## Performance
-
-│   │   ├── setup/          # Initial setup
-
-│   │   ├── migration/      # Database migrations- ⚡ **6 Worker Pool** - Parallel sentiment analysis
-
-│   │   ├── maintenance/    # Maintenance tasks- 📦 **Batch Processing** - 300 tweets per batch
-
-│   │   └── testing/        # Test scripts- ⏱️ **~20-25 minutes** for 23,000 tweets
-
-│   ├── config/             # Database config- 🔄 **Auto-scaling Ready** - Kubernetes compatible
-
-│   ├── docs/               # API documentation
-
-│   ├── Dockerfile## Security Features
-
-│   └── .env
-
-│- 🔐 JWT authentication with refresh tokens
-
-├── docs/                    # Documentation- 🛡️ Rate limiting on API endpoints
-
-│   ├── deployment/         # Deployment guides- 🔒 Password hashing with bcrypt
-
-│   │   ├── PRODUCTION_SECURITY.md- 🔑 Data encryption for sensitive fields
-
-│   │   ├── CORS_CONFIGURATION.md- 📝 Audit logging for security events
-
-│   │   ├── HOSTING_DEPLOYMENT_GUIDE.md- 🚫 CORS protection
-
-│   │   └── ENVIRONMENT_CONFIG_GUIDE.md- 🔍 SQL injection prevention
-
-│   └── development/        # Development guides
-
-│       └── LOGGING_GUIDE.md## License
-
-│
-
-├── docker-compose.yml      # Docker orchestrationThis project is part of academic research. See LICENSE file for details.
-
-├── .env                    # Environment config (gitignored)
-
-├── .env.example           # Environment template## Support
-
-├── .gitignore
-
-├── PRODUCTION_CHECKLIST.mdFor issues and questions:
-
-├── PRODUCTION_READY.md1. Check documentation in `docs/`
-
-└── README.md2. Review logs: `docker logs sentiment-backend`
-
-```3. See troubleshooting guides in documentation
-
-
-
-## 🔧 Configuration## Contributors
-
-
-
-### Environment Variables- [Your Name] - Initial work
-
-
-
-Key variables in `.env`:---
-
-
-
-```bashMade with ❤️ for Indonesian NLP research
-
-# Environment
-NODE_ENV=development          # Set to 'production' for deployment
-
-# Database
-DB_NAME=sentiment_analysis
-DB_USER=sentiment_user
-DB_PASSWORD=your-password     # Change in production
-
-# Security (CRITICAL: Change these!)
-JWT_SECRET=your-jwt-secret    # Generate with crypto
-ENCRYPTION_KEY=your-key       # Generate with crypto
-
-# CORS
-ALLOWED_ORIGINS=              # Empty = localhost (dev)
-                             # Production: https://yourdomain.com
-                             # Wildcard: *.yourdomain.com
-
-# Logging
-LOG_LEVEL=debug              # Options: error, warn, info, debug
-```
-
-### CORS Configuration
-
-Supports flexible pattern matching:
-
-```bash
-# Specific domains
-ALLOWED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
-
-# Wildcard subdomain (recommended)
-ALLOWED_ORIGINS=*.yourdomain.com
-
-# Multiple wildcards
-ALLOWED_ORIGINS=*.production.com,*.staging.com
-```
-
-See [CORS Configuration Guide](docs/deployment/CORS_CONFIGURATION.md) for details.
-
-## 📖 Usage
-
-### Manual CSV Analysis
-
-1. **Prepare CSV file** with columns: `timestamp`, `username`, `message`
-2. Go to **Raw Data Analysis**
-3. Select word library or create new one
-4. Upload CSV file
-5. View results and insights
-
-### X/Twitter API Collection
-
-1. Configure API credentials in Backend `.env`
-2. Go to **Tweet Collection**
-3. Enter search query and parameters
-4. Select word library
-5. Collect and analyze tweets
-
-### Word Library Management
-
-1. Go to **Admin** → **Word Libraries**
-2. Create new library
-3. Add positive words
-4. Add negative words
-5. Use in analyses
-
-## 🔐 Security Features
-
-- ✅ JWT Authentication
-- ✅ Password hashing (bcrypt)
-- ✅ AES-256-GCM encryption for sensitive data
-- ✅ SQL injection protection (parameterized queries)
-- ✅ Rate limiting on auth endpoints
-- ✅ CORS with pattern matching
-- ✅ Sanitized error messages in production
-- ✅ Audit logging
-- ✅ Session management
-- ✅ Environment variable protection (.gitignore)
-
-## 📊 API Endpoints
-
-### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - User login
-- `POST /api/auth/logout` - User logout
-
-### Analysis
-- `POST /api/raw-data/upload` - Upload CSV for analysis
-- `POST /api/sentiment-analysis/analyze` - Start analysis
-- `GET /api/sentiment-analysis/progress/:sessionId` - Check progress
-- `GET /api/analysis-results/session/:sessionId` - Get results
-
-### Word Libraries
-- `GET /api/word-libraries` - List libraries
-- `POST /api/word-libraries` - Create library
-- `POST /api/word-libraries/:id/words` - Add words
-
-### History
-- `GET /api/analysis-history` - User's analysis history
-- `GET /api/analysis-insights/:sessionId` - Detailed insights
-
-See [API Documentation](Backend/views/index.html) for complete reference.
-
-## 🚀 Deployment
+1. [**Production Checklist**](docs/PRODUCTION_CHECKLIST.md) - Pre-deployment requirements
+2. [**Docker Deployment**](docs/docs/deployment/DOCKER_README.md) - Container setup
+3. [**Hosting Guide**](docs/docs/deployment/HOSTING_DEPLOYMENT_GUIDE.md) - Cloud deployment
 
 ### Development
-```bash
-docker-compose up -d
-```
 
-### Production
+1. [**System Architecture**](docs/docs/architecture/SYSTEM_ARCHITECTURE.md) - How it works
+2. [**API Reference**](docs/introduction/docs/api-reference/RAW_DATA_ANALYSIS_API.md) - Endpoint documentation
+3. [**Development Guide**](docs/#-deployment) - Local development setup
 
-1. **Update configuration**:
-   ```bash
-   cp .env.example .env
-   # Edit .env with production values
-   ```
+### Support
 
-2. **Generate secrets**:
-   ```bash
-   node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
-   node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-   ```
+1. [**Troubleshooting**](docs/docs/troubleshooting/COMMON_ISSUES.md) - Common problems & solutions
+2. [**FAQ**](docs/docs/reference/FAQ.md) - Frequently asked questions
+3. [**GitHub Issues**](https://github.com/Mega-Zinyz/Sentiment-Analysis/issues) - Report bugs
 
-3. **Set production mode**:
-   ```bash
-   NODE_ENV=production
-   ALLOWED_ORIGINS=https://yourdomain.com
-   LOG_LEVEL=info
-   ```
+## 📊 Performance Overview
 
-4. **Deploy**:
-   ```bash
-   docker-compose down
-   docker-compose up -d --build
-   ```
+Our system is optimized for production use:
 
-5. **Verify**:
-   ```bash
-   curl http://localhost:5000/health
-   ```
+| Metric               | Value      | Description                     |
+| -------------------- | ---------- | ------------------------------- |
+| **Processing Speed** | 20-25 min  | For 23,000 tweets               |
+| **Worker Pool**      | 6 workers  | Parallel processing             |
+| **Batch Size**       | 300 tweets | Per batch                       |
+| **Accuracy**         | Varies     | Depends on word library quality |
+| **Uptime**           | 99%+       | Production-ready stability      |
 
-See [Production Checklist](PRODUCTION_CHECKLIST.md) for complete deployment guide.
+## 🛠️ Technology Stack
 
-### Hosting Providers
+Built with modern, production-ready technologies:
 
-Compatible with:
-- AWS (ECS, EC2, Lightsail)
-- Google Cloud (Cloud Run, GKE, Compute Engine)
-- Azure (Container Apps, AKS, VMs)
-- DigitalOcean (App Platform, Droplets)
-- Railway, Render, Heroku
-- Any VPS with Docker support
+* **Frontend**: Angular 18+, TypeScript, Bootstrap, Nginx
+* **Backend**: Node.js 20, Express.js, Python 3.12
+* **Database**: MySQL 8.0
+* **ML/NLP**: scikit-learn, Sastrawi, spaCy
+* **DevOps**: Docker, Docker Compose
+* **Security**: JWT, bcrypt, AES-256-GCM
 
-See [Hosting Deployment Guide](docs/deployment/HOSTING_DEPLOYMENT_GUIDE.md) for provider-specific instructions.
+## 📖 Documentation Structure
 
-## 🔍 Monitoring
+This documentation is organized into the following sections:
 
-### View Logs
-```bash
-# All logs
-docker-compose logs -f
+### **Getting Started**
 
-# Backend only
-docker-compose logs -f backend
+Step-by-step guides for installation, configuration, and first-time usage.
 
-# Inside container (production logs)
-docker exec sentiment-backend ls -la /app/logs/
-docker exec sentiment-backend tail -f /app/logs/combined-*.log
-```
+### **Architecture & Design**
 
-### Health Check
-```bash
-curl http://localhost:5000/health
-```
+Technical documentation about system architecture, components, and design decisions.
 
-### Container Status
-```bash
-docker-compose ps
-docker stats sentiment-backend sentiment-frontend sentiment-mysql
-```
+### **User Guide**
 
-## 🛠️ Development
+Detailed instructions for using all features of the application.
 
-### Prerequisites
-- Node.js 20+
-- Python 3.12+
-- MySQL 8.0
+### **API Reference**
 
-### Backend Development
-```bash
-cd Backend
-npm install
-pip install -r requirements.txt
+Complete API documentation with request/response examples.
 
-# Configure database in .env
-cp .env.example .env
+### **Deployment**
 
-# Run development server
-npm run dev
-```
+Production deployment guides for various hosting providers and configurations.
 
-### Frontend Development
-```bash
-cd Frontend
-npm install
+### **Security**
 
-# Run dev server
-ng serve
+Security best practices, vulnerability management, and compliance information.
 
-# Access at http://localhost:4200
-```
+### **Development**
 
-### Database Setup
-```bash
-# Setup database
-node Backend/scripts/setup/setup-database.js
+Guides for local development, testing, and contributing to the project.
 
-# Run migrations
-node Backend/scripts/migration/migrate-database.js
-```
+### **Monitoring & Logging**
 
-## 🧪 Testing
+Production monitoring, logging configuration, and debugging techniques.
 
-### Test Sentiment Analysis
-```bash
-# Inside Backend/
-node scripts/testing/test_raw_data_analysis.js
-```
+### **Troubleshooting**
 
-### Test API
-```bash
-# Health check
-curl http://localhost:5000/health
+Common issues, error messages, and their solutions.
 
-# Register user
-curl -X POST http://localhost:5000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@example.com","password":"Test123","fullName":"Test User"}'
-```
+### **Maintenance**
 
-## 📈 Performance Tuning
+Database maintenance, backups, updates, and cleanup procedures.
 
-Current configuration (optimized):
-- **Workers**: 6 parallel
-- **Batch Size**: 300 tweets
-- **Timeout**: 240 seconds
+## 🎓 Learning Path
 
-To adjust performance in `Backend/routes/sentimentAnalysis.js`:
-```javascript
-const NUM_WORKERS = 6;      // More workers = faster (uses more CPU)
-const BATCH_SIZE = 300;     // Larger batches = faster (uses more memory)
-const WORKER_TIMEOUT = 240; // Seconds before timeout
-```
+We recommend following this learning path:
 
-## 🐛 Troubleshooting
+### Beginners
 
-### Backend won't start
-```bash
-# Check logs
-docker-compose logs backend
+1. Read the **Overview** and **Quick Start**
+2. Follow **Installation** instructions
+3. Try **First Time Usage** tutorial
+4. Explore **User Guide** sections
 
-# Common fixes:
-# 1. Database not ready - wait for mysql healthy status
-# 2. Port conflict - check if port 5000 is in use
-# 3. Environment variables - verify .env file exists
-```
+### Developers
 
-### CORS errors
-```bash
-# Check allowed origins
-cat .env | grep ALLOWED_ORIGINS
+1. Review **System Architecture**
+2. Study **API Reference**
+3. Set up **Local Development**
+4. Read **Contributing Guidelines**
 
-# View blocked origins
-docker-compose logs backend | grep "CORS blocked"
+### DevOps/Administrators
 
-# Fix: Add your domain to ALLOWED_ORIGINS
-```
+1. Review **Production Checklist**
+2. Study **Security Overview**
+3. Follow **Deployment Guides**
+4. Configure **Monitoring & Logging**
 
-### Database connection failed
-```bash
-# Check MySQL status
-docker-compose ps mysql
+## 💡 Best Practices
 
-# Reset database (WARNING: deletes data)
-docker-compose down -v
-docker-compose up -d
-```
+To get the most out of this system:
 
-### Frontend not loading
-```bash
-# Check if backend is running
-curl http://localhost:5000/health
+1. **Start Small** - Test with small datasets before processing large volumes
+2. **Customize Word Libraries** - Create domain-specific word libraries for better accuracy
+3. **Monitor Performance** - Use logging and monitoring to track system health
+4. **Regular Backups** - Back up your database and word libraries regularly
+5. **Keep Updated** - Stay current with security patches and updates
+6. **Read Docs First** - Most questions are answered in the documentation
 
-# Check nginx logs
-docker-compose logs frontend
-```
+## 🆘 Getting Help
 
-## 📚 Documentation
+If you need assistance:
 
-- [Production Checklist](PRODUCTION_CHECKLIST.md) - Pre-deployment checklist
-- [Production Security](docs/deployment/PRODUCTION_SECURITY.md) - Security configuration
-- [CORS Configuration](docs/deployment/CORS_CONFIGURATION.md) - CORS setup guide
-- [Hosting Guide](docs/deployment/HOSTING_DEPLOYMENT_GUIDE.md) - Provider-specific deployment
-- [Environment Config](docs/deployment/ENVIRONMENT_CONFIG_GUIDE.md) - Environment variables
-- [Logging Guide](docs/development/LOGGING_GUIDE.md) - Logging configuration
+1. **Search Documentation** - Use the search feature in GitBook
+2. **Check FAQ** - Common questions are answered in the FAQ
+3. **Review Troubleshooting** - Most issues have documented solutions
+4. **GitHub Issues** - Report bugs or request features
+5. **Community Discussions** - Join the conversation on GitHub Discussions
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+This is an open-source project, and we welcome contributions! Whether you want to:
 
-## 📝 License
+* Report bugs
+* Suggest features
+* Improve documentation
+* Submit code changes
 
-This project is licensed under the MIT License.
+Please check our [Contributing Guidelines](docs/#-contributing) to get started.
 
-## 👥 Authors
+## 📈 Project Status
 
-- Mega-Zinyz - Initial work
+* **Version**: 1.0.0
+* **Status**: ✅ Production Ready
+* **Last Updated**: November 12, 2025
+* **Maintenance**: Active
+* **License**: MIT
 
-## 🙏 Acknowledgments
+## 🎯 Next Steps
 
-- Sastrawi - Indonesian text stemming
-- scikit-learn - Machine learning library
-- Angular Team - Frontend framework
-- Docker - Containerization platform
+Ready to get started? Here are your next steps:
 
-## 📞 Support
+1. [**Install the System**](docs/#installation) - Set up on your machine
+2. [**Configure Environment**](docs/#-configuration) - Customize settings
+3. [**First Analysis**](docs/#-first-time-usage) - Run your first sentiment analysis
+4. [**Explore Features**](docs/#-features) - Discover all capabilities
 
-For issues and questions:
-- Create an issue on GitHub
-- Check documentation in `/docs` folder
-- Review [Troubleshooting](#-troubleshooting) section
+***
 
-## 🎯 Roadmap
+**Let's analyze some sentiment!** 🚀
 
-- [ ] Add support for multiple languages
-- [ ] Real-time sentiment tracking dashboard
-- [ ] Export results to PDF/Excel
-- [ ] Sentiment trend visualization
-- [ ] API rate limiting per user
-- [ ] Advanced analytics and reporting
-
----
-
-**Status**: ✅ Production Ready  
-**Version**: 1.0.0  
-**Last Updated**: November 12, 2025
-
-Made with ❤️ for Indonesian sentiment analysis
+[Get Started](docs/#-quick-start) | [View on GitHub](https://github.com/Mega-Zinyz/Sentiment-Analysis) | [Report Issue](https://github.com/Mega-Zinyz/Sentiment-Analysis/issues)

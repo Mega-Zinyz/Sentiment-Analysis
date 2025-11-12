@@ -1,4 +1,4 @@
-# Documentation Directory Structure
+# Documentation
 
 This directory contains all project documentation, organized by category.
 
@@ -56,36 +56,43 @@ docs/
 ## 📖 Documentation Categories
 
 ### API Documentation
+
 Complete reference for all API endpoints, authentication, and security.
 
 **Location**: `docs/api/` and `docs/api-reference/`
 
 ### Architecture
+
 System design, component structure, and technical architecture.
 
 **Location**: `docs/architecture/`
 
 ### Deployment
+
 Guides for deploying to various hosting providers and environments.
 
 **Location**: `docs/deployment/`
 
 ### Development
+
 Documentation for developers working on the project.
 
 **Location**: `docs/development/`
 
 ### Troubleshooting
+
 Solutions to common problems and error messages.
 
 **Location**: `docs/troubleshooting/`
 
 ### User Guides
+
 Step-by-step guides for end users.
 
 **Location**: `docs/user-guide/`
 
 ### Reference
+
 Glossary, FAQ, and other reference materials.
 
 **Location**: `docs/reference/`
@@ -95,42 +102,48 @@ Glossary, FAQ, and other reference materials.
 ### By Topic
 
 **Getting Started**
-- [Welcome](introduction/WELCOME.md)
-- [Quick Start](../README.md#-quick-start)
+
+* [Welcome](../)
+* [Quick Start](<../README (1).md#-quick-start>)
 
 **API**
-- [API Overview](api/AUTHENTICATION.md)
-- [Complete API Reference](api-reference/RAW_DATA_ANALYSIS_API.md)
+
+* [API Overview](api/AUTHENTICATION.md)
+* [Complete API Reference](api-reference/RAW_DATA_ANALYSIS_API.md)
 
 **Deployment**
-- [Docker Deployment](deployment/DOCKER_README.md)
-- [Hosting Guide](deployment/HOSTING_DEPLOYMENT_GUIDE.md)
+
+* [Docker Deployment](deployment/DOCKER_README.md)
+* [Hosting Guide](deployment/HOSTING_DEPLOYMENT_GUIDE.md)
 
 **Security**
-- [Production Security](deployment/PRODUCTION_SECURITY.md)
-- [Security Analysis](api-reference/SECURITY_ANALYSIS.md)
+
+* [Production Security](deployment/PRODUCTION_SECURITY.md)
+* [Security Analysis](api-reference/SECURITY_ANALYSIS.md)
 
 **Troubleshooting**
-- [Common Issues](troubleshooting/COMMON_ISSUES.md)
-- [FAQ](reference/FAQ.md)
+
+* [Common Issues](troubleshooting/COMMON_ISSUES.md)
+* [FAQ](reference/FAQ.md)
 
 ### By File Type
 
-**Markdown Files (.md)**
-Human-readable documentation in Markdown format
+**Markdown Files (.md)** Human-readable documentation in Markdown format
 
-**SQL Files (.sql)**
-Database schemas and migrations
+**SQL Files (.sql)** Database schemas and migrations
 
 ## 📝 Documentation Standards
 
 ### File Naming
-- Use `UPPERCASE_SNAKE_CASE.md` for main documents
-- Use lowercase-with-dashes for subdocuments
-- Be descriptive and specific
+
+* Use `UPPERCASE_SNAKE_CASE.md` for main documents
+* Use lowercase-with-dashes for subdocuments
+* Be descriptive and specific
 
 ### Structure
+
 Each documentation file should include:
+
 1. Clear title (# heading)
 2. Brief description
 3. Table of contents (for long docs)
@@ -140,20 +153,23 @@ Each documentation file should include:
 7. Last updated date
 
 ### Links
-- Use relative paths: `../other-doc.md`
-- Link to specific sections: `README.md#section-name`
-- Always test links before committing
+
+* Use relative paths: `../other-doc.md`
+* Link to specific sections: `README.md#section-name`
+* Always test links before committing
 
 ## 🔄 Keeping Documentation Updated
 
 ### When to Update
-- New features added
-- Configuration changes
-- API changes
-- Bug fixes that affect usage
-- Security updates
+
+* New features added
+* Configuration changes
+* API changes
+* Bug fixes that affect usage
+* Security updates
 
 ### How to Update
+
 1. Edit the relevant `.md` file
 2. Update `SUMMARY.md` if structure changes
 3. Check all internal links still work
@@ -162,13 +178,13 @@ Each documentation file should include:
 
 ## 🌐 Published Documentation
 
-- **GitHub Pages**: https://mega-zinyz.github.io/Sentiment-Analysis
-- **Repository**: https://github.com/Mega-Zinyz/Sentiment-Analysis
+* **GitHub Pages**: https://mega-zinyz.github.io/Sentiment-Analysis
+* **Repository**: https://github.com/Mega-Zinyz/Sentiment-Analysis
 
 ## 🤝 Contributing to Documentation
 
-See [Contributing Guidelines](../README.md#-contributing) for how to improve documentation.
+See [Contributing Guidelines](<../README (1).md#-contributing>) for how to improve documentation.
 
----
+***
 
 **Last Updated**: November 12, 2025
