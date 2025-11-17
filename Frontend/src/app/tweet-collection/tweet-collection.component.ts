@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ElementRef, Renderer2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -93,7 +93,9 @@ export class TweetCollectionComponent implements OnInit {
   constructor(
     private http: HttpClient,
     public authService: AuthService,
-    private router: Router
+    private router: Router,
+    private el: ElementRef,
+    private renderer: Renderer2
   ) {}
 
   ngOnInit() {
