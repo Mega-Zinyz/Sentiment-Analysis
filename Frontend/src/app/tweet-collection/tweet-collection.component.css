@@ -2,8 +2,8 @@
   max-width: 1400px;
   margin: 0 auto;
   padding: 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-height: 100vh;
+  background: transparent; /* keep layout but remove full-page background */
+  min-height: auto;
 }
 
 /* Header */
@@ -11,6 +11,10 @@
   text-align: center;
   margin-bottom: 2rem;
   color: white;
+  /* Apply the gradient to the header only so the large purple area disappears */
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 2.5rem 1rem;
+  border-radius: 12px;
 }
 
 .header h1 {
