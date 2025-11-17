@@ -31,8 +31,17 @@ const getSystemStatsHandler = async (req, res) => {
 const getUsersHandler = async (req, res) => {
   try {
     const db = getDb();
-    const { page = 1, limit = 10, search = '', role, isActive } = req.query;
-    const offset = (page - 1) * limit;
+
+    // Coerce and validate pagination params
+    const rawPage = req.query.page;
+    const rawLimit = req.query.limit;
+    const page = Number.isInteger(Number(rawPage)) ? parseInt(rawPage, 10) : 1;
+    const limit = Number.isInteger(Number(rawLimit)) ? Math.min(parseInt(rawLimit, 10), 100) : 10; // cap limit to 100
+    const offset = Math.max(0, (page - 1) * limit);
+
+    const search = typeof req.query.search === 'string' ? req.query.search.trim() : '';
+    const role = typeof req.query.role === 'string' ? req.query.role : undefined;
+    const isActiveRaw = req.query.isActive;
 
     // Build dynamic query
     let whereConditions = [];
@@ -48,9 +57,12 @@ const getUsersHandler = async (req, res) => {
       params.push(role);
     }
 
-    if (isActive !== undefined && isActive !== 'all') {
+    if (typeof isActiveRaw !== 'undefined' && isActiveRaw !== 'all') {
+      // Accept 'true'|'false'|'1'|'0'
+      const lowered = String(isActiveRaw).toLowerCase();
+      const isActive = lowered === 'true' || lowered === '1' ? 1 : 0;
       whereConditions.push('is_active = ?');
-      params.push(isActive === 'true' ? 1 : 0);
+      params.push(isActive);
     }
 
     const whereClause = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
@@ -58,22 +70,37 @@ const getUsersHandler = async (req, res) => {
     // Get total count
     const countQuery = `SELECT COUNT(*) as count FROM users ${whereClause}`;
     const [totalUsersRows] = await db.execute(countQuery, params);
-    const totalUsers = totalUsersRows[0].count;
+    const totalUsers = totalUsersRows[0] ? totalUsersRows[0].count : 0;
 
-    // Get users
+    // Get users (interpolate validated numeric LIMIT/OFFSET to avoid prepared-statement issues)
     const query = `
       SELECT id, username, email, role, is_active, created_at, updated_at 
       FROM users ${whereClause}
       ORDER BY created_at DESC 
-      LIMIT ? OFFSET ?
+      LIMIT ${limit} OFFSET ${offset}
     `;
-    const [users] = await db.execute(query, [...params, parseInt(limit), parseInt(offset)]);
+
+    let users = [];
+    try {
+      const [rows] = await db.execute(query, params);
+      users = rows;
+    } catch (sqlError) {
+      // Ensure params are serializable in logs
+      let safeParams;
+      try {
+        safeParams = JSON.stringify(params);
+      } catch (e) {
+        safeParams = String(params);
+      }
+      console.error(`SQL error in getUsersHandler: ${sqlError.message} | query: ${query} | params: ${safeParams}`);
+      throw sqlError; // rethrow to be caught by outer catch
+    }
 
     res.json({
       users,
       totalUsers,
-      totalPages: Math.ceil(totalUsers / limit),
-      currentPage: parseInt(page)
+      totalPages: Math.ceil(totalUsers / limit) || 0,
+      currentPage: page
     });
   } catch (error) {
     console.error('Get users error:', error);
@@ -265,8 +292,15 @@ const getSystemAnalyticsHandler = async (req, res) => {
 const getAuditLogsHandler = async (req, res) => {
   try {
     const db = getDb();
-    const { page = 1, limit = 50, userId, action } = req.query;
-    const offset = (page - 1) * limit;
+    // Coerce and validate pagination params
+    const rawPage = req.query.page;
+    const rawLimit = req.query.limit;
+    const page = Number.isInteger(Number(rawPage)) ? parseInt(rawPage, 10) : 1;
+    const limit = Number.isInteger(Number(rawLimit)) ? Math.min(parseInt(rawLimit, 10), 500) : 50; // cap limit
+    const offset = Math.max(0, (page - 1) * limit);
+
+    const userId = req.query.userId;
+    const action = typeof req.query.action === 'string' ? req.query.action.trim() : undefined;
 
     // Build dynamic query
     let whereConditions = [];
@@ -287,9 +321,9 @@ const getAuditLogsHandler = async (req, res) => {
     // Get total count
     const countQuery = `SELECT COUNT(*) as count FROM audit_logs ${whereClause}`;
     const [totalRows] = await db.execute(countQuery, params);
-    const totalLogs = totalRows[0].count;
+    const totalLogs = totalRows[0] ? totalRows[0].count : 0;
 
-    // Get audit logs with user information
+    // Get audit logs with user information (interpolate numeric LIMIT/OFFSET after validation)
     const query = `
       SELECT 
         al.id, al.user_id, al.action, al.ip_address, al.user_agent, 
@@ -299,15 +333,25 @@ const getAuditLogsHandler = async (req, res) => {
       LEFT JOIN users u ON al.user_id = u.id
       ${whereClause}
       ORDER BY al.created_at DESC 
-      LIMIT ? OFFSET ?
+      LIMIT ${limit} OFFSET ${offset}
     `;
-    const [logs] = await db.execute(query, [...params, parseInt(limit), parseInt(offset)]);
+
+    let logs = [];
+    try {
+      const [rows] = await db.execute(query, params);
+      logs = rows;
+    } catch (sqlError) {
+      let safeParams;
+      try { safeParams = JSON.stringify(params); } catch (e) { safeParams = String(params); }
+      console.error(`SQL error in getAuditLogsHandler: ${sqlError.message} | query: ${query} | params: ${safeParams}`);
+      throw sqlError;
+    }
 
     res.json({
       logs,
       totalLogs,
-      totalPages: Math.ceil(totalLogs / limit),
-      currentPage: parseInt(page)
+      totalPages: Math.ceil(totalLogs / limit) || 0,
+      currentPage: page
     });
   } catch (error) {
     console.error('Get audit logs error:', error);
