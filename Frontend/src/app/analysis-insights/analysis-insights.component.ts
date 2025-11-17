@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ViewChild, ElementRef, Renderer2 } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Chart, ChartConfiguration, ChartData, ChartOptions, registerables } from 'chart.js';
@@ -553,9 +553,7 @@ export class AnalysisInsightsComponent implements OnInit, OnDestroy {
   
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
-    private el: ElementRef,
-    private renderer: Renderer2
+    private router: Router
   ) {}
 
   ngOnInit() {

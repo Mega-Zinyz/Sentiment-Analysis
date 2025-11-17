@@ -4,10 +4,10 @@ services:
     image: mysql:8.0
     container_name: sentiment-mysql
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-sentiment_analysis_root}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-sentiment_analysis_rootismtm}
       MYSQL_DATABASE: ${DB_NAME:-sentiment_analysis}
       MYSQL_USER: ${DB_USER:-sentiment_user}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-sentiment_pass}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-sentiment_passtoriation}
     ports:
       - "3306:3306"
     volumes:

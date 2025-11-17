@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, Renderer2 } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -101,9 +101,7 @@ export class ProfileComponent implements OnInit {
 
   constructor(
     private http: HttpClient,
-    private authService: AuthService,
-    private el: ElementRef,
-    private renderer: Renderer2
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
