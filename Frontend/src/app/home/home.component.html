@@ -1,3 +1,4 @@
+<div class="app-component" data-component="home">
 <!-- API Configuration Section -->
 <div *ngIf="!apiConfigured && !showApiConfig" class="api-setup-section">
 	<div class="api-setup-content">
@@ -316,7 +317,7 @@
 
 	<!-- Sentiment Chart -->
 	<div class="chart-container">
-		<canvas id="sentimentChart" width="400" height="200"></canvas>
+		<canvas #sentimentChart id="sentimentChart" width="400" height="200"></canvas>
 	</div>
 
 	<!-- Results Table -->
