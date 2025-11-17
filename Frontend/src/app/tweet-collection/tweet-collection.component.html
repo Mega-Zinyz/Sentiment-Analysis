@@ -1,12 +1,12 @@
 <div class="app-component" data-component="tweet-collection" style="display:contents;">
 <div class="tweet-collection-container">
-  
-  <!-- Header -->
-  <div class="header">
-    <h1>📊 Tweet Collection & Management</h1>
-    <p class="subtitle">Collect, organize, and analyze tweets from Twitter API</p>
-  </div>
-</div>
+  <div class="content-card">
+    <!-- Header -->
+    <div class="header">
+      <h1>📊 Tweet Collection & Management</h1>
+      <p class="subtitle">Collect, organize, and analyze tweets from Twitter API</p>
+    </div>
+
 
   <!-- API Rate Limits -->
   <div class="rate-limits-section" style="background: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; margin: 10px 0;">
@@ -382,6 +382,9 @@
       </div>
     </div>
   </div>
+
+  <!-- Library Selection Modal -->
+  </div> <!-- /.content-card -->
 
   <!-- Library Selection Modal -->
   <div *ngIf="showLibrarySelection" class="modal-overlay" (click)="closeLibrarySelection()">
