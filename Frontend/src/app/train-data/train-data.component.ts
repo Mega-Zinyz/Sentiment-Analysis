@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, OnDestroy, RendererFactory2 } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -35,9 +35,7 @@ interface Sample {
 export class TrainDataComponent implements OnInit {
   private http = inject(HttpClient);
   private apiUrl = environment.apiUrl;
-  private rendererFactory = inject(RendererFactory2);
-  private renderer = this.rendererFactory.createRenderer(null, null);
-  private document = inject(DOCUMENT as any);
+  // keep DOM access minimal; no body-class manipulation
   
   // Library management
   libraries: WordLibrary[] = [];
@@ -334,21 +332,6 @@ export class TrainDataComponent implements OnInit {
 
   ngOnInit() {
     this.loadLibraries();
-    // Add a body class so global styles can show the blue background behind the whole page
-    try {
-      this.renderer.addClass(this.document.body, 'train-data-bg');
-    } catch (e) {
-      // ignore when renderer isn't available (e.g., server-side)
-      console.error('Failed to add train-data body class', e);
-    }
-  }
-
-  ngOnDestroy() {
-    try {
-      this.renderer.removeClass(this.document.body, 'train-data-bg');
-    } catch (e) {
-      // ignore
-    }
   }
 
   private getHeaders(): HttpHeaders {

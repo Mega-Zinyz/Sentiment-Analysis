@@ -1,18 +1,18 @@
 /* Container & Global Styles */
 .container {
-  max-width: 1600px;
-  margin: 0 auto;
+  max-width: 1200px;
+  margin: 2rem auto;
   padding: 2rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-height: 100vh;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
 }
 
 h2 {
-  color: #fff;
+  color: #222;
   margin-bottom: 1.5rem;
   font-size: 2rem;
   font-weight: 700;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 h3 {

@@ -7,25 +7,6 @@ body {
 	padding-bottom: 120px; /* Space for fixed footer */
 }
 
-/* Train Data full-page blue background */
-body.train-data-bg {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-/* When train-data page is active, make footer sit transparently over the blue background */
-body.train-data-bg .footer {
-  background: transparent !important;
-  border-top: none !important;
-  box-shadow: none !important;
-  color: #ffffff !important;
-}
-
-body.train-data-bg .footer .footer-text p,
-body.train-data-bg .footer .footer-subtitle,
-body.train-data-bg .footer .tech-badge {
-  color: rgba(255,255,255,0.9) !important;
-}
-
 nav {
 	background: #fff;
 	box-shadow: 0 2px 8px rgba(0,0,0,0.05);
