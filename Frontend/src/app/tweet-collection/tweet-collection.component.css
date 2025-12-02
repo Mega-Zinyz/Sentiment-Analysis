@@ -14,27 +14,150 @@
   padding: 0; /* inner sections will have their own padding/cards */
 }
 
+.content-card { /* better internal spacing */
+  padding: 1.5rem 1.5rem 2rem 1.5rem;
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
 /* Header */
 .header {
-  text-align: center;
-  margin-bottom: 0; /* header is inside card, don't double-space */
+  margin-bottom: 1rem;
   color: white;
-  /* Apply the gradient to the header only so the large purple area disappears */
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 2.5rem 1rem;
-  border-radius: 0 0 12px 12px; /* rounded bottom if needed; top is clipped by card */
+  padding: 1.5rem;
+  border-radius: 8px;
 }
 
 .header h1 {
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  font-size: 2rem;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.25);
 }
 
 .subtitle {
-  font-size: 1.1rem;
-  opacity: 0.9;
+  font-size: 0.98rem;
+  opacity: 0.95;
   margin: 0;
+  color: rgba(255,255,255,0.95);
+}
+
+.header-cta .btn-create {
+  background: linear-gradient(90deg,#007bff,#0056b3);
+  color: white;
+  border: none;
+  padding: 0.8rem 1.2rem;
+  border-radius: 10px;
+  font-weight: 700;
+  box-shadow: 0 6px 18px rgba(0,123,255,0.18);
+  cursor: pointer;
+}
+
+.header-cta .btn-create:hover {
+  transform: translateY(-2px);
+}
+
+/* Typography and responsive tweaks */
+.view-header h2 {
+  font-size: 1.4rem;
+  margin: 0;
+  font-weight: 700;
+  color: #222;
+}
+
+.view-header button.btn-primary {
+  background: linear-gradient(90deg,#0069d9,#0056b3);
+  border: none;
+  color: #fff;
+  padding: 0.5rem 0.9rem;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.header-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+}
+
+.header-text .breadcrumb {
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.9);
+}
+
+.header-text .view-header {
+  margin: 0.15rem 0 0.25rem 0;
+}
+
+.header-text .view-header h1, .header-text .view-header h2 {
+  color: white;
+  font-weight: 800;
+  margin: 0;
+}
+
+/* Responsive: stack header on small screens */
+@media (max-width: 720px) {
+  .header-inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.8rem;
+  }
+
+  .header-left {
+    align-items: center;
+    text-align: center;
+    gap: 0.6rem;
+    flex-direction: column;
+    display: flex;
+  }
+
+  .header-icon {
+    width: 56px;
+    height: 56px;
+    font-size: 26px;
+  }
+
+  .header-cta {
+    display: flex;
+    justify-content: center;
+  }
+
+  .header-cta .btn-create {
+    width: 100%;
+    max-width: 280px;
+  }
+
+  .content-card {
+    padding: 1rem;
+  }
 }
 
 /* Messages */
@@ -141,13 +264,13 @@
 
 .btn-outline {
   background: transparent;
-  color: white;
-  border: 2px solid white;
+  color: #667eea;
+  border: 2px solid #667eea;
 }
 
 .btn-outline:hover {
-  background: white;
-  color: #667eea;
+  background: #667eea;
+  color: white;
 }
 
 .btn-danger {
@@ -408,7 +531,7 @@
 }
 
 .selection-info {
-  color: white;
+  color: #333;
   font-weight: 600;
 }
 
@@ -534,13 +657,13 @@
   align-items: center;
   gap: 1rem;
   margin-top: 2rem;
-  color: white;
+  color: #333;
 }
 
 .btn-page {
   padding: 0.5rem 1rem;
-  background: rgba(255,255,255,0.2);
-  color: white;
+  background: #f1f3f5;
+  color: #333;
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -548,7 +671,7 @@
 }
 
 .btn-page:hover:not(:disabled) {
-  background: rgba(255,255,255,0.3);
+  background: #e9ecef;
 }
 
 .btn-page:disabled {

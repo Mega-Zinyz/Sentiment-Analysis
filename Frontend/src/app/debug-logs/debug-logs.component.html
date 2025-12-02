@@ -1,0 +1,18 @@
+<div class="debug-logs-card">
+  <div class="header">
+    <h2>Failed Tweets Log</h2>
+    <p class="subtitle">Displays recent failed tweet insertion samples (admin only)</p>
+  </div>
+
+  <div class="controls">
+    <label>Lines to fetch: <input type="number" [(ngModel)]="n" min="1" max="500"></label>
+    <button (click)="refresh()" [disabled]="loading">🔄 Refresh</button>
+  </div>
+
+  <div *ngIf="loading" class="loading">Loading...</div>
+  <div *ngIf="error" class="error">Error: {{ error }}</div>
+
+  <div *ngIf="!loading && lines.length === 0" class="empty">No failed log lines found.</div>
+
+  <pre *ngIf="lines.length > 0" class="log-lines">{{ lines.join('\n') }}</pre>
+</div>

@@ -1,6 +1,8 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:5000/api',
+  // Build-time placeholder. The prebuild script will replace this with the value
+  // from `Frontend/.env` (API_URL) if present. If not replaced, it remains '$API_URL'.
+  apiUrl: '$API_URL',
   
   // Feature flags
   enableLogging: true,

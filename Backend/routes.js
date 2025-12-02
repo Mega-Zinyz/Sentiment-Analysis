@@ -5,7 +5,7 @@ const { fetchTweetsHandler, getRateLimitsHandler } = require('./routes/fetchTwee
 const { getTrainDataHandler, saveTrainDataHandler } = require('./routes/trainData');
 const { saveAnalysisResultsHandler, getAnalysisResultsHandler } = require('./routes/analysisResults');
 const { uploadTrainingDataHandler, getDatasetStatsHandler, upload } = require('./routes/uploadTrainingData');
-const { checkCredentialsHandler, configureCredentialsHandler, getCredentialsStatusHandler, deleteCredentialsHandler } = require('./routes/apiConfig');
+const { checkCredentialsHandler, configureCredentialsHandler, getCredentialsStatusHandler, deleteCredentialsHandler, validateCredentialsHandler } = require('./routes/apiConfig');
 
 // Authentication
 const { registerHandler, loginHandler, logoutHandler, profileHandler } = require('./routes/auth');
@@ -43,6 +43,9 @@ const tweetDatasetsRouter = require('./routes/tweetDatasets');
 
 // Word libraries management
 const wordLibrariesRouter = require('./routes/wordLibraries');
+
+// Debug routes (admin-only)
+const debugRouter = require('./routes/debug');
 
 // Profile management
 const {
@@ -92,6 +95,7 @@ router.get('/dataset-stats', authenticateToken, getDatasetStatsHandler);
 
 // API Configuration endpoints (require authentication)
 router.get('/check-credentials', optionalAuth, checkCredentialsHandler);
+router.post('/validate-credentials', authenticateToken, validateCredentialsHandler);
 router.post('/configure-credentials', authenticateToken, configureCredentialsHandler);
 router.get('/credentials-status', optionalAuth, getCredentialsStatusHandler);
 router.delete('/credentials', authenticateToken, deleteCredentialsHandler);
@@ -198,6 +202,40 @@ router.use('/tweet-datasets', authenticateToken, tweetDatasetsRouter);
 
 // Word libraries management
 router.use('/word-libraries', authenticateToken, wordLibrariesRouter);
+
+// Manual debug log entry for authenticated users
+const fs = require('fs');
+const path = require('path');
+
+// Route: POST /api/debug/manual-log
+// Authenticated users can write a manual test entry to the failed_tweets.log
+router.post('/debug/manual-log', authenticateToken, async (req, res) => {
+  try {
+    const user = req.user || { id: null, username: null };
+    const payload = req.body || {};
+
+    const logsDir = path.join(__dirname, '..', 'logs');
+    try { fs.mkdirSync(logsDir, { recursive: true }); } catch (_) {}
+    const failedLogPath = path.join(logsDir, 'failed_tweets.log');
+
+    const record = {
+      when: new Date().toISOString(),
+      triggeredBy: { id: user.userId || user.id || null, username: user.username || null },
+      reason: 'manual_test',
+      payload
+    };
+
+    fs.appendFileSync(failedLogPath, JSON.stringify(record) + '\n');
+
+    res.json({ success: true, recorded: true });
+  } catch (error) {
+    console.error('Failed to write manual debug log:', error && error.stack ? error.stack : error);
+    res.status(500).json({ success: false, error: error?.message || String(error) });
+  }
+});
+
+// Debug endpoints - restrict to authenticated admins in mounting below
+router.use('/debug', authenticateToken, requireAdmin, debugRouter);
 
 // Error logging (no auth required for frontend error reporting)
 const errorLogRouter = require('./routes/errorLog');

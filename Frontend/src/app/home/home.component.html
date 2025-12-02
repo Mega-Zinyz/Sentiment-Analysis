@@ -71,10 +71,14 @@
 						id="bearerToken"
 						name="bearerToken"
 						[(ngModel)]="apiCredentials.bearerToken"
+						(input)="onCredentialInput()"
 						placeholder="Enter your Bearer Token"
 						required
 						class="config-input">
 					<small>Required for basic functionality</small>
+					<div *ngIf="apiCredentialErrors.length" class="validation-errors">
+						<small class="error" *ngFor="let err of apiCredentialErrors">{{ err }}</small>
+					</div>
 				</div>
 				
 				<div class="optional-section">
@@ -141,7 +145,7 @@
 					<button type="button" (click)="hideApiConfiguration()" class="cancel-button" [disabled]="configuringApi">
 						Cancel
 					</button>
-					<button type="submit" class="save-button" [disabled]="configuringApi || !apiCredentials.bearerToken.trim()">
+					<button type="submit" class="save-button" [disabled]="configuringApi || apiCredentialErrors.length > 0">
 						<span *ngIf="configuringApi">⏳ Configuring...</span>
 						<span *ngIf="!configuringApi">💾 Save Configuration</span>
 					</button>

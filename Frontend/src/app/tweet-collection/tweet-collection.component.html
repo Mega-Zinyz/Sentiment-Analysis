@@ -3,8 +3,19 @@
   <div class="content-card">
     <!-- Header -->
     <div class="header">
-      <h1>📊 Tweet Collection & Management</h1>
-      <p class="subtitle">Collect, organize, and analyze tweets from Twitter API</p>
+      <div class="header-inner">
+        <div class="header-left">
+          <div class="header-icon">📈</div>
+          <div class="header-text">
+            <h1>Tweet Collection & Management</h1>
+            <p class="subtitle">Collect, organize, and analyze tweets from Twitter API</p>
+          </div>
+        </div>
+
+        <div class="header-cta">
+          <button class="btn-create" (click)="showCreateDatasetForm()">➕ Create New Dataset</button>
+        </div>
+      </div>
     </div>
 
 
@@ -145,6 +156,10 @@
           </button>
           <button class="btn-outline" (click)="selectedDataset = dataset; goToCollection()">
             ➕ Add Tweets
+          </button>
+          <button class="btn-ghost" (click)="analyzeDataset(dataset)" [disabled]="isAnalyzingDatasets[dataset.id]">
+            <span *ngIf="!isAnalyzingDatasets[dataset.id]">🧠 Analyze</span>
+            <span *ngIf="isAnalyzingDatasets[dataset.id]">⏳ Analyzing...</span>
           </button>
           <button class="btn-danger" (click)="deleteDataset(dataset)">
             🗑️ Delete

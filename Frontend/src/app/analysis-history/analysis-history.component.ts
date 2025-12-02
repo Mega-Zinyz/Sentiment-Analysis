@@ -1,4 +1,5 @@
-import { Component, OnInit, OnDestroy, ElementRef, Renderer2 } from '@angular/core';
+import { Component, OnInit, OnDestroy, ElementRef, Renderer2, Inject } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -82,7 +83,8 @@ export class AnalysisHistoryComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private router: Router,
     private el: ElementRef,
-    private renderer: Renderer2
+    private renderer: Renderer2,
+    @Inject(DOCUMENT) private document: Document
   ) {}
 
   ngOnInit() {
@@ -136,7 +138,7 @@ export class AnalysisHistoryComponent implements OnInit, OnDestroy {
     this.selectedAnalysis = analysis;
     this.showDetails = true;
     this.detailsPage = 1;
-    document.body.classList.add('modal-open');
+    this.renderer.addClass(this.document.body, 'modal-open');
     await this.loadAnalysisDetails();
   }
 
@@ -212,7 +214,7 @@ export class AnalysisHistoryComponent implements OnInit, OnDestroy {
     this.showDetails = false;
     this.selectedAnalysis = null;
     this.analysisDetails = [];
-    document.body.classList.remove('modal-open');
+    this.renderer.removeClass(this.document.body, 'modal-open');
   }
 
   changePage(page: number) {
@@ -414,17 +416,18 @@ export class AnalysisHistoryComponent implements OnInit, OnDestroy {
       console.log('CSV generated, length:', csvContent.length);
       
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
+      const link: any = this.renderer.createElement('a');
       
       if (link.download !== undefined) {
         const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
+        this.renderer.setAttribute(link, 'href', url);
         const filename = this.generateFilename(this.selectedAnalysis);
-        link.setAttribute('download', filename);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        this.renderer.setAttribute(link, 'download', filename);
+        this.renderer.setStyle(link, 'visibility', 'hidden');
+        this.renderer.appendChild(this.document.body, link);
+        // Click the link programmatically
+        (link as HTMLElement).click();
+        this.renderer.removeChild(this.document.body, link);
         console.log('Export completed successfully');
       } else {
         console.error('Download not supported');
@@ -488,6 +491,6 @@ export class AnalysisHistoryComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     // Clean up body class if modal was open when component is destroyed
-    document.body.classList.remove('modal-open');
+    this.renderer.removeClass(this.document.body, 'modal-open');
   }
 }

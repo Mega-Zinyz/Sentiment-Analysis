@@ -57,16 +57,17 @@ h3 {
   background: white;
   padding: 2rem;
   border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  box-shadow: 0 8px 20px rgba(15,20,30,0.06);
   margin-bottom: 2rem;
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid rgba(0,0,0,0.06);
 }
 
 .selector-group {
   display: flex;
   gap: 1rem;
   margin-bottom: 1.5rem;
-  align-items: stretch;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .library-dropdown {
@@ -90,8 +91,24 @@ h3 {
   margin-top: 1.5rem;
   padding: 1.5rem;
   border-radius: 12px;
-  background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+  background: linear-gradient(135deg, rgba(102,126,234,0.06) 0%, rgba(118,75,162,0.04) 100%);
   border-left: 4px solid #667eea;
+  color: #222;
+}
+
+.library-stats { margin-bottom: 1.5rem; }
+
+.library-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.library-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
 }
 
 .library-stats h3 {
@@ -174,28 +191,28 @@ h3 {
   background: white;
   padding: 2rem;
   border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 20px rgba(15,20,30,0.06);
   margin-bottom: 2rem;
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid rgba(0,0,0,0.06);
 }
 
 /* Forms */
 .add-words-form, .add-sample-form {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.2rem;
   margin-bottom: 2rem;
-  padding: 1.5rem;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 1.25rem;
+  background: linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
   border-radius: 12px;
-  border: 2px dashed #667eea;
+  border: 1px dashed rgba(102,126,234,0.25);
 }
 
 .input-group {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
-  align-items: stretch;
+  align-items: flex-start;
 }
 
 .add-words-form textarea,
@@ -209,6 +226,25 @@ h3 {
   resize: vertical;
   font-size: 0.95rem;
   transition: all 0.3s;
+}
+
+.add-sample-form .sentiment-select,
+.add-words-form .sentiment-select {
+  flex: 0 0 160px;
+}
+
+.add-sample-form .btn-primary {
+  flex: 0 0 auto;
+  margin-left: 0.5rem;
+}
+
+.selector-group .btn-primary {
+  margin-left: 1rem;
+}
+
+.add-words-form textarea::placeholder,
+.add-sample-form textarea::placeholder {
+  color: #808a95;
 }
 
 .add-words-form textarea:focus,
@@ -266,7 +302,7 @@ h3 {
 }
 
 .csv-hint {
-  color: #666;
+  color: #515866;
   font-size: 0.85rem;
   font-style: italic;
   flex: 1;
@@ -344,6 +380,11 @@ h3 {
   border-collapse: collapse;
   background: white;
 }
+
+/* add breathing room between major sections */
+.library-selector { margin-bottom: 2rem; }
+.samples-section { margin-top: 1rem; }
+.word-section { margin-top: 1rem; }
 
 .words-table thead,
 .samples-table thead {
@@ -537,9 +578,9 @@ input[type="checkbox"] {
 .empty-table {
   text-align: center;
   padding: 3rem;
-  color: #999;
+  color: #666;
   font-style: italic;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
 }
 
 /* Pagination */

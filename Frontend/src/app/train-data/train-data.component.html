@@ -23,11 +23,17 @@
     </div>
 
     <div class="library-stats" *ngIf="selectedLibrary">
-      <h3>{{ selectedLibrary.name }}</h3>
-      <p class="library-description">{{ selectedLibrary.description || 'No description' }}</p>
-      <button (click)="deleteLibrary()" class="btn-danger" *ngIf="!selectedLibrary.is_default">
-        Delete Training Data
-      </button>
+      <div class="library-header">
+        <div>
+          <h3>{{ selectedLibrary.name }}</h3>
+          <p class="library-description">{{ selectedLibrary.description || 'No description' }}</p>
+        </div>
+        <div class="library-actions">
+          <button (click)="deleteLibrary()" class="btn-danger" *ngIf="!selectedLibrary.is_default">
+            🗑️ Delete Training Data
+          </button>
+        </div>
+      </div>
     </div>
 
   <!-- Sample Tweets Section -->

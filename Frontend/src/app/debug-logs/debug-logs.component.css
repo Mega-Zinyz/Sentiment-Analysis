@@ -1,0 +1,8 @@
+.debug-logs-card { padding: 16px; background: #fff; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.header { margin-bottom: 8px; }
+.subtitle { color: #666; margin-top: 4px; }
+.controls { margin-bottom: 8px; }
+.loading { color: #007bff; }
+.error { color: #d32f2f; }
+.empty { color: #666; }
+.log-lines { background: #111; color: #e6e6e6; padding: 12px; border-radius: 4px; max-height: 480px; overflow: auto; }

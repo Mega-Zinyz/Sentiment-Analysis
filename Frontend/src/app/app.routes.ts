@@ -10,6 +10,7 @@ import { AnalysisInsightsComponent } from './analysis-insights/analysis-insights
 import { ProfileComponent } from './profile/profile.component';
 import { RawDataAnalysisComponent } from './raw-data-analysis/raw-data-analysis.component';
 import { TweetCollectionComponent } from './tweet-collection/tweet-collection.component';
+import { DebugLogsComponent } from './debug-logs/debug-logs.component';
 import { AuthGuard } from './guards/auth.guard';
 import { adminGuard } from './guards/admin.guard';
 
@@ -23,6 +24,7 @@ export const routes: Routes = [
 	{ path: 'analysis-insights/:id', component: AnalysisInsightsComponent, canActivate: [AuthGuard] },
 	{ path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
 	{ path: 'admin', component: AdminComponent, canActivate: [adminGuard] },
+	{ path: 'debug/logs', component: DebugLogsComponent, canActivate: [adminGuard] },
 	{ path: 'login', component: LoginComponent },
 	{ path: 'register', component: RegisterComponent },
 	{ path: '**', redirectTo: '/login' }

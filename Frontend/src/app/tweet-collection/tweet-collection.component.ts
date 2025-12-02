@@ -89,6 +89,7 @@ export class TweetCollectionComponent implements OnInit {
   showLibrarySelection: boolean = false;
   isAnalyzing: boolean = false;
   analysisProgress: string = '';
+  isAnalyzingDatasets: { [datasetId: number]: boolean } = {};
 
   constructor(
     private http: HttpClient,
@@ -265,6 +266,42 @@ export class TweetCollectionComponent implements OnInit {
       console.error('Error deleting dataset:', error);
       const errorMessage = error?.error?.error || error?.message || 'Failed to delete dataset';
       this.setError(errorMessage);
+    }
+  }
+
+  // Trigger dataset-level analysis (uses backend: POST /api/tweet-datasets/:id/analyze)
+  async analyzeDataset(dataset: TweetDataset) {
+    if (!dataset) return;
+
+    // Confirm with user
+    if (!confirm(`Start sentiment analysis for dataset "${dataset.name}" (${dataset.tweet_count} tweets)?`)) return;
+
+    // Ensure auth
+    if (!this.authService.isAuthenticated || this.authService.isTokenExpired()) {
+      this.handleAuthenticationError('Authentication required to start analysis');
+      return;
+    }
+
+    this.isAnalyzingDatasets[dataset.id] = true;
+    this.clearMessages();
+
+    try {
+      const payload: any = {};
+      if (this.selectedLibraryId) payload.libraryId = this.selectedLibraryId;
+
+      const response = await this.http.post<any>(`${environment.apiUrl}/tweet-datasets/${dataset.id}/analyze`, payload).toPromise();
+      if (response && response.success) {
+        this.setSuccess('Dataset analysis started. You can monitor progress in Analysis History.');
+        // Optionally navigate to analysis history view
+        setTimeout(() => this.router.navigate(['/analysis-history']), 1000);
+      } else {
+        this.setError(response?.error || 'Failed to start dataset analysis');
+      }
+    } catch (error: any) {
+      console.error('Error starting dataset analysis:', error);
+      this.setError(error?.error?.error || error?.message || 'Failed to start dataset analysis');
+    } finally {
+      this.isAnalyzingDatasets[dataset.id] = false;
     }
   }
 

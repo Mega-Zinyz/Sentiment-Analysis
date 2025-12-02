@@ -1,4 +1,5 @@
 const { getDb } = require('../config/mysql-database');
+const axios = require('axios');
 const { encryptCredentials, decryptCredentials, maskSensitiveValue } = require('../utils/encryption');
 const AuditLogger = require('../utils/auditLogger');
 
@@ -255,6 +256,59 @@ const getDecryptedCredentialsForUser = async (userId) => {
   }
 };
 
+// Validate provided or stored credentials by making a lightweight call to Twitter API
+const validateCredentialsHandler = async (req, res) => {
+  try {
+    // Allow validation of credentials supplied in body (for pre-save validation)
+    const bodyCreds = req.body || {};
+    let bearerToken = bodyCreds.bearerToken || null;
+
+    // If no bearer token provided in body, try the stored credentials for authenticated user
+    if (!bearerToken) {
+      if (!req.user || !req.user.userId) {
+        return res.status(400).json({ success: false, error: 'No bearer token provided and user not authenticated' });
+      }
+      const stored = await getUserCredentials(req.user.userId);
+      if (!stored || !stored.bearer_token) {
+        return res.status(400).json({ success: false, error: 'No stored credentials found for user' });
+      }
+      bearerToken = stored.bearer_token;
+    }
+
+    // Strip a leading "Bearer " if the client accidentally included it
+    if (/^Bearer\s+/i.test(bearerToken)) {
+      bearerToken = bearerToken.replace(/^Bearer\s+/i, '');
+    }
+
+    // Make a lightweight call to Twitter API to confirm the token works. Use rate_limit_status endpoint which
+    // accepts application-only bearer tokens and returns 200 for valid tokens.
+    const resp = await axios.get('https://api.twitter.com/1.1/application/rate_limit_status.json', {
+      headers: { Authorization: `Bearer ${bearerToken}` },
+      params: { resources: 'application,search' },
+      timeout: 10000
+    });
+
+    if (resp && resp.status === 200) {
+      return res.json({ success: true, message: 'Credentials validated successfully' });
+    }
+
+    res.status(400).json({ success: false, error: 'Unexpected response from upstream API' });
+  } catch (error) {
+    console.error('Credential validation failed:', error.response?.data || error.message);
+    if (error.response && error.response.status) {
+      const status = error.response.status;
+      if (status === 401 || status === 403) {
+        return res.status(401).json({ success: false, error: 'Invalid or unauthorized Bearer Token' });
+      }
+      if (status === 429) {
+        return res.status(429).json({ success: false, error: 'Upstream rate limit reached' });
+      }
+    }
+
+    res.status(500).json({ success: false, error: 'Failed to validate credentials', details: error.response?.data || error.message });
+  }
+};
+
 // Delete user's API credentials
 const deleteCredentialsHandler = async (req, res) => {
   try {
@@ -284,6 +338,7 @@ module.exports = {
   configureCredentialsHandler,
   getCredentialsStatusHandler,
   getDecryptedCredentialsForUser,
+  validateCredentialsHandler,
   deleteCredentialsHandler,
   getUserCredentialsForRequest // For backwards compatibility
 };

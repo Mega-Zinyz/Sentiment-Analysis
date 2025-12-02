@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, Renderer2 } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, Renderer2 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
@@ -14,6 +14,7 @@ import { environment } from '../../environments/environment';
   styleUrls: ['./home.component.css']
 })
 export class HomeComponent implements OnInit {
+  @ViewChild('sentimentChart') sentimentCanvas!: ElementRef<HTMLCanvasElement>;
   private apiUrl = environment.apiUrl;
   
   inputText: string = '';
@@ -41,6 +42,7 @@ export class HomeComponent implements OnInit {
     accessTokenSecret: ''
   };
   configuringApi = false;
+  apiCredentialErrors: string[] = [];
   
   // Animation states
   showSearchInput = true;
@@ -120,12 +122,12 @@ export class HomeComponent implements OnInit {
   }
 
   renderChart() {
-    const ctx = document.getElementById('sentimentChart') as HTMLCanvasElement;
-    if (!ctx) return;
+    const canvasEl = this.sentimentCanvas?.nativeElement as HTMLCanvasElement | undefined;
+    if (!canvasEl) return;
     if (this.sentimentChart) {
       this.sentimentChart.destroy();
     }
-    this.sentimentChart = new Chart(ctx, {
+    this.sentimentChart = new Chart(canvasEl, {
       type: 'pie',
       data: {
         labels: ['Positive', 'Negative', 'Neutral'],
@@ -289,8 +291,10 @@ export class HomeComponent implements OnInit {
   }
 
   async saveApiConfiguration() {
-    if (!this.apiCredentials.bearerToken.trim()) {
-      this.errorMsg = 'Bearer Token is required for basic functionality';
+    // Validate credentials before sending
+    this.apiCredentialErrors = this.validateApiCredentials();
+    if (this.apiCredentialErrors.length) {
+      this.errorMsg = this.apiCredentialErrors.join(' ');
       return;
     }
 
@@ -303,6 +307,25 @@ export class HomeComponent implements OnInit {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       };
+
+      // First: validate the provided credentials with the backend which will attempt a lightweight
+      // request to the X/Twitter API to confirm the bearer token is usable.
+      try {
+        const validate = await this.http.post<any>(`${this.apiUrl}/validate-credentials`, this.apiCredentials, { headers }).toPromise();
+        if (!validate || !validate.success) {
+          this.errorMsg = validate?.error || 'Credentials validation failed';
+          this.configuringApi = false;
+          return;
+        }
+      } catch (vErr) {
+        // Surface validation error message from server if available
+        const message = (vErr && (vErr as any).error && (vErr as any).error.error) ? (vErr as any).error.error : 'Failed to validate credentials';
+        this.errorMsg = message;
+        this.configuringApi = false;
+        return;
+      }
+
+      // Validation passed — save credentials
       const data = await this.http.post<any>(`${this.apiUrl}/configure-credentials`, this.apiCredentials, { headers }).toPromise();
       
       if (data && data.success) {
@@ -318,6 +341,37 @@ export class HomeComponent implements OnInit {
     }
 
     this.configuringApi = false;
+  }
+
+  validateApiCredentials(): string[] {
+    const errors: string[] = [];
+    const token = (this.apiCredentials.bearerToken || '').trim();
+
+    if (!token) {
+      errors.push('Bearer Token is required.');
+      return errors;
+    }
+
+    // Basic sanity checks
+    if (/\s/.test(token)) {
+      errors.push('Bearer Token must not contain spaces.');
+    }
+    if (token.length < 20) {
+      errors.push('Bearer Token looks too short; paste the full token.');
+    }
+    if (/^Bearer\s+/i.test(token)) {
+      errors.push('Do not include the "Bearer " prefix; paste the raw token only.');
+    }
+
+    return errors;
+  }
+
+  onCredentialInput() {
+    this.apiCredentialErrors = this.validateApiCredentials();
+    // Clear any generic error message when the user is actively editing
+    if (this.apiCredentialErrors.length === 0) {
+      this.errorMsg = '';
+    }
   }
 
   canProceed(): boolean {
