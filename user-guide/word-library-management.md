@@ -1,2 +1,0 @@
-# Word Library Management
-
