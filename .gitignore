@@ -21,6 +21,9 @@ Thumbs.db
 temp/
 *.tmp
 
+# Auth tokens - never commit
+token.json
+
 # GitBook
 _book/
 node_modules/

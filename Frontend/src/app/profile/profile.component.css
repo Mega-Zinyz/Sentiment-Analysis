@@ -259,29 +259,48 @@
   font-weight: bold;
 }
 
-/* Current Credentials */
-.current-credentials {
-  background: #fff3cd;
-  padding: 20px;
-  border-radius: 10px;
-  margin-bottom: 25px;
-  border: 1px solid #ffc107;
+/* Cookie Status Card */
+.cookie-status-card {
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-bottom: 8px;
+  border: 1.5px solid #e5e7eb;
 }
 
-.current-credentials h4 {
-  color: #856404;
-  margin-top: 0;
+.cookie-status-card.status-active {
+  background: #f0fdf4;
+  border-color: #86efac;
 }
 
-.credential-item {
+.cookie-status-card.status-empty {
+  background: #fffbeb;
+  border-color: #fcd34d;
+}
+
+.status-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
   margin-bottom: 10px;
-  font-family: 'Courier New', monospace;
-  font-size: 0.9rem;
 }
 
-.credential-item:last-child {
-  margin-bottom: 0;
+.status-icon { font-size: 1.2rem; }
+
+.status-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
+
+.status-row {
+  display: flex;
+  gap: 12px;
+  font-size: 0.875rem;
+}
+
+.status-label { color: #6b7280; min-width: 150px; }
+.status-value { color: #111827; font-weight: 500; }
 
 /* Form Actions */
 .form-actions {

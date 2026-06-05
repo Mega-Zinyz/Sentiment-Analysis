@@ -2,69 +2,75 @@
 <div class="profile-container">
   <div class="profile-header">
     <h1>👤 User Profile</h1>
-    <p>Manage your account settings and API credentials</p>
+    <p>Manage your account settings and crawler integration</p>
   </div>
 
   <!-- Alert Messages -->
-  <div *ngIf="error" class="alert alert-danger">
-    <i class="icon">⚠️</i>
-    {{ error }}
-  </div>
+  @if (error) {
+    <div class="alert alert-danger">
+      <i class="icon">⚠️</i>
+      {{ error }}
+    </div>
+  }
 
-  <div *ngIf="success" class="alert alert-success">
-    <i class="icon">✅</i>
-    {{ success }}
-  </div>
+  @if (success) {
+    <div class="alert alert-success">
+      <i class="icon">✅</i>
+      {{ success }}
+    </div>
+  }
 
   <!-- Profile Stats -->
-  <div *ngIf="profileData" class="profile-stats">
-    <div class="stat-card">
-      <div class="stat-icon">📊</div>
-      <div class="stat-content">
-        <div class="stat-number">{{ profileData.statistics.totalAnalyses }}</div>
-        <div class="stat-label">Total Analyses</div>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon">📚</div>
-      <div class="stat-content">
-        <div class="stat-number">{{ profileData.statistics.totalWordLibraries || 0 }}</div>
-        <div class="stat-label">Training Data</div>
-      </div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-icon">🔑</div>
-      <div class="stat-content">
-        <div class="stat-status" [style.color]="getCredentialStatusColor()">
-          {{ getCredentialStatus() }}
+  @if (profileData) {
+    <div class="profile-stats">
+      <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-content">
+          <div class="stat-number">{{ profileData.statistics.totalAnalyses }}</div>
+          <div class="stat-label">Total Analyses</div>
         </div>
-        <div class="stat-label">API Status</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📚</div>
+        <div class="stat-content">
+          <div class="stat-number">{{ profileData.statistics.totalWordLibraries || 0 }}</div>
+          <div class="stat-label">Training Data</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🔑</div>
+        <div class="stat-content">
+          <div class="stat-status" [style.color]="getCredentialStatusColor()">
+            {{ getCredentialStatus() }}
+          </div>
+          <div class="stat-label">Crawler Status</div>
+        </div>
       </div>
     </div>
-  </div>
+  }
 
   <!-- Tab Navigation -->
   <div class="tab-navigation">
-    <button 
-      class="tab-button" 
+    <button
+      class="tab-button"
       [class.active]="activeTab === 'profile'"
       (click)="setActiveTab('profile')">
       👤 Profile Info
     </button>
-    <button 
-      class="tab-button" 
+    <button
+      class="tab-button"
       [class.active]="activeTab === 'password'"
       (click)="setActiveTab('password')">
       🔒 Change Password
     </button>
-    <button 
-      class="tab-button" 
-      [class.active]="activeTab === 'api-credentials'"
-      (click)="setActiveTab('api-credentials')">
-      🔑 API Credentials
+    <button
+      class="tab-button"
+      [class.active]="activeTab === 'crawler-access'"
+      (click)="setActiveTab('crawler-access')">
+      🧩 Crawler Access
     </button>
-    <button 
-      class="tab-button" 
+    <button
+      class="tab-button"
       [class.active]="activeTab === 'sessions'"
       (click)="setActiveTab('sessions')">
       🖥️ Active Sessions
@@ -72,316 +78,256 @@
   </div>
 
   <!-- Profile Information Tab -->
-  <div *ngIf="activeTab === 'profile'" class="tab-content">
-    <div class="form-card">
-      <h3>Profile Information</h3>
-      <form (ngSubmit)="updateProfile()" #profileFormRef="ngForm">
-        <div class="form-group">
-          <label for="username">Username</label>
-          <input 
-            type="text" 
-            id="username" 
-            name="username"
-            [(ngModel)]="profileForm.username" 
-            required 
-            class="form-control">
-        </div>
+  @if (activeTab === 'profile') {
+    <div class="tab-content">
+      <div class="form-card">
+        <h3>Profile Information</h3>
+        <form (ngSubmit)="updateProfile()" #profileFormRef="ngForm">
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              [(ngModel)]="profileForm.username"
+              required
+              class="form-control">
+          </div>
 
-        <div class="form-group">
-          <label for="email">Email Address</label>
-          <input 
-            type="email" 
-            id="email" 
-            name="email"
-            [(ngModel)]="profileForm.email" 
-            required 
-            class="form-control">
-        </div>
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              [(ngModel)]="profileForm.email"
+              required
+              class="form-control">
+          </div>
 
-        <div *ngIf="profileData" class="form-info">
-          <p><strong>Role:</strong> {{ profileData.user.role }}</p>
-          <p><strong>Member since:</strong> {{ formatDate(profileData.user.created_at) }}</p>
-          <p><strong>Last updated:</strong> {{ formatDate(profileData.user.updated_at) }}</p>
-        </div>
+          @if (profileData) {
+            <div class="form-info">
+              <p><strong>Role:</strong> {{ profileData.user.role }}</p>
+              <p><strong>Member since:</strong> {{ formatDate(profileData.user.created_at) }}</p>
+              <p><strong>Last updated:</strong> {{ formatDate(profileData.user.updated_at) }}</p>
+            </div>
+          }
 
-        <button 
-          type="submit" 
-          class="btn btn-primary"
-          [disabled]="loading || !profileFormRef.valid">
-          <span *ngIf="loading">⏳ Updating...</span>
-          <span *ngIf="!loading">💾 Update Profile</span>
-        </button>
-      </form>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="loading || !profileFormRef.valid">
+            @if (loading) {
+              <span>⏳ Updating...</span>
+            } @else {
+              <span>💾 Update Profile</span>
+            }
+          </button>
+        </form>
+      </div>
     </div>
-  </div>
+  }
 
   <!-- Change Password Tab -->
-  <div *ngIf="activeTab === 'password'" class="tab-content">
-    <div class="form-card">
-      <h3>Change Password</h3>
-      <form (ngSubmit)="changePassword()" #passwordFormRef="ngForm">
-        <div class="form-group">
-          <label for="currentPassword">Current Password</label>
-          <input 
-            type="password" 
-            id="currentPassword" 
-            name="currentPassword"
-            [(ngModel)]="passwordForm.currentPassword" 
-            required 
-            class="form-control">
-        </div>
-
-        <div class="form-group">
-          <label for="newPassword">New Password</label>
-          <input 
-            type="password" 
-            id="newPassword" 
-            name="newPassword"
-            [(ngModel)]="passwordForm.newPassword" 
-            required 
-            minlength="6"
-            class="form-control">
-          <small class="form-text">Password must be at least 6 characters long</small>
-        </div>
-
-        <div class="form-group">
-          <label for="confirmPassword">Confirm New Password</label>
-          <input 
-            type="password" 
-            id="confirmPassword" 
-            name="confirmPassword"
-            [(ngModel)]="passwordForm.confirmPassword" 
-            required 
-            class="form-control">
-        </div>
-
-        <button 
-          type="submit" 
-          class="btn btn-primary"
-          [disabled]="loading || !passwordFormRef.valid">
-          <span *ngIf="loading">⏳ Changing...</span>
-          <span *ngIf="!loading">🔒 Change Password</span>
-        </button>
-      </form>
-    </div>
-  </div>
-
-  <!-- API Credentials Tab -->
-  <div *ngIf="activeTab === 'api-credentials'" class="tab-content">
-    <div class="form-card">
-      <h3>API Credentials</h3>
-      
-      <!-- Current Credentials Status -->
-      <div *ngIf="credentialsInfo" class="credentials-status">
-        <div class="status-item">
-          <strong>Status:</strong> 
-          <span [style.color]="getCredentialStatusColor()">{{ getCredentialStatus() }}</span>
-        </div>
-        <div *ngIf="credentialsInfo.configured" class="status-item">
-          <strong>Last Updated:</strong> {{ formatDate(credentialsInfo.lastUpdated) }}
-        </div>
-        <div *ngIf="credentialsInfo.expiresAt" class="status-item">
-          <strong>Expires:</strong> 
-          <span [class.expired]="credentialsInfo.isExpired">
-            {{ formatDate(credentialsInfo.expiresAt) }}
-          </span>
-        </div>
-      </div>
-
-      <!-- Current Masked Credentials Display -->
-      <div *ngIf="credentialsInfo?.configured && credentialsInfo?.credentials" class="current-credentials">
-        <h4>Current Credentials (Masked)</h4>
-        <div class="credential-item" *ngIf="credentialsInfo?.credentials?.bearerToken">
-          <strong>Bearer Token:</strong> {{ credentialsInfo?.credentials?.bearerToken }}
-        </div>
-        <div class="credential-item" *ngIf="credentialsInfo?.credentials?.apiKey">
-          <strong>API Key:</strong> {{ credentialsInfo?.credentials?.apiKey }}
-        </div>
-        <div class="credential-item" *ngIf="credentialsInfo?.credentials?.apiSecret">
-          <strong>API Secret:</strong> {{ credentialsInfo?.credentials?.apiSecret }}
-        </div>
-        <div class="credential-item" *ngIf="credentialsInfo?.credentials?.accessToken">
-          <strong>Access Token:</strong> {{ credentialsInfo?.credentials?.accessToken }}
-        </div>
-        <div class="credential-item" *ngIf="credentialsInfo?.credentials?.accessTokenSecret">
-          <strong>Access Token Secret:</strong> {{ credentialsInfo?.credentials?.accessTokenSecret }}
-        </div>
-      </div>
-
-      <!-- Update Credentials Form -->
-      <form (ngSubmit)="updateApiCredentials()" #credentialsFormRef="ngForm">
-        <div class="form-section">
-          <h4>Basic Credentials</h4>
+  @if (activeTab === 'password') {
+    <div class="tab-content">
+      <div class="form-card">
+        <h3>Change Password</h3>
+        <form (ngSubmit)="changePassword()" #passwordFormRef="ngForm">
           <div class="form-group">
-            <label for="bearerToken">X/Twitter Bearer Token</label>
-            <input 
-              type="password" 
-              id="bearerToken" 
-              name="bearerToken"
-              [(ngModel)]="credentialsForm.bearerToken" 
-              class="form-control"
-              placeholder="Enter your X/Twitter Bearer Token">
-            <small class="form-text">Required for basic tweet fetching</small>
-          </div>
-        </div>
-
-        <div class="form-section">
-          <h4>Advanced Credentials (Optional)</h4>
-          <div class="form-group">
-            <label for="apiKey">API Key</label>
-            <input 
-              type="text" 
-              id="apiKey" 
-              name="apiKey"
-              [(ngModel)]="credentialsForm.apiKey" 
-              class="form-control"
-              placeholder="Enter your API Key">
-          </div>
-
-          <div class="form-group">
-            <label for="apiSecret">API Secret</label>
-            <input 
-              type="password" 
-              id="apiSecret" 
-              name="apiSecret"
-              [(ngModel)]="credentialsForm.apiSecret" 
-              class="form-control"
-              placeholder="Enter your API Secret">
-          </div>
-
-          <div class="form-group">
-            <label for="accessToken">Access Token</label>
-            <input 
-              type="password" 
-              id="accessToken" 
-              name="accessToken"
-              [(ngModel)]="credentialsForm.accessToken" 
-              class="form-control"
-              placeholder="Enter your Access Token">
-          </div>
-
-          <div class="form-group">
-            <label for="accessTokenSecret">Access Token Secret</label>
-            <input 
-              type="password" 
-              id="accessTokenSecret" 
-              name="accessTokenSecret"
-              [(ngModel)]="credentialsForm.accessTokenSecret" 
-              class="form-control"
-              placeholder="Enter your Access Token Secret">
-          </div>
-        </div>
-
-        <div class="form-section">
-          <h4>Expiry Settings</h4>
-          <div class="form-group">
-            <label for="expiresAt">Expiry Date (Optional)</label>
-            <input 
-              type="datetime-local" 
-              id="expiresAt" 
-              name="expiresAt"
-              [(ngModel)]="credentialsForm.expiresAt" 
+            <label for="currentPassword">Current Password</label>
+            <input
+              type="password"
+              id="currentPassword"
+              name="currentPassword"
+              [(ngModel)]="passwordForm.currentPassword"
+              required
               class="form-control">
-            <small class="form-text">Set when these credentials should expire</small>
           </div>
+
+          <div class="form-group">
+            <label for="newPassword">New Password</label>
+            <input
+              type="password"
+              id="newPassword"
+              name="newPassword"
+              [(ngModel)]="passwordForm.newPassword"
+              required
+              minlength="6"
+              class="form-control">
+            <small class="form-text">Password must be at least 6 characters long</small>
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword">Confirm New Password</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              [(ngModel)]="passwordForm.confirmPassword"
+              required
+              class="form-control">
+          </div>
+
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="loading || !passwordFormRef.valid">
+            @if (loading) {
+              <span>⏳ Changing...</span>
+            } @else {
+              <span>🔒 Change Password</span>
+            }
+          </button>
+        </form>
+      </div>
+    </div>
+  }
+
+  <!-- Crawler Access Tab -->
+  @if (activeTab === 'crawler-access') {
+    <div class="tab-content">
+      <div class="form-card">
+        <h3>🍪 Crawler Access — Session X.com</h3>
+        <p>Crawler menggunakan session cookies X.com untuk login otomatis dan mengumpulkan tweet.</p>
+
+        <!-- Status Card -->
+        <div class="cookie-status-card" [class.status-active]="cookieStatus?.hasCookies" [class.status-empty]="!cookieStatus?.hasCookies">
+          @if (cookieStatus?.hasCookies) {
+            <div class="status-header">
+              <span class="status-icon">✅</span>
+              <strong>Session Aktif</strong>
+            </div>
+            <div class="status-details">
+              <div class="status-row"><span class="status-label">Jumlah cookies:</span><span class="status-value">{{ cookieStatus!.count }} cookies</span></div>
+              <div class="status-row"><span class="status-label">Terakhir diperbarui:</span><span class="status-value">{{ formatDate(cookieStatus!.updatedAt || '') }}</span></div>
+              <div class="status-row"><span class="status-label">Status crawling:</span><span class="status-value" style="color:#16a34a">🟢 Siap digunakan</span></div>
+            </div>
+            <button type="button" class="btn btn-danger" (click)="clearCookies()" [disabled]="loading" style="margin-top:12px">
+              🗑️ Hapus Session
+            </button>
+          } @else {
+            <div class="status-header">
+              <span class="status-icon">⚠️</span>
+              <strong>Belum Ada Session</strong>
+            </div>
+            <p style="margin:6px 0 0; color:#92400e; font-size:0.9rem">
+              Crawler akan berjalan tanpa login — hasil terbatas pada tweet publik saja. Import session cookies untuk hasil lebih banyak.
+            </p>
+          }
+        </div>
+
+        <!-- Divider -->
+        <div style="border-top:1px solid #e5e7eb; margin:20px 0"></div>
+
+        <!-- Import Cookies Form -->
+        <h4 style="margin:0 0 8px">Import Session Cookies</h4>
+
+        <details open style="margin-bottom:14px">
+          <summary style="cursor:pointer; font-weight:500; color:#2563eb; font-size:0.9rem">📋 Cara mendapatkan cookies →</summary>
+          <ol style="margin:8px 0 0 16px; font-size:0.85rem; line-height:1.9; color:#374151">
+            <li>Install extension <strong>Cookie Editor</strong> di Chrome/Edge (gratis di Chrome Web Store)</li>
+            <li>Buka <strong>x.com</strong> di browser dan pastikan sudah login</li>
+            <li>Klik icon Cookie Editor di toolbar → klik tombol <strong>Export</strong></li>
+            <li>Semua cookies ter-copy ke clipboard sebagai JSON</li>
+            <li>Paste di textarea di bawah → klik <strong>Simpan Session</strong></li>
+          </ol>
+        </details>
+
+        <div class="form-group">
+          <label>Cookie JSON dari Cookie Editor</label>
+          <textarea
+            [(ngModel)]="cookieJson"
+            name="cookieJson"
+            class="form-control"
+            rows="5"
+            placeholder='Paste JSON cookies di sini...&#10;Format: [{"name":"auth_token","value":"...","domain":".x.com",...}, ...]'
+            style="font-size:0.8rem; font-family:monospace; resize:vertical"></textarea>
+          <small class="form-text">Cookies disimpan terenkripsi di server dan hanya digunakan untuk crawling.</small>
         </div>
 
         <div class="form-actions">
-          <button 
-            type="submit" 
-            class="btn btn-primary"
-            [disabled]="loading">
-            <span *ngIf="loading">⏳ Updating...</span>
-            <span *ngIf="!loading">💾 Update Credentials</span>
-          </button>
-
-          <button 
-            type="button" 
-            class="btn btn-secondary"
-            (click)="clearCredentialsForm()"
-            [disabled]="loading">
-            🗑️ Clear Form
-          </button>
-
-          <button 
-            type="button" 
-            class="btn btn-danger"
-            (click)="deleteApiCredentials()"
-            [disabled]="loading || !credentialsInfo?.configured"
-            *ngIf="credentialsInfo?.configured">
-            <span *ngIf="loading">⏳ Deleting...</span>
-            <span *ngIf="!loading">🗑️ Delete Credentials</span>
+          <button type="button" class="btn btn-primary" (click)="saveCookies()" [disabled]="!cookieJson.trim() || loading">
+            @if (loading) { <span>⏳ Menyimpan...</span> } @else { <span>🍪 Simpan Session</span> }
           </button>
         </div>
-      </form>
+
+      </div>
     </div>
-  </div>
+  }
 
   <!-- Active Sessions Tab -->
-  <div *ngIf="activeTab === 'sessions'" class="tab-content">
-    <div class="form-card">
-      <h3>🖥️ Active Sessions</h3>
-      <p>Manage your active login sessions for security</p>
+  @if (activeTab === 'sessions') {
+    <div class="tab-content">
+      <div class="form-card">
+        <h3>🖥️ Active Sessions</h3>
+        <p>Manage your active login sessions for security</p>
 
-      <div *ngIf="sessionsLoading" class="loading-state">
-        <div class="spinner"></div>
-        <span>Loading sessions...</span>
-      </div>
-
-      <div *ngIf="!sessionsLoading && userSessions.length === 0" class="empty-state">
-        <div class="empty-icon">🔐</div>
-        <h4>No Active Sessions</h4>
-        <p>You currently have no active sessions</p>
-      </div>
-
-      <div *ngIf="!sessionsLoading && userSessions.length > 0" class="sessions-list">
-        <div class="sessions-header">
-          <div class="sessions-info">
-            <span class="sessions-count">{{ userSessions.length }} active session(s)</span>
-            <button 
-              type="button" 
-              class="btn btn-outline btn-sm"
-              (click)="refreshSessions()"
-              [disabled]="sessionsLoading">
-              🔄 Refresh
-            </button>
+        @if (sessionsLoading) {
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <span>Loading sessions...</span>
           </div>
-          <button 
-            type="button" 
-            class="btn btn-warning btn-sm"
-            (click)="revokeOtherSessions()"
-            [disabled]="sessionsLoading || userSessions.length <= 1">
-            🚪 End Other Sessions
-          </button>
-        </div>
-
-        <div class="session-item" *ngFor="let session of userSessions; trackBy: trackSession">
-          <div class="session-info">
-            <div class="session-status">
-              <span class="status-indicator" [class]="'status-' + session.status"></span>
-              <span class="status-text">{{ session.status | titlecase }}</span>
-            </div>
-            <div class="session-details">
-              <div class="session-created">
-                <strong>Created:</strong> {{ formatDate(session.created_at) }}
+        } @else if (userSessions.length === 0) {
+          <div class="empty-state">
+            <div class="empty-icon">🔐</div>
+            <h4>No Active Sessions</h4>
+            <p>You currently have no active sessions</p>
+          </div>
+        } @else {
+          <div class="sessions-list">
+            <div class="sessions-header">
+              <div class="sessions-info">
+                <span class="sessions-count">{{ userSessions.length }} active session(s)</span>
+                <button
+                  type="button"
+                  class="btn btn-outline btn-sm"
+                  (click)="refreshSessions()"
+                  [disabled]="sessionsLoading">
+                  🔄 Refresh
+                </button>
               </div>
-              <div class="session-expires">
-                <strong>Expires:</strong> {{ formatDate(session.expires_at) }}
-              </div>
+              <button
+                type="button"
+                class="btn btn-warning btn-sm"
+                (click)="revokeOtherSessions()"
+                [disabled]="sessionsLoading || userSessions.length <= 1">
+                🚪 End Other Sessions
+              </button>
             </div>
+
+            @for (session of userSessions; track session.id) {
+              <div class="session-item">
+                <div class="session-info">
+                  <div class="session-status">
+                    <span class="status-indicator" [class]="'status-' + session.status"></span>
+                    <span class="status-text">{{ session.status }}</span>
+                  </div>
+                  <div class="session-details">
+                    <div class="session-created">
+                      <strong>Created:</strong> {{ formatDate(session.created_at) }}
+                    </div>
+                    <div class="session-expires">
+                      <strong>Expires:</strong> {{ formatDate(session.expires_at) }}
+                    </div>
+                  </div>
+                </div>
+                <div class="session-actions">
+                  <button
+                    type="button"
+                    class="btn btn-danger btn-sm"
+                    (click)="revokeSession(session.id)"
+                    [disabled]="sessionsLoading">
+                    🗑️ Revoke
+                  </button>
+                </div>
+              </div>
+            }
           </div>
-          <div class="session-actions">
-            <button 
-              type="button" 
-              class="btn btn-danger btn-sm"
-              (click)="revokeSession(session.id)"
-              [disabled]="sessionsLoading">
-              🗑️ Revoke
-            </button>
-          </div>
-        </div>
+        }
       </div>
     </div>
-  </div>
+  }
+
 </div>
 </div>

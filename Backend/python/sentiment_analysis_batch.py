@@ -18,24 +18,20 @@ from sklearn.metrics import accuracy_score, classification_report, confusion_mat
 from sklearn.model_selection import cross_val_score
 import re
 import spacy
+from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 
-# Load spaCy model
+# Load spaCy multilingual model (required)
 try:
-    nlp = spacy.load("en_core_web_sm")
-    spacy_available = True
+    nlp = spacy.load("xx_ent_wiki_sm")
 except OSError:
-    spacy_available = False
-    nlp = None
+    raise OSError(
+        "spaCy model 'xx_ent_wiki_sm' tidak ditemukan. "
+        "Jalankan: python -m spacy download xx_ent_wiki_sm"
+    )
 
-# Sastrawi for Indonesian stemming
-try:
-    from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
-    sastrawi_available = True
-    factory = StemmerFactory()
-    stemmer = factory.create_stemmer()
-except ImportError:
-    sastrawi_available = False
-    stemmer = None
+# Sastrawi Indonesian stemmer (required)
+factory = StemmerFactory()
+stemmer = factory.create_stemmer()
 
 # Enhanced Indonesian stopwords (same as in main script)
 INDONESIAN_STOPWORDS = set([
@@ -53,9 +49,6 @@ INDONESIAN_STOPWORDS = set([
 
 class BatchSentimentAnalyzer:
     def __init__(self):
-        self.use_spacy = spacy_available
-        self.use_sastrawi = sastrawi_available
-        
         # Create pipeline with TfidfVectorizer and MultinomialNB
         self.pipeline = Pipeline([
             ('tfidf', TfidfVectorizer(
@@ -70,86 +63,48 @@ class BatchSentimentAnalyzer:
         ])
         
     def spacy_process(self, text):
-        """Process text using spaCy for advanced preprocessing"""
-        if not self.use_spacy or not text:
+        """Tokenisasi dan filtering menggunakan spaCy (xx_ent_wiki_sm)."""
+        if not text:
             return text
-        
-        try:
-            doc = nlp(text)
-            
-            # Extract tokens, filtering out punctuation, spaces, and stop words
-            tokens = []
-            for token in doc:
-                # Skip punctuation, spaces, and numbers
-                if token.is_punct or token.is_space or token.like_num:
-                    continue
-                    
-                # Skip if it's a stop word (English) or in our Indonesian stopwords
-                if token.is_stop or token.lemma_.lower() in INDONESIAN_STOPWORDS:
-                    continue
-                    
-                # Use lemma (root form) if available, otherwise use token text
-                lemma = token.lemma_.lower() if token.lemma_ != "-PRON-" else token.text.lower()
-                
-                # Only include meaningful tokens (length > 2)
-                if len(lemma) > 2:
-                    tokens.append(lemma)
-            
-            return ' '.join(tokens)
-            
-        except Exception as e:
-            print(f"spaCy processing error: {e}", file=sys.stderr)
-            return text
-    
+        doc = nlp(text)
+        tokens = []
+        for token in doc:
+            if token.is_punct or token.is_space or token.like_num:
+                continue
+            word = token.text.lower()
+            if word in INDONESIAN_STOPWORDS:
+                continue
+            if len(word) > 2:
+                tokens.append(word)
+        return ' '.join(tokens)
+
     def stem_text(self, text):
-        """Apply Indonesian stemming using Sastrawi"""
-        if self.use_sastrawi and text:
-            try:
-                return stemmer.stem(text)
-            except Exception as e:
-                print(f"Stemming error: {e}", file=sys.stderr)
-                return text
-        return text
-    
+        """Stemming bahasa Indonesia menggunakan Sastrawi."""
+        if not text:
+            return text
+        try:
+            return stemmer.stem(text)
+        except Exception as e:
+            print(f"Stemming error: {e}", file=sys.stderr)
+            return text
+
     def preprocess_text(self, text):
-        """Enhanced preprocessing with spaCy and Sastrawi"""
+        """Pipeline preprocessing: cleaning → spaCy tokenisasi → Sastrawi stemming."""
         if not text:
             return ""
-        
-        # Step 1: Basic cleaning
+        # Tahap 1: Cleaning dasar
         text = text.lower()
-        
-        # Remove URLs
         text = re.sub(r'http\S+|www\S+|https\S+', '', text, flags=re.MULTILINE)
-        
-        # Remove mentions and hashtags
         text = re.sub(r'@\w+|#\w+', '', text)
-        
-        # Remove RT markers
         text = re.sub(r'\brt\b', '', text)
-        
-        # Remove extra whitespace
         text = re.sub(r'\s+', ' ', text).strip()
-        
-        # Step 2: spaCy advanced processing (if available)
-        if self.use_spacy:
-            text = self.spacy_process(text)
-        else:
-            # Fallback: manual stopword removal
-            words = text.split()
-            filtered_words = [word for word in words if word.lower() not in INDONESIAN_STOPWORDS]
-            text = ' '.join(filtered_words)
-        
-        # Step 3: Indonesian stemming
+        # Tahap 2: Tokenisasi & filter stopword dengan spaCy
+        text = self.spacy_process(text)
+        # Tahap 3: Stemming bahasa Indonesia dengan Sastrawi
         text = self.stem_text(text)
-        
-        # Step 4: Final cleanup
-        text = re.sub(r'[^a-zA-Z\s]', '', text)  # Remove non-alphabetic chars
-        text = re.sub(r'\s+', ' ', text).strip()  # Normalize whitespace
-        
-        # Remove extra whitespace
+        # Tahap 4: Normalisasi akhir
+        text = re.sub(r'[^a-zA-Z\s]', '', text)
         text = re.sub(r'\s+', ' ', text).strip()
-        
         return text
     
     def train(self, training_data):
@@ -311,8 +266,7 @@ def main():
         
         # Create analyzer and train
         analyzer = BatchSentimentAnalyzer()
-        print(f"🔧 spaCy available: {analyzer.use_spacy}")
-        print(f"🔧 Sastrawi available: {analyzer.use_sastrawi}")
+        print("Preprocessing: spaCy (xx_ent_wiki_sm) + Sastrawi aktif")
         metrics = analyzer.train(training_data)
         
         # Make predictions

@@ -1,6 +1,7 @@
 const { getDb } = require('../config/mysql-database');
 const bcrypt = require('bcryptjs');
 const AuditLogger = require('../utils/auditLogger');
+const PlaywrightCrawler = require('../crawlers/playwright-crawler');
 const { encryptCredentials, decryptCredentials, maskSensitiveValue } = require('../utils/encryption');
 
 // Get user profile
@@ -219,34 +220,25 @@ const getApiCredentialsHandler = async (req, res) => {
       });
     }
 
-    // Decrypt credentials
     const encryptedCredentials = rows[0];
-    const credentialsToDecrypt = {
+    const decryptedCredentials = decryptCredentials({
       bearerToken: encryptedCredentials.bearer_token,
       apiKey: encryptedCredentials.api_key,
       apiSecret: encryptedCredentials.api_secret,
       accessToken: encryptedCredentials.access_token,
-      accessTokenSecret: encryptedCredentials.access_token_secret
-    };
-    const decryptedCredentials = decryptCredentials(credentialsToDecrypt);
+      accessTokenSecret: encryptedCredentials.access_token_secret,
+    });
 
-    // Log credential access
-    await AuditLogger.logCredentialAccess(
-      userId, 
-      'CREDENTIAL_VIEW', 
-      req.ip, 
-      req.get('User-Agent')
-    );
+    await AuditLogger.logCredentialAccess(userId, 'CREDENTIAL_VIEW', req.ip, req.get('User-Agent'));
 
-    // Return masked credentials for display
     res.json({
       configured: true,
       credentials: {
-        bearerToken: maskSensitiveValue(decryptedCredentials.bearerToken),
-        apiKey: maskSensitiveValue(decryptedCredentials.apiKey),
-        apiSecret: maskSensitiveValue(decryptedCredentials.apiSecret),
-        accessToken: maskSensitiveValue(decryptedCredentials.accessToken),
-        accessTokenSecret: maskSensitiveValue(decryptedCredentials.accessTokenSecret)
+        bearerToken: decryptedCredentials.bearerToken ? maskSensitiveValue(decryptedCredentials.bearerToken) : '',
+        apiKey: decryptedCredentials.apiKey ? maskSensitiveValue(decryptedCredentials.apiKey) : '',
+        apiSecret: decryptedCredentials.apiSecret ? maskSensitiveValue(decryptedCredentials.apiSecret) : '',
+        accessToken: decryptedCredentials.accessToken ? maskSensitiveValue(decryptedCredentials.accessToken) : '',
+        accessTokenSecret: decryptedCredentials.accessTokenSecret ? maskSensitiveValue(decryptedCredentials.accessTokenSecret) : ''
       },
       expiresAt: encryptedCredentials.expires_at,
       isActive: encryptedCredentials.is_active,
@@ -267,17 +259,15 @@ const updateApiCredentialsHandler = async (req, res) => {
     const { bearerToken, apiKey, apiSecret, accessToken, accessTokenSecret, expiresAt } = req.body;
 
     if (!bearerToken && !apiKey) {
-      return res.status(400).json({ error: 'At least Bearer Token or API Key is required' });
+      return res.status(400).json({ error: 'Bearer Token or API Key is required' });
     }
 
-    // Validate advanced credentials if provided
     if (apiKey && (!apiSecret || !accessToken || !accessTokenSecret)) {
-      return res.status(400).json({ 
-        error: 'If API Key is provided, all advanced credentials (API Secret, Access Token, Access Token Secret) are required' 
+      return res.status(400).json({
+        error: 'If API Key is provided, all advanced credentials are required'
       });
     }
 
-    // Validate expiry date if provided
     let expiryDate = null;
     if (expiresAt) {
       expiryDate = new Date(expiresAt);
@@ -286,7 +276,6 @@ const updateApiCredentialsHandler = async (req, res) => {
       }
     }
 
-    // Encrypt credentials
     const encryptedCredentials = encryptCredentials({
       bearer_token: bearerToken || '',
       api_key: apiKey || '',
@@ -295,19 +284,16 @@ const updateApiCredentialsHandler = async (req, res) => {
       access_token_secret: accessTokenSecret || ''
     });
 
-    // Check if credentials exist
     const [existing] = await db.execute(
       'SELECT id FROM user_api_credentials WHERE user_id = ?',
       [userId]
     );
 
     if (existing.length > 0) {
-      // Update existing credentials
       await db.execute(`
-        UPDATE user_api_credentials 
-        SET bearer_token = ?, api_key = ?, api_secret = ?, 
-            access_token = ?, access_token_secret = ?, 
-            expires_at = ?, is_active = TRUE,
+        UPDATE user_api_credentials
+        SET bearer_token = ?, api_key = ?, api_secret = ?,
+            access_token = ?, access_token_secret = ?, expires_at = ?, is_active = TRUE,
             updated_at = CURRENT_TIMESTAMP
         WHERE user_id = ?
       `, [
@@ -320,10 +306,9 @@ const updateApiCredentialsHandler = async (req, res) => {
         userId
       ]);
     } else {
-      // Insert new credentials
       await db.execute(`
-        INSERT INTO user_api_credentials 
-        (user_id, bearer_token, api_key, api_secret, access_token, access_token_secret, expires_at, is_active) 
+        INSERT INTO user_api_credentials
+        (user_id, bearer_token, api_key, api_secret, access_token, access_token_secret, expires_at, is_active)
         VALUES (?, ?, ?, ?, ?, ?, ?, TRUE)
       `, [
         userId,
@@ -390,11 +375,82 @@ const deleteApiCredentialsHandler = async (req, res) => {
   }
 };
 
+const verifyXCredentialsHandler = (_req, res) => {
+  res.status(410).json({ error: 'Username/password login removed — use session cookies instead' });
+};
+
+// Save X.com session cookies (bypasses bot detection)
+const saveCookiesHandler = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { cookies } = req.body;
+    if (!cookies || !Array.isArray(cookies) || cookies.length === 0) {
+      return res.status(400).json({ error: 'cookies must be a non-empty array' });
+    }
+    const db = getDb();
+    const cookieJson = JSON.stringify(cookies);
+    const [existing] = await db.execute('SELECT id FROM user_api_credentials WHERE user_id = ?', [userId]);
+    if (existing.length > 0) {
+      await db.execute(
+        'UPDATE user_api_credentials SET x_cookies = ?, is_active = TRUE, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+        [cookieJson, userId]
+      );
+    } else {
+      await db.execute(
+        'INSERT INTO user_api_credentials (user_id, x_cookies, is_active) VALUES (?, ?, TRUE)',
+        [userId, cookieJson]
+      );
+    }
+    res.json({ success: true, message: `Saved ${cookies.length} cookies`, count: cookies.length });
+  } catch (error) {
+    console.error('Save cookies error:', error);
+    res.status(500).json({ error: 'Failed to save cookies' });
+  }
+};
+
+// Delete X.com session cookies
+const deleteCookiesHandler = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const db = getDb();
+    await db.execute(
+      'UPDATE user_api_credentials SET x_cookies = NULL, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+      [userId]
+    );
+    res.json({ success: true, message: 'Cookies deleted' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete cookies' });
+  }
+};
+
+// Get cookie status (count only, never expose actual values)
+const getCookieStatusHandler = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const db = getDb();
+    const [rows] = await db.execute(
+      'SELECT x_cookies, updated_at FROM user_api_credentials WHERE user_id = ? AND is_active = TRUE LIMIT 1',
+      [userId]
+    );
+    if (!rows.length || !rows[0].x_cookies) {
+      return res.json({ hasCookies: false, count: 0 });
+    }
+    const cookies = JSON.parse(rows[0].x_cookies);
+    res.json({ hasCookies: true, count: cookies.length, updatedAt: rows[0].updated_at });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to get cookie status' });
+  }
+};
+
 module.exports = {
   getProfileHandler,
   updateProfileHandler,
   changePasswordHandler,
   getApiCredentialsHandler,
   updateApiCredentialsHandler,
-  deleteApiCredentialsHandler
+  deleteApiCredentialsHandler,
+  verifyXCredentialsHandler,
+  saveCookiesHandler,
+  getCookieStatusHandler,
+  deleteCookiesHandler
 };

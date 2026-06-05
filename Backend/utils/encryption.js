@@ -97,7 +97,11 @@ const encryptCredentials = (credentials) => {
     'accessToken', 
     'access_token',
     'accessTokenSecret', 
-    'access_token_secret'
+    'access_token_secret',
+    'xUsername',
+    'x_username',
+    'xPassword',
+    'x_password'
   ];
 
   for (const [key, value] of Object.entries(credentials)) {
@@ -132,7 +136,11 @@ const decryptCredentials = (encryptedCredentials) => {
     'accessToken', 
     'access_token',
     'accessTokenSecret', 
-    'access_token_secret'
+    'access_token_secret',
+    'xUsername',
+    'x_username',
+    'xPassword',
+    'x_password'
   ];
 
   for (const [key, value] of Object.entries(encryptedCredentials)) {

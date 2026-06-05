@@ -757,6 +757,29 @@
   background: #e5e7eb;
 }
 
+.label-btn.skip {
+  background: #fffbeb;
+  color: #92400e;
+  margin-left: auto;
+}
+
+.label-btn.skip:hover {
+  background: #fde68a;
+}
+
+.labeling-empty {
+  text-align: center;
+  padding: 24px;
+  color: #6b7280;
+  background: #f9fafb;
+  border-radius: 8px;
+  margin-top: 12px;
+}
+
+.labeling-empty p {
+  margin-bottom: 12px;
+}
+
 .labeling-complete {
   text-align: center;
   background: #d1fae5;

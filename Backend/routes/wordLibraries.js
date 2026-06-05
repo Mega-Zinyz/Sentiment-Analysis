@@ -317,9 +317,9 @@ router.post('/:id/import-labeled-tweets', async (req, res) => {
       
       // Insert sample
       await db.execute(`
-        INSERT INTO word_library_samples (library_id, tweet_text, sentiment)
-        VALUES (?, ?, ?)
-      `, [libraryId, tweet.clean_text, sentiment]);
+        INSERT INTO word_library_samples (library_id, user_id, tweet_text, sentiment)
+        VALUES (?, ?, ?, ?)
+      `, [libraryId, userId, tweet.clean_text, sentiment]);
       
       samplesAdded++;
       

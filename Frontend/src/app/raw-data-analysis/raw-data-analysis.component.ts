@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { environment } from '../../environments/environment';
 
@@ -36,7 +36,7 @@ interface LabelingData {
 })
 export class RawDataAnalysisComponent implements OnInit, OnDestroy {
   // UI State
-  analysisMode: 'choose' | 'direct-api' | 'upload-file' = 'choose';
+  analysisMode: 'choose' | 'crawler' | 'upload-file' = 'choose';
   currentStep: 'upload' | 'library-selection' | 'labeling' | 'analyzing' | 'results' = 'upload';
   
   // Forms
@@ -152,7 +152,8 @@ export class RawDataAnalysisComponent implements OnInit, OnDestroy {
     private http: HttpClient,
     private authService: AuthService,
     private cdr: ChangeDetectorRef,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {
     this.uploadForm = this.fb.group({
       sessionName: ['', [Validators.required, Validators.minLength(3)]],
@@ -162,7 +163,8 @@ export class RawDataAnalysisComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadSessions();
-    
+    this.checkCrawlerSessionParam();
+
     // Start auto-refresh for sessions list
     this.startAutoRefresh();
     
@@ -170,14 +172,36 @@ export class RawDataAnalysisComponent implements OnInit, OnDestroy {
     console.log('✅ Component initialized - all processing handled by backend');
   }
 
-  // Form state management removed - all processing now on backend
+  // ========== Crawler Session Redirect ==========
+
+  private checkCrawlerSessionParam() {
+    const sessionId = this.route.snapshot.queryParamMap.get('sessionId');
+    if (!sessionId) return;
+
+    // Remove query param from URL without reloading
+    this.router.navigate([], { replaceUrl: true });
+
+    // Wait for sessions to load then select the target session
+    const trySelect = (attempts: number) => {
+      const session = this.sessions.find(s => s.session_id === sessionId);
+      if (session) {
+        this.analysisMode = 'upload-file';
+        this.selectSession(session);
+        this.setSuccess('Data dari crawler berhasil dimuat. Pilih metode analisis untuk melanjutkan.');
+      } else if (attempts > 0) {
+        setTimeout(() => trySelect(attempts - 1), 500);
+      } else {
+        this.setError('Gagal memuat sesi dari crawler. Silakan refresh halaman atau coba lagi.');
+      }
+    };
+    setTimeout(() => trySelect(10), 300);
+  }
 
   // ========== Mode Selection ==========
   
-  selectDirectApi() {
-    this.analysisMode = 'direct-api';
-    // Redirect to existing home component functionality
-    // This will use the existing Twitter API integration
+  selectCrawler() {
+    this.analysisMode = 'crawler';
+    // Redirect to the crawler interface for Playwright-based X/Twitter scraping
     window.location.href = '/home';
   }
 
@@ -226,7 +250,7 @@ export class RawDataAnalysisComponent implements OnInit, OnDestroy {
           this.readFileContent(file);
         }
       } else {
-        this.setError('Please select a .txt, .csv, or .tsv file containing raw Twitter data');
+        this.setError('Please select a .txt, .csv, or .tsv file containing raw crawl data');
       }
     }
   }
@@ -565,7 +589,7 @@ export class RawDataAnalysisComponent implements OnInit, OnDestroy {
   }
 
   private simulateDataCleaning(rawData: string, index: number) {
-    // Parse raw Twitter data format
+    // Parse raw crawl data format
     const regex = /^(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2})\s+(\w+)\s+(.*?)\s*(\d+)?$/;
     const match = rawData.match(regex);
     
@@ -900,6 +924,14 @@ export class RawDataAnalysisComponent implements OnInit, OnDestroy {
           this.loading.labeling = false;
         }
       });
+  }
+
+  skipItem(item: LabelingData) {
+    this.labelingData = this.labelingData.filter(d => d.id !== item.id);
+  }
+
+  reloadLabelingData() {
+    this.loadLabelingData();
   }
 
   labelItem(item: LabelingData, sentiment: 'Positive' | 'Negative' | 'Neutral') {

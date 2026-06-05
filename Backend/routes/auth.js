@@ -69,66 +69,55 @@ const loginHandler = async (req, res) => {
 
   try {
     // Get user
+    console.log('Login handler started.');
     const db = getDb();
+    console.log('Database connection obtained.');
+    
     const [users] = await db.execute(
       'SELECT * FROM users WHERE username = ? AND is_active = TRUE',
       [username]
     );
 
-    console.log('Users found:', users.length);
+    console.log('User query executed. Found:', users.length);
 
     if (users.length === 0) {
-      console.log('No user found with username:', username);
+      console.log('No active user found for username:', username);
       return res.status(401).json({ error: 'Invalid username or password' });
     }
 
     const user = users[0];
-    console.log('User found:', user.username, 'Active:', user.is_active);
+    console.log('User found:', user.username);
 
-    // Verify password
-    console.log('Comparing password with hash...');
+    console.log('Comparing password...');
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
-    console.log('Password validation result:', isValidPassword);
+    console.log('Password comparison result:', isValidPassword);
 
     if (!isValidPassword) {
       console.log('Password validation failed for user:', username);
-      
-      // Audit log failed login attempt
-      await AuditLogger.logAuthEvent(
-        user.id, 
-        'AUTH_LOGIN_FAILED', 
-        req.ip, 
-        req.get('User-Agent')
-      );
-      
+      await AuditLogger.logAuthEvent(user.id, 'AUTH_LOGIN_FAILED', req.ip, req.get('User-Agent'));
       return res.status(401).json({ error: 'Invalid username or password' });
     }
 
-    // Generate JWT token
+    console.log('Password is valid. Generating token...');
     const token = jwt.sign(
-      { userId: user.id, username: user.username, role: user.role }, 
-      JWT_SECRET, 
+      { userId: user.id, username: user.username, role: user.role },
+      JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN }
     );
+    console.log('Token generated.');
 
-    // Save session
+    console.log('Saving session to database...');
     const sessionId = uuidv4();
-    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
     await db.execute(
       'INSERT INTO user_sessions (id, user_id, token, expires_at, created_at) VALUES (?, ?, ?, ?, NOW())',
       [sessionId, user.id, token, expiresAt]
     );
+    console.log('Session saved.');
 
     console.log('✅ User logged in successfully:', username);
-    
-    // Audit log successful login
-    await AuditLogger.logAuthEvent(
-      user.id, 
-      'AUTH_LOGIN_SUCCESS', 
-      req.ip, 
-      req.get('User-Agent')
-    );
+    await AuditLogger.logAuthEvent(user.id, 'AUTH_LOGIN_SUCCESS', req.ip, req.get('User-Agent'));
     
     res.json({
       success: true,

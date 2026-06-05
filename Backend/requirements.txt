@@ -2,7 +2,7 @@
 scikit-learn>=1.4.0
 numpy>=1.26.0
 spacy>=3.7.2
-Sastrawi==1.0.1
+PySastrawi>=1.0.0
 
-# Download Indonesian language model for spacy (needs to be done separately)
+# Setelah install, jalankan perintah berikut untuk mengunduh model spaCy multilingual:
 # python -m spacy download xx_ent_wiki_sm

@@ -12,8 +12,6 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./Backend/docs/database_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
-      - ./Backend/docs/word_libraries_schema.sql:/docker-entrypoint-initdb.d/02_word_libraries.sql
     networks:
       - sentiment-network
     healthcheck:
@@ -21,6 +19,23 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  # Redis - For Bull job queue
+  redis:
+    image: redis:7-alpine
+    container_name: sentiment-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - sentiment-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
   # Backend API
   backend:
@@ -32,24 +47,46 @@ services:
       NODE_ENV: ${NODE_ENV:-production}
       PORT: ${PORT:-5000}
       DB_HOST: mysql
+      DB_PORT: 3306
       DB_USER: ${DB_USER:-sentiment_user}
-      DB_PASSWORD: ${DB_PASSWORD:-sentiment_pass}
+      DB_PASSWORD: ${DB_PASSWORD:-sentiment_passtoriation}
       DB_NAME: ${DB_NAME:-sentiment_analysis}
       JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-this}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY:-your-encryption-key-change-this}
-      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost,http://localhost:80,http://localhost:4200}
       LOG_LEVEL: ${LOG_LEVEL:-info}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      # Crawler/Playwright settings
+      PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH: /usr/bin/chromium
+      CRAWLER_HEADLESS: "true"
+      CRAWLER_TIMEOUT: "30000"
+      CRAWLER_RATE_LIMIT: "2000"
+      CRAWLER_MAX_RETRIES: "3"
     ports:
       - "5000:5000"
     depends_on:
       mysql:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
       - ./Backend/config:/app/config
       - ./Backend/python:/app/python
+      - ./Backend/logs:/app/logs
+      - ./Backend/temp:/app/temp
     networks:
       - sentiment-network
     restart: unless-stopped
+    # Resource limits for Playwright/Chromium
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 3G
+        reservations:
+          cpus: '1'
+          memory: 1G
 
   # Frontend (Angular + Nginx)
   frontend:
@@ -71,4 +108,6 @@ networks:
 
 volumes:
   mysql_data:
+    driver: local
+  redis_data:
     driver: local

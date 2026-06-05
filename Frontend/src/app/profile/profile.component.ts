@@ -15,11 +15,8 @@ interface UserProfile {
 }
 
 interface ApiCredentials {
-  bearerToken?: string;
-  apiKey?: string;
-  apiSecret?: string;
-  accessToken?: string;
-  accessTokenSecret?: string;
+  xUsername?: string;
+  xPassword?: string;
 }
 
 interface CredentialsInfo {
@@ -83,21 +80,21 @@ export class ProfileComponent implements OnInit {
     confirmPassword: ''
   };
   
-  // API credentials form
+  // Crawler access settings form
   credentialsForm = {
-    bearerToken: '',
-    apiKey: '',
-    apiSecret: '',
-    accessToken: '',
-    accessTokenSecret: '',
-    expiresAt: ''
+    xUsername: '',
+    xPassword: ''
   };
   
+  // Cookie import
+  cookieJson = '';
+  cookieStatus: { hasCookies: boolean; count: number; updatedAt?: string } | null = null;
+
   // Session management
   userSessions: any[] = [];
   sessionsLoading = false;
-  
-  activeTab = 'profile'; // profile, password, api-credentials, sessions
+
+  activeTab = 'profile'; // profile, password, crawler-access, sessions
 
   constructor(
     private http: HttpClient,
@@ -107,6 +104,7 @@ export class ProfileComponent implements OnInit {
   ngOnInit() {
     this.loadProfile();
     this.loadApiCredentials();
+    this.loadCookieStatus();
     this.loadUserSessions();
   }
 
@@ -130,7 +128,7 @@ export class ProfileComponent implements OnInit {
       const headers = this.authService.getAuthHeaders();
       this.credentialsInfo = await this.http.get<CredentialsInfo>(`${this.apiUrl}/profile/api-credentials`, { headers }).toPromise() || null;
     } catch (error) {
-      console.error('Error loading API credentials:', error);
+      console.error('Error loading crawler access settings:', error);
     }
   }
 
@@ -199,14 +197,14 @@ export class ProfileComponent implements OnInit {
       const headers = this.authService.getAuthHeaders();
       await this.http.put(`${this.apiUrl}/profile/api-credentials`, this.credentialsForm, { headers }).toPromise();
       
-      this.success = 'API credentials updated successfully!';
+      this.success = 'Crawler access settings updated successfully!';
       setTimeout(() => this.success = '', 3000);
       
       // Reload credentials
       await this.loadApiCredentials();
     } catch (error: any) {
-      console.error('Error updating API credentials:', error);
-      this.error = error.error?.error || 'Failed to update API credentials';
+      console.error('Error updating crawler access settings:', error);
+      this.error = error.error?.error || 'Failed to update crawler access settings';
       setTimeout(() => this.error = '', 5000);
     } finally {
       this.loading = false;
@@ -214,7 +212,7 @@ export class ProfileComponent implements OnInit {
   }
 
   async deleteApiCredentials() {
-    if (!confirm('Are you sure you want to delete your API credentials? This action cannot be undone.')) {
+    if (!confirm('Are you sure you want to delete your crawler access settings? This action cannot be undone.')) {
       return;
     }
     
@@ -226,15 +224,15 @@ export class ProfileComponent implements OnInit {
       const headers = this.authService.getAuthHeaders();
       await this.http.delete(`${this.apiUrl}/profile/api-credentials`, { headers }).toPromise();
       
-      this.success = 'API credentials deleted successfully!';
+      this.success = 'Crawler access settings deleted successfully!';
       setTimeout(() => this.success = '', 3000);
       
       // Clear credentials form and reload
       this.clearCredentialsForm();
       await this.loadApiCredentials();
     } catch (error: any) {
-      console.error('Error deleting API credentials:', error);
-      this.error = error.error?.error || 'Failed to delete API credentials';
+      console.error('Error deleting crawler access settings:', error);
+      this.error = error.error?.error || 'Failed to delete crawler access settings';
       setTimeout(() => this.error = '', 5000);
     } finally {
       this.loading = false;
@@ -287,41 +285,60 @@ export class ProfileComponent implements OnInit {
   }
 
   validateCredentialsForm(): boolean {
-    if (!this.credentialsForm.bearerToken && !this.credentialsForm.apiKey) {
-      this.error = 'At least Bearer Token or API Key is required';
+    if (!this.credentialsForm.xUsername || !this.credentialsForm.xPassword) {
+      this.error = 'Username dan password X.com harus diisi';
       setTimeout(() => this.error = '', 5000);
       return false;
     }
-
-    if (this.credentialsForm.apiKey) {
-      if (!this.credentialsForm.apiSecret || !this.credentialsForm.accessToken || !this.credentialsForm.accessTokenSecret) {
-        this.error = 'If API Key is provided, all advanced credentials are required';
-        setTimeout(() => this.error = '', 5000);
-        return false;
-      }
-    }
-
-    if (this.credentialsForm.expiresAt) {
-      const expiryDate = new Date(this.credentialsForm.expiresAt);
-      if (expiryDate <= new Date()) {
-        this.error = 'Expiry date must be in the future';
-        setTimeout(() => this.error = '', 5000);
-        return false;
-      }
-    }
-
     return true;
   }
 
   clearCredentialsForm() {
-    this.credentialsForm = {
-      bearerToken: '',
-      apiKey: '',
-      apiSecret: '',
-      accessToken: '',
-      accessTokenSecret: '',
-      expiresAt: ''
-    };
+    this.credentialsForm = { xUsername: '', xPassword: '' };
+  }
+
+  async loadCookieStatus() {
+    try {
+      const headers = this.authService.getAuthHeaders();
+      this.cookieStatus = await this.http.get<any>(`${this.apiUrl}/profile/cookies/status`, { headers }).toPromise();
+    } catch { this.cookieStatus = { hasCookies: false, count: 0 }; }
+  }
+
+  async saveCookies() {
+    const raw = this.cookieJson.trim();
+    if (!raw) return;
+    let cookies: any[];
+    try {
+      cookies = JSON.parse(raw);
+      if (!Array.isArray(cookies)) throw new Error('Bukan array');
+    } catch {
+      this.error = 'Format cookies tidak valid — harus berupa JSON array';
+      setTimeout(() => this.error = '', 5000);
+      return;
+    }
+    this.loading = true;
+    try {
+      const headers = this.authService.getAuthHeaders();
+      await this.http.post(`${this.apiUrl}/profile/cookies`, { cookies }, { headers }).toPromise();
+      this.success = `✅ ${cookies.length} cookies berhasil disimpan`;
+      this.cookieJson = '';
+      await this.loadCookieStatus();
+      setTimeout(() => this.success = '', 5000);
+    } catch (e: any) {
+      this.error = e?.error?.error || 'Gagal menyimpan cookies';
+      setTimeout(() => this.error = '', 5000);
+    } finally { this.loading = false; }
+  }
+
+  async clearCookies() {
+    if (!confirm('Hapus semua cookies tersimpan?')) return;
+    try {
+      const headers = this.authService.getAuthHeaders();
+      await this.http.delete(`${this.apiUrl}/profile/cookies`, { headers }).toPromise();
+      this.cookieStatus = { hasCookies: false, count: 0 };
+      this.success = 'Cookies dihapus';
+      setTimeout(() => this.success = '', 3000);
+    } catch { /* ignore */ }
   }
 
   setActiveTab(tab: string) {

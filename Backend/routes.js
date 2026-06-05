@@ -1,9 +1,7 @@
 const express = require('express');
 
 const router = express.Router();
-const { fetchTweetsHandler, getRateLimitsHandler } = require('./routes/fetchTweets');
 const { getTrainDataHandler, saveTrainDataHandler } = require('./routes/trainData');
-const { saveAnalysisResultsHandler, getAnalysisResultsHandler } = require('./routes/analysisResults');
 const { uploadTrainingDataHandler, getDatasetStatsHandler, upload } = require('./routes/uploadTrainingData');
 const { checkCredentialsHandler, configureCredentialsHandler, getCredentialsStatusHandler, deleteCredentialsHandler, validateCredentialsHandler } = require('./routes/apiConfig');
 
@@ -38,9 +36,6 @@ const {
   getAnalysisInsightsHandler
 } = require('./routes/analysisInsights');
 
-// Tweet datasets management
-const tweetDatasetsRouter = require('./routes/tweetDatasets');
-
 // Word libraries management
 const wordLibrariesRouter = require('./routes/wordLibraries');
 
@@ -54,7 +49,11 @@ const {
   changePasswordHandler,
   getApiCredentialsHandler,
   updateApiCredentialsHandler,
-  deleteApiCredentialsHandler
+  deleteApiCredentialsHandler,
+  verifyXCredentialsHandler,
+  saveCookiesHandler,
+  getCookieStatusHandler,
+  deleteCookiesHandler
 } = require('./routes/profile');
 
 // Session management
@@ -78,16 +77,10 @@ router.post('/auth/logout', logoutHandler);
 router.get('/auth/profile', authenticateToken, profileHandler);
 
 // Main functionality routes (require authentication)
-router.post('/fetch-tweets', authenticateToken, fetchTweetsHandler);
-router.get('/rate-limits', authenticateToken, getRateLimitsHandler);
 
 // Training data CSV endpoints (require authentication)
 router.get('/train-data', authenticateToken, getTrainDataHandler);
 router.post('/train-data', authenticateToken, saveTrainDataHandler);
-
-// Analysis results endpoints (require authentication)
-router.post('/save-analysis-results', authenticateToken, saveAnalysisResultsHandler);
-router.get('/analysis-results', authenticateToken, getAnalysisResultsHandler);
 
 // Training data upload endpoints (require authentication)
 router.post('/upload-training-data', authenticateToken, upload.single('csvFile'), uploadTrainingDataHandler);
@@ -125,6 +118,10 @@ router.put('/profile/password', authenticateToken, changePasswordHandler);
 router.get('/profile/api-credentials', authenticateToken, getApiCredentialsHandler);
 router.put('/profile/api-credentials', authenticateToken, updateApiCredentialsHandler);
 router.delete('/profile/api-credentials', authenticateToken, deleteApiCredentialsHandler);
+router.post('/profile/api-credentials/verify', authenticateToken, verifyXCredentialsHandler);
+router.post('/profile/cookies', authenticateToken, saveCookiesHandler);
+router.get('/profile/cookies/status', authenticateToken, getCookieStatusHandler);
+router.delete('/profile/cookies', authenticateToken, deleteCookiesHandler);
 
 // Session management endpoints (require authentication)
 router.get('/sessions', authenticateToken, getUserSessionsHandler);
@@ -171,7 +168,6 @@ const {
 // Raw data upload and management
 router.post('/raw-data/upload', authenticateToken, uploadRawDataHandler);
 router.post('/raw-data/upload-csv', authenticateToken, uploadCsv.single('csvFile'), uploadCsvFileHandler);
-router.post('/raw-data/upload-x-tweets', authenticateToken, uploadXTweetsHandler);
 router.get('/raw-data/sessions', authenticateToken, getSessionsHandler);
 router.get('/raw-data/session/:sessionId', authenticateToken, getSessionDataHandler);
 router.get('/raw-data/view/:sessionId', authenticateToken, viewSessionDataHandler);
@@ -196,9 +192,6 @@ router.get('/raw-data/library-progress/:progressKey', authenticateToken, getLibr
 router.post('/raw-data/cancel-library-analysis/:progressKey', authenticateToken, cancelLibraryAnalysisHandler);
 router.get('/raw-data/results/:sessionId', authenticateToken, getRawDataAnalysisResultsHandler);
 router.get('/raw-data/export/:sessionId', authenticateToken, exportResultsHandler);
-
-// Tweet datasets management
-router.use('/tweet-datasets', authenticateToken, tweetDatasetsRouter);
 
 // Word libraries management
 router.use('/word-libraries', authenticateToken, wordLibrariesRouter);
@@ -236,6 +229,12 @@ router.post('/debug/manual-log', authenticateToken, async (req, res) => {
 
 // Debug endpoints - restrict to authenticated admins in mounting below
 router.use('/debug', authenticateToken, requireAdmin, debugRouter);
+
+// Crawler endpoints (require authentication)
+const crawlerRouter = require('./routes/crawler');
+const crawlerCollectionsRouter = require('./routes/crawlerCollections');
+router.use('/crawler/collections', authenticateToken, crawlerCollectionsRouter);
+router.use('/crawler', authenticateToken, crawlerRouter);
 
 // Error logging (no auth required for frontend error reporting)
 const errorLogRouter = require('./routes/errorLog');

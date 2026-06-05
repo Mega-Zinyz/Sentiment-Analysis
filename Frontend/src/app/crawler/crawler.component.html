@@ -1,0 +1,392 @@
+<div class="app-component" data-component="crawler" style="display:contents;">
+<div class="crawler-container">
+  <!-- Header -->
+  <div class="crawler-header">
+    <h1>🕷️ Playwright Crawler</h1>
+    <p class="subtitle">Kumpulkan data langsung dari halaman X/Twitter dengan browser crawler</p>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    {{ successMessage }}
+  </div>
+  <div *ngIf="errorMessage" class="alert alert-error">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="nav-tabs">
+    <button 
+      class="tab-button" 
+      [class.active]="currentView === 'dashboard'"
+      (click)="currentView = 'dashboard'">
+      📊 Dashboard
+    </button>
+    <button 
+      class="tab-button" 
+      [class.active]="currentView === 'start'"
+      (click)="currentView = 'start'">
+      🚀 Mulai Crawl
+    </button>
+    <button 
+      class="tab-button" 
+      [class.active]="currentView === 'monitor'"
+      (click)="currentView = 'monitor'">
+      ⏳ Monitor
+    </button>
+    <button 
+      class="tab-button" 
+      [class.active]="currentView === 'history'"
+      (click)="currentView = 'history'">
+      📈 History
+    </button>
+  </div>
+
+  <!-- Dashboard View -->
+  <div *ngIf="currentView === 'dashboard'" class="view-content dashboard-view">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats?.totalJobs || 0 }}</div>
+          <div class="stat-label">Total Jobs</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats?.completedJobs || 0 }}</div>
+          <div class="stat-label">Selesai</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats?.processingJobs || 0 }}</div>
+          <div class="stat-label">Sedang Berjalan</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">❌</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats?.failedJobs || 0 }}</div>
+          <div class="stat-label">Gagal</div>
+        </div>
+      </div>
+
+      <div class="stat-card full-width">
+        <div class="stat-icon">🐦</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats?.totalTweetsCollected || 0 }}</div>
+          <div class="stat-label">Total Tweet Dikumpulkan</div>
+        </div>
+      </div>
+
+      <div class="stat-card full-width">
+        <div class="stat-icon">📈</div>
+        <div class="stat-content">
+          <div class="stat-value">{{ stats?.avgTweetsPerJob || 0 }}</div>
+          <div class="stat-label">Rata-rata Tweet/Job</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Current Job Info -->
+    <div *ngIf="currentJob" class="current-job-card">
+      <h3>⏳ Job Sedang Berjalan</h3>
+      <div class="job-info">
+        <div class="info-row">
+          <span class="label">Keyword:</span>
+          <span class="value">{{ currentJob.keyword }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Status:</span>
+          <span class="value status" [style.color]="getStatusColor(currentJob.status)">
+            {{ getStatusIcon(currentJob.status) }} {{ currentJob.status }}
+          </span>
+        </div>
+        <div class="info-row">
+          <span class="label">Progress:</span>
+          <span class="value">{{ currentJob.collectedCount }} / {{ currentJob.targetCount }}</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width]="(currentJob.progress || 0) + '%'"></div>
+        </div>
+        <div class="info-row">
+          <span class="label">Message:</span>
+          <span class="value">{{ currentJob.statusMessage }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="!currentJob" class="no-current-job">
+      <p>Tidak ada job yang sedang berjalan</p>
+      <button class="btn-primary" (click)="currentView = 'start'">
+        🚀 Mulai Crawl Baru
+      </button>
+    </div>
+  </div>
+
+  <!-- Start Crawl View -->
+  <div *ngIf="currentView === 'start'" class="view-content start-view">
+    <div class="form-card">
+      <h2>Mulai Crawling Baru</h2>
+      
+      <div class="form-group">
+        <label for="keyword">🔍 Keyword</label>
+        <input 
+          type="text" 
+          id="keyword" 
+          [(ngModel)]="keyword"
+          placeholder="Contoh: teknologi, berita, cryptocurrency"
+          [disabled]="isSubmitting">
+        <small>Masukkan keyword untuk dicari di Twitter</small>
+      </div>
+
+      <div class="form-group">
+        <label for="targetCount">📊 Target Jumlah Tweet</label>
+        <input 
+          type="number" 
+          id="targetCount" 
+          [(ngModel)]="targetCount"
+          name="targetCount"
+          min="10"
+          max="10000"
+          [disabled]="isSubmitting">
+        <small>Jumlah minimum: 10, maksimum: 10000</small>
+      </div>
+
+      <div class="form-group">
+        <label for="sinceDate">📅 Tanggal Mulai</label>
+        <input 
+          type="date" 
+          id="sinceDate" 
+          name="sinceDate"
+          [(ngModel)]="sinceDate"
+          [disabled]="isSubmitting">
+        <small>Opsional: mulai dari tanggal ini</small>
+      </div>
+
+      <div class="form-group">
+        <label for="untilDate">📅 Tanggal Akhir</label>
+        <input 
+          type="date" 
+          id="untilDate" 
+          name="untilDate"
+          [(ngModel)]="untilDate"
+          [disabled]="isSubmitting">
+        <small>Opsional: sampai tanggal ini</small>
+      </div>
+
+      <div class="form-group">
+        <label for="xUsername">🔐 X.com Username</label>
+        <input 
+          type="text"
+          id="xUsername"
+          name="xUsername"
+          [(ngModel)]="xUsername"
+          [disabled]="isSubmitting">
+      </div>
+
+      <div class="form-group">
+        <label for="xPassword">🔐 X.com Password</label>
+        <input 
+          type="password"
+          id="xPassword"
+          name="xPassword"
+          [(ngModel)]="xPassword"
+          [disabled]="isSubmitting">
+        <small>Opsional: login X.com untuk melihat konten yang memerlukan autentikasi</small>
+      </div>
+
+      <button 
+        class="btn-primary" 
+        (click)="submitCrawlJob()"
+        [disabled]="isSubmitting || !keyword.trim()">
+        <span *ngIf="!isSubmitting">🚀 Mulai Crawl</span>
+        <span *ngIf="isSubmitting">⏳ Memproses...</span>
+      </button>
+
+      <div class="info-box">
+        <h4>📋 Informasi:</h4>
+        <ul>
+          <li>Crawling akan berjalan di background</li>
+          <li>Anda bisa monitor progress di tab Monitor</li>
+          <li>Lihat history semua crawl di tab History</li>
+          <li>Kecepatan tergantung dari beban server dan batasan akses halaman X/Twitter</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monitor View -->
+  <div *ngIf="currentView === 'monitor'" class="view-content monitor-view">
+    <div class="monitor-card">
+      <h2>⏳ Monitor Crawling</h2>
+
+      <div *ngIf="currentJob || selectedJob" class="job-monitor">
+        <div class="job-header">
+          <h3>{{ (selectedJob || currentJob)?.keyword || 'Job' }}</h3>
+          <span class="status-badge" 
+            [style.backgroundColor]="getStatusColor((selectedJob || currentJob)?.status || 'unknown')">
+            {{ getStatusIcon((selectedJob || currentJob)?.status || 'unknown') }}
+            {{ (selectedJob || currentJob)?.status }}
+          </span>
+        </div>
+
+        <div class="job-details">
+          <div class="detail-row">
+            <span class="label">Job ID:</span>
+            <span class="value code">{{ (selectedJob || currentJob)?.jobId }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="label">Target:</span>
+            <span class="value">{{ (selectedJob || currentJob)?.targetCount }} tweets</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="label">Terkumpul:</span>
+            <span class="value">{{ (selectedJob || currentJob)?.collectedCount }} tweets</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="label">Progress:</span>
+            <div class="progress-container">
+              <div class="progress-bar">
+                <div class="progress-fill" [style.width]="((selectedJob || currentJob)?.progress || 0) + '%'"></div>
+              </div>
+              <span class="progress-text">{{ (selectedJob || currentJob)?.progress || 0 }}%</span>
+            </div>
+          </div>
+
+          <div class="detail-row" *ngIf="(selectedJob || currentJob)?.failedCount">
+            <span class="label">Gagal:</span>
+            <span class="value error">{{ (selectedJob || currentJob)?.failedCount }}</span>
+          </div>
+
+          <div class="detail-row" *ngIf="(selectedJob || currentJob)?.statusMessage">
+            <span class="label">Pesan:</span>
+            <span class="value">{{ (selectedJob || currentJob)?.statusMessage }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="label">Durasi:</span>
+            <span class="value">{{ getDuration((selectedJob || currentJob)?.createdAt || '', (selectedJob || currentJob)?.completedAt) }}</span>
+          </div>
+
+          <div class="detail-row">
+            <span class="label">Dibuat:</span>
+            <span class="value">{{ formatDate((selectedJob || currentJob)?.createdAt || '') }}</span>
+          </div>
+
+          <div class="detail-row" *ngIf="(selectedJob || currentJob)?.completedAt">
+            <span class="label">Selesai:</span>
+            <span class="value">{{ formatDate((selectedJob || currentJob)?.completedAt || '') }}</span>
+          </div>
+
+          <div class="detail-row error" *ngIf="(selectedJob || currentJob)?.error">
+            <span class="label">Error:</span>
+            <span class="value">{{ (selectedJob || currentJob)?.error }}</span>
+          </div>
+        </div>
+
+        <div class="action-buttons">
+          <button 
+            *ngIf="(selectedJob || currentJob)?.status === 'processing' || (selectedJob || currentJob)?.status === 'queued'"
+            class="btn-danger" 
+            (click)="cancelJob((selectedJob || currentJob)?.jobId || '')">
+            ⛔ Batalkan Job
+          </button>
+          <button 
+            class="btn-secondary" 
+            (click)="selectedJob = null; currentView = 'history'">
+            📈 Lihat History
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="!currentJob && !selectedJob" class="empty-state">
+        <p>Tidak ada job yang dipilih</p>
+        <button class="btn-primary" (click)="currentView = 'start'">
+          🚀 Mulai Crawl Baru
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- History View -->
+  <div *ngIf="currentView === 'history'" class="view-content history-view">
+    <div class="history-card">
+      <h2>📈 History Crawling</h2>
+
+      <div *ngIf="jobs.length > 0" class="jobs-table-wrapper">
+        <table class="jobs-table">
+          <thead>
+            <tr>
+              <th>Keyword</th>
+              <th>Status</th>
+              <th>Progress</th>
+              <th>Terkumpul</th>
+              <th>Target</th>
+              <th>Durasi</th>
+              <th>Tanggal</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let job of jobs" [class]="'status-' + job.status">
+              <td class="keyword">{{ job.keyword }}</td>
+              <td class="status">
+                <span class="status-badge" [style.backgroundColor]="getStatusColor(job.status)">
+                  {{ getStatusIcon(job.status) }} {{ job.status }}
+                </span>
+              </td>
+              <td class="progress">
+                <div class="progress-bar small">
+                  <div class="progress-fill" [style.width]="job.progress + '%'"></div>
+                </div>
+              </td>
+              <td class="collected">{{ job.collectedCount }}</td>
+              <td class="target">{{ job.targetCount }}</td>
+              <td class="duration">{{ getDuration(job.createdAt, job.completedAt) }}</td>
+              <td class="date">{{ formatDate(job.createdAt) }}</td>
+              <td class="actions">
+                <button 
+                  class="btn-small btn-info" 
+                  (click)="selectJob(job)"
+                  title="Monitor job ini">
+                  👁️
+                </button>
+                <button 
+                  *ngIf="job.status === 'processing' || job.status === 'queued'"
+                  class="btn-small btn-danger" 
+                  (click)="cancelJob(job.jobId)"
+                  title="Batalkan job ini">
+                  ❌
+                </button>
+                <button 
+                  *ngIf="job.status === 'failed' || job.status === 'suspended' || job.status === 'error'"
+                  class="btn-small btn-warning" 
+                  (click)="resumeJob(job.jobId)"
+                  title="Lanjutkan job ini (kumpulkan sisa target)">
+                  🔄
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="jobs.length === 0" class="empty-state">
+        <p>Belum ada history crawling</p>
+        <button class="btn-primary" (click)="currentView = 'start'">
+          🚀 Mulai Crawl Pertama
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

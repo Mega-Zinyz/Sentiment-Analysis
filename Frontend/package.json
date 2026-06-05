@@ -5,7 +5,6 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
-    "prebuild": "node ./scripts/generate-environment.js",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
@@ -20,7 +19,9 @@
     "chart.js": "^4.5.1",
     "chartjs-adapter-date-fns": "^3.0.0",
     "ng2-charts": "^8.0.0",
+    "@angular/cdk": "^20.0.0",
     "rxjs": "~7.8.0",
+    "socket.io-client": "^4.7.2",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
   },

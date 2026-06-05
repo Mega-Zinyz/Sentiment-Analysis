@@ -5,12 +5,23 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
+const http = require('http');
+const socketIO = require('socket.io');
 const { initDatabase } = require('./config/mysql-database');
 const SessionManager = require('./utils/sessionManager');
 const logger = require('./utils/logger');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const server = http.createServer(app);
+const io = socketIO(server, {
+  cors: {
+    origin: ['http://localhost:4200', 'http://127.0.0.1:4200', 'http://localhost', 'http://localhost:80'],
+    methods: ['GET', 'POST'],
+    credentials: true
+  }
+});
+
+const port = process.env.PORT || 5000;
 
 // Enhanced CORS configuration with pattern matching
 const allowedOrigins = process.env.ALLOWED_ORIGINS 
@@ -84,6 +95,14 @@ const initializeApp = async () => {
   try {
     await initDatabase();
     logger.info('✅ MySQL database initialized successfully');
+    
+    // Initialize job queue and processor
+    const { createJobQueue, initializeQueueProcessor, setIO } = require('./utils/job-queue');
+    setIO(io);
+    const queue = createJobQueue();
+    initializeQueueProcessor(queue);
+    logger.info('✅ Job queue initialized successfully');
+    
   } catch (error) {
     logger.error('❌ Database initialization failed', { error: error.message, stack: error.stack });
     process.exit(1);
@@ -139,7 +158,19 @@ initializeApp().then(() => {
   // Start automatic session cleanup (every hour)
   SessionManager.startCleanupJob(60);
   
-  app.listen(port, () => {
+  // Socket.io connection handling
+  io.on('connection', (socket) => {
+    logger.info(`📱 Client connected: ${socket.id}`);
+    
+    socket.on('disconnect', () => {
+      logger.info(`📱 Client disconnected: ${socket.id}`);
+    });
+  });
+  
+  // Make io accessible to routes
+  app.locals.io = io;
+  
+  server.listen(port, () => {
     logger.info(`🚀 Backend server running on http://localhost:${port}`, {
       port,
       nodeEnv: process.env.NODE_ENV || 'development'

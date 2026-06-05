@@ -1,8 +1,8 @@
 export const environment = {
   production: false,
-  // Build-time placeholder. The prebuild script will replace this with the value
-  // from `Frontend/.env` (API_URL) if present. If not replaced, it remains '$API_URL'.
-  apiUrl: '$API_URL',
+  // In development, use relative path for API
+  // The nginx proxy will handle routing to backend:5000
+  apiUrl: '/api',
   
   // Feature flags
   enableLogging: true,

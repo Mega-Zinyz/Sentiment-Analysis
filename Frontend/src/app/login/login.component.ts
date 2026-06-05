@@ -29,7 +29,7 @@ export class LoginComponent {
     }
 
     // Get return url from route parameters or default to '/home'
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/home';
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/analysis';
   }
 
   onSubmit() {
@@ -43,8 +43,12 @@ export class LoginComponent {
 
     this.authService.login(this.username, this.password).subscribe({
       next: (response) => {
-        console.log('Login successful:', response);
-        this.router.navigate([this.returnUrl]);
+        // Clear loading/error and ensure auth state is updated before navigating
+        this.loading = false;
+        this.error = '';
+
+        // Navigate after current call stack so subscribers receive the update
+        setTimeout(() => this.router.navigate([this.returnUrl]), 0);
       },
       error: (error) => {
         console.error('Login error:', error);

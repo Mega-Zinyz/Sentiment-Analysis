@@ -1084,62 +1084,6 @@ async function deleteRawDataItemHandler(req, res) {
   }
 }
 
-/**
- * Upload tweets from X API for analysis
- * POST /api/raw-data/upload-x-tweets
- */
-async function uploadXTweetsHandler(req, res) {
-  try {
-    const userId = req.user.userId;
-    const { sessionId, tweets } = req.body;
-    
-    console.log('📥 X API tweets upload request:');
-    console.log('- User ID:', userId);
-    console.log('- Session ID:', sessionId);
-    console.log('- Tweet count:', tweets?.length || 0);
-    
-    if (!sessionId || !tweets || !Array.isArray(tweets) || tweets.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Session ID and tweets array are required'
-      });
-    }
-    
-    const db = getDb();
-    
-    // Format tweets for raw_twitter_data table
-    const formattedTweets = tweets.map(tweet => ({
-      tweet_id: tweet.tweet_id || tweet.id,
-      tweet_text: tweet.tweet_text || tweet.text,
-      created_at: tweet.created_at,
-      author_id: tweet.author_id,
-      username: tweet.username || 'unknown'
-    }));
-    
-    // Process using existing raw data processor
-    const result = await processRawDataBatch(db, userId, sessionId, formattedTweets);
-    
-    console.log(`✅ X API tweets uploaded: ${result.inserted} inserted, ${result.duplicates} duplicates`);
-    
-    res.json({
-      success: true,
-      message: 'Tweets uploaded successfully',
-      sessionId: sessionId,
-      totalItems: result.inserted + result.duplicates,
-      inserted: result.inserted,
-      duplicates: result.duplicates
-    });
-    
-  } catch (error) {
-    console.error('❌ Error uploading X API tweets:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to upload tweets',
-      error: error.message
-    });
-  }
-}
-
 module.exports = {
   uploadRawDataHandler,
   uploadCsvFileHandler,
@@ -1150,6 +1094,5 @@ module.exports = {
   deleteSessionHandler,
   viewSessionDataHandler,
   updateRawDataItemHandler,
-  deleteRawDataItemHandler,
-  uploadXTweetsHandler
+  deleteRawDataItemHandler
 };

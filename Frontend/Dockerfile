@@ -10,7 +10,7 @@ COPY package*.json ./
 # Install dependencies
 RUN npm ci
 
-# Copy source code
+# Copy rest of app source
 COPY . .
 
 # Build the Angular application
@@ -32,6 +32,13 @@ RUN ls -la /tmp/dist && \
     else \
       cp -r /tmp/dist/* /usr/share/nginx/html/; \
     fi && \
+    # Create a fallback styles.css if the build produced a hashed stylesheet
+    for f in /usr/share/nginx/html/styles-*.css; do \
+      if [ -f "$f" ]; then \
+        cp "$f" /usr/share/nginx/html/styles.css; \
+        break; \
+      fi; \
+    done && \
     rm -rf /tmp/dist
 
 # Copy custom nginx configuration

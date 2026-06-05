@@ -24,27 +24,27 @@
     <h2>Choose Analysis Method</h2>
     
     <div class="mode-cards">
-      <!-- Direct API Card -->
-      <div class="mode-card" (click)="selectDirectApi()">
+      <!-- Browser Crawl Data Card -->
+      <div class="mode-card" (click)="selectCrawler()">
         <div class="card-icon">🐦</div>
-        <h3>Direct Twitter API</h3>
-        <p>Fetch tweets directly from Twitter API using keywords and analyze sentiment in real-time</p>
+        <h3>Use Playwright Crawl Data</h3>
+        <p>Gunakan data yang dikumpulkan oleh Playwright dari halaman X/Twitter untuk analisis sentimen.</p>
         <div class="card-features">
-          <span class="feature">✓ Real-time data</span>
+          <span class="feature">✓ Crawl website X/Twitter</span>
           <span class="feature">✓ Keyword search</span>
-          <span class="feature">✓ Live analysis</span>
+          <span class="feature">✓ Analyze crawled content</span>
         </div>
-        <button class="card-button primary">Use Twitter API</button>
+        <button class="card-button primary">Open Crawler</button>
       </div>
 
       <!-- Upload File Card -->
       <div class="mode-card" (click)="selectUploadFile()">
         <div class="card-icon">📄</div>
-        <h3>Upload Raw Data</h3>
-        <p>Upload your own raw Twitter data file (.txt or .csv) and train a custom sentiment analysis model</p>
+        <h3>Upload Raw Crawl Data</h3>
+        <p>Upload raw crawl data file (.txt, .csv, or .tsv) and run sentiment analysis on scraped content.</p>
         <div class="card-features">
-          <span class="feature">✓ TXT & CSV files</span>
-          <span class="feature">✓ Manual training</span>
+          <span class="feature">✓ TXT, CSV & TSV files</span>
+          <span class="feature">✓ Manual upload</span>
           <span class="feature">✓ Auto-conversion</span>
         </div>
         <button class="card-button secondary">Upload File</button>
@@ -288,7 +288,7 @@
 
     <!-- Step 1: Upload Data -->
     <div *ngIf="currentStep === 'upload'" class="upload-step">
-      <h3>📤 Upload Raw Twitter Data</h3>
+      <h3>📤 Upload Raw Crawl Data</h3>
       
       <form [formGroup]="uploadForm" (ngSubmit)="uploadRawData()">
         <div class="form-group">
@@ -334,13 +334,13 @@
 
         <!-- Raw Data Text Area -->
         <div class="form-group">
-          <label for="rawDataText">Raw Twitter Data</label>
+          <label for="rawDataText">Raw Crawl Data</label>
           <textarea 
             id="rawDataText"
             formControlName="rawDataText"
-            placeholder="Paste your Twitter data here:
+            placeholder="Paste your raw X/Twitter crawl data here:
 
-Twitter API JSON format (recommended):
+Raw JSON format (recommended):
 [
   {{ '{' }}
     &quot;id&quot;: &quot;1234567890123456789&quot;,
@@ -355,22 +355,22 @@ Or legacy text format (one per line):
             rows="8"
             class="form-textarea"></textarea>
           <div class="form-help">
-            <strong>💡 Getting More Data (Twitter API Free Tier = 100 tweets/month):</strong>
+            <strong>💡 Recommended Data Sources:</strong>
             <ul style="margin: 0.5rem 0; padding-left: 1.5rem; background: #f0f8ff; padding: 0.5rem; border-radius: 4px;">
-              <li><strong>🔑 Multiple API Keys:</strong> Create multiple developer accounts for 300-500 tweets/month</li>
-              <li><strong>🎓 Academic Access:</strong> Apply for Twitter Academic Research (10M tweets/month FREE)</li>
-              <li><strong>📱 Manual Collection:</strong> Use browser extensions or scraping tools (legal gray area)</li>
-              <li><strong>🗂️ Existing Datasets:</strong> Use Kaggle, GitHub, or research datasets</li>
+              <li><strong>✅ Built-in Playwright Crawler:</strong> Collect data directly from X/Twitter pages without API keys.</li>
+              <li><strong>🧾 Exported Crawled Data:</strong> Use previously scraped JSON, CSV, or TSV files.</li>
+              <li><strong>🗂️ Public Datasets:</strong> Use research and community datasets for training.</li>
+              <li><strong>⚠️ Legal Reminder:</strong> Use scraping tools responsibly and respect website terms.</li>
             </ul>
             
-            <strong>Accepted formats:</strong> 
+            <strong>Accepted formats:</strong>
             <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
-              <li><strong>Twitter API JSON:</strong> JSON array with {{ '{' }}id, text, created_at, author_id{{ '}' }} objects (recommended)</li>
+              <li><strong>Crawl JSON:</strong> JSON array with {{ '{' }}id, text, created_at, author_id{{ '}' }} objects (recommended)</li>
               <li><strong>Text files (.txt):</strong> "YYYY-MM-DD HH:MM:SS+TZ username message number"</li>
               <li><strong>CSV files (.csv):</strong> timestamp,username,message (comma or tab separated)</li>
               <li><strong>TSV files:</strong> date\tuser\ttweet (tab separated, auto-detected)</li>
             </ul>
-            <strong>Minimum:</strong> 20 data points (15 for training + 5 for prediction) | <strong>Recommended:</strong> 500+ for better accuracy
+            <strong>Minimum:</strong> 20 data points | <strong>Recommended:</strong> 500+ for better accuracy
           </div>
           <div *ngIf="uploadForm.get('rawDataText')?.invalid && uploadForm.get('rawDataText')?.touched" class="form-error">
             Raw data is required (minimum 50 characters)
@@ -549,26 +549,38 @@ Or legacy text format (one per line):
             </div>
           </div>
           <div class="labeling-buttons">
-            <button 
-              class="label-btn positive" 
+            <button
+              class="label-btn positive"
               (click)="labelItem(item, 'Positive')"
               [disabled]="labelingProgress.needed.positive <= 0">
               👍 Positive
             </button>
-            <button 
-              class="label-btn negative" 
+            <button
+              class="label-btn negative"
               (click)="labelItem(item, 'Negative')"
               [disabled]="labelingProgress.needed.negative <= 0">
               👎 Negative
             </button>
-            <button 
-              class="label-btn neutral" 
+            <button
+              class="label-btn neutral"
               (click)="labelItem(item, 'Neutral')"
               [disabled]="labelingProgress.needed.neutral <= 0">
               ⚪ Neutral
             </button>
+            <button
+              class="label-btn skip"
+              (click)="skipItem(item)"
+              title="Lewati tweet ini, cari tweet lain">
+              ⏭ Lewati
+            </button>
           </div>
         </div>
+      </div>
+
+      <!-- Empty state after all visible tweets skipped -->
+      <div *ngIf="labelingData && labelingData.length === 0 && totalLabelingNeeded > 0" class="labeling-empty">
+        <p>Semua tweet telah dilewati. Muat ulang untuk menampilkan tweet lain.</p>
+        <button class="btn-secondary" (click)="reloadLabelingData()">🔄 Muat Ulang Tweet</button>
       </div>
 
       <div *ngIf="totalLabelingNeeded === 0" class="labeling-complete">

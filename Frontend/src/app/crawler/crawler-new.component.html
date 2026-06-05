@@ -1,0 +1,648 @@
+<div class="app-component" data-component="crawler-new" style="display: contents;">
+  <div class="crawler-container">
+
+    <!-- Global Alerts -->
+    @if (successMessage) {
+      <div class="alert alert-success">{{ successMessage }}</div>
+    }
+    @if (errorMessage) {
+      <div class="alert alert-error">{{ errorMessage }}</div>
+    }
+
+    <!-- ================================================================
+         VIEW: COLLECTIONS (Halaman utama)
+         ================================================================ -->
+    @if (currentView === 'collections') {
+      <div class="view-fade">
+
+        <div class="page-header">
+          <div class="page-title">
+            <h1>🕷️ Data Crawling</h1>
+            <p>Kelola database tweet untuk analisis sentimen</p>
+          </div>
+          <button class="btn-primary" (click)="openCreateDialog()">+ Buat Database Baru</button>
+        </div>
+
+        @if (isLoadingCollections) {
+          <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Memuat database...</p>
+          </div>
+        } @else if (collections.length === 0) {
+          <div class="empty-hero">
+            <div class="empty-icon">🗄️</div>
+            <h2>Belum Ada Database Crawling</h2>
+            <p>Buat database crawling pertama Anda untuk mulai mengumpulkan tweet dari X.com secara otomatis.</p>
+            <button class="btn-primary btn-large" (click)="openCreateDialog()">
+              + Buat Database Crawling
+            </button>
+          </div>
+        } @else {
+          <div class="collections-grid">
+            @for (col of collections; track col.collectionId) {
+              <div class="collection-card" (click)="openCollection(col)">
+                <div class="card-top">
+                  <span class="card-icon">🗄️</span>
+                  <span class="status-pill" [class]="'pill-' + col.status">{{ col.status }}</span>
+                  <div class="card-actions" (click)="$event.stopPropagation()">
+                    <button class="card-action-btn edit" (click)="openEditDialog(col, $event)" title="Edit">✏️</button>
+                    <button class="card-action-btn delete" (click)="deleteCollection(col, $event)" title="Hapus">🗑️</button>
+                  </div>
+                </div>
+                <h3 class="card-name">{{ col.name }}</h3>
+                <p class="card-desc">{{ col.description || 'Tidak ada deskripsi' }}</p>
+                @if (col.keywords && col.keywords.length > 0) {
+                  <div class="card-keywords">
+                    @for (kw of col.keywords.slice(0, 3); track kw) {
+                      <span class="kw-tag">{{ kw }}</span>
+                    }
+                    @if (col.keywords.length > 3) {
+                      <span class="kw-more">+{{ col.keywords.length - 3 }}</span>
+                    }
+                  </div>
+                }
+                <div class="card-stats">
+                  <div class="card-stat">
+                    <span class="cs-num">{{ col.tweetCount }}</span>
+                    <span class="cs-lbl">Tweets</span>
+                  </div>
+                  <div class="card-stat">
+                    <span class="cs-num cs-date">{{ formatDate(col.createdAt) }}</span>
+                    <span class="cs-lbl">Dibuat</span>
+                  </div>
+                </div>
+                <div class="card-overlay">Buka →</div>
+              </div>
+            }
+          </div>
+        }
+
+      </div>
+    }
+
+    <!-- ================================================================
+         VIEW: COLLECTION DETAIL
+         ================================================================ -->
+    @if (currentView === 'collection-detail' && selectedCollection) {
+      <div class="view-fade detail-view">
+
+        <!-- Breadcrumb -->
+        <div class="breadcrumb-bar">
+          <button class="btn-back" (click)="goBack()">← Kembali</button>
+          <span class="bc-sep">/</span>
+          <span class="bc-current">{{ selectedCollection.name }}</span>
+          <span class="status-pill" [class]="'pill-' + selectedCollection.status">{{ selectedCollection.status }}</span>
+          <button
+            class="btn-analyze"
+            [disabled]="isSendingToAnalysis || !selectedCollection.tweetCount"
+            (click)="sendToAnalysis(selectedCollection)"
+            title="Kirim tweet ke halaman analisis sentimen">
+            {{ isSendingToAnalysis ? '⏳ Memindahkan...' : '🔬 Analisis Sentimen' }}
+          </button>
+        </div>
+
+        <!-- Transfer progress banner -->
+        @if (isSendingToAnalysis) {
+          <div class="transfer-banner">
+            <div class="transfer-spinner"></div>
+            <div class="transfer-text">
+              <strong>Memindahkan {{ selectedCollection.tweetCount | number }} tweet ke sesi analisis...</strong>
+              <span>Harap tunggu, jangan tutup halaman ini</span>
+            </div>
+          </div>
+        }
+
+        <!-- Info strip -->
+        <div class="info-strip">
+          <div class="info-text">
+            @if (selectedCollection.description) {
+              <p><strong>Deskripsi:</strong> {{ selectedCollection.description }}</p>
+            }
+            @if (selectedCollection.keywords && selectedCollection.keywords.length > 0) {
+              <p><strong>Keywords:</strong> {{ selectedCollection.keywords.join(', ') }}</p>
+            }
+            @if (selectedCollection.tweetDateMin || selectedCollection.tweetDateMax) {
+              <p class="tweet-date-range-info">
+                <strong>📅 Rentang Tweet:</strong>
+                <span class="tweet-date-range-badge">
+                  {{ formatDateShort(selectedCollection.tweetDateMin) }}
+                  →
+                  {{ formatDateShort(selectedCollection.tweetDateMax) }}
+                </span>
+              </p>
+            }
+          </div>
+          <div class="info-counters">
+            <div class="counter-box">
+              <span class="counter-num">{{ selectedCollection.tweetCount || 0 }}</span>
+              <span class="counter-lbl">Total Tweet</span>
+            </div>
+            <div class="counter-box">
+              <span class="counter-num">{{ jobs.length }}</span>
+              <span class="counter-lbl">Total Jobs</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ LIVE MONITOR PANEL ============ -->
+        <div class="monitor-card" [class.monitor-active]="isJobActive">
+          <div class="monitor-header-row">
+            <div class="monitor-title-group">
+              <span class="live-dot" [class.pulsing]="isJobActive"></span>
+              <h3>Monitor Real-time</h3>
+            </div>
+            @if (isJobActive) {
+              <span class="live-badge">● LIVE</span>
+            } @else if (liveJob?.status === 'completed') {
+              <span class="done-badge">✅ SELESAI</span>
+            } @else if (liveJob?.status === 'failed') {
+              <span class="fail-badge">❌ GAGAL</span>
+            }
+          </div>
+
+          <!-- Job progress -->
+          @if (liveJob) {
+            <div class="monitor-body">
+              <div class="job-summary-row">
+                <div>
+                  <div class="job-keyword-text">{{ liveJob.keyword }}</div>
+                  <div class="job-count-text">{{ liveJob.collectedCount }} / {{ liveJob.targetCount }} tweets</div>
+                </div>
+                <span class="status-pill" [class]="'pill-' + liveJob.status">
+                  {{ getStatusIcon(liveJob.status) }} {{ liveJob.status }}
+                </span>
+              </div>
+
+              <div class="progress-wrapper">
+                <div class="progress-track">
+                  <div
+                    class="progress-fill"
+                    [style.width]="liveJob.progress + '%'"
+                    [class.animated-stripe]="isJobActive">
+                  </div>
+                </div>
+                <span class="progress-pct">{{ liveJob.progress }}%</span>
+              </div>
+
+              @if (isJobActive) {
+                <div class="monitor-actions">
+                  <button class="btn-danger btn-sm" (click)="cancelJob(liveJob.jobId)">⛔ Batalkan Job</button>
+                </div>
+              }
+              @if (liveJob.status === 'failed' || liveJob.status === 'suspended') {
+                <div class="monitor-actions">
+                  <button class="btn-warning btn-sm" (click)="resumeJob(liveJob.jobId)">🔄 Lanjutkan Job</button>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="monitor-idle">
+              <span class="idle-icon">📡</span>
+              <p>Tidak ada proses aktif. Mulai crawl untuk melihat progress secara real-time di sini.</p>
+            </div>
+          }
+
+          <!-- Log Terminal -->
+          <div class="log-terminal">
+            <div class="log-term-header">
+              <span>📟 Log Aktivitas</span>
+              @if (liveLog.length > 0) {
+                <button class="btn-clear" (click)="clearLog()">Hapus</button>
+              }
+            </div>
+            <div class="log-term-body">
+              @for (log of liveLog; track log.time + log.message) {
+                <div class="log-entry" [class]="'log-' + log.type">
+                  <span class="log-time">{{ log.time }}</span>
+                  <span class="log-msg">{{ log.message }}</span>
+                </div>
+              } @empty {
+                <div class="log-empty">Menunggu aktivitas...</div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- ============ CRAWL FORM (collapsible) ============ -->
+        <div class="section-card">
+          <div class="section-header">
+            <h3>🚀 Mulai Crawl Baru</h3>
+            <button
+              class="btn-toggle"
+              (click)="showCrawlForm = !showCrawlForm"
+              [disabled]="isJobActive"
+              [title]="isJobActive ? 'Tunggu job selesai terlebih dahulu' : ''">
+              {{ showCrawlForm ? '▲ Tutup' : '▼ Buka Form' }}
+            </button>
+          </div>
+
+          @if (isJobActive) {
+            <div class="form-blocked-notice">
+              ⏳ Job sedang berjalan — tunggu selesai sebelum memulai crawl baru.
+            </div>
+          }
+
+          @if (showCrawlForm && !isJobActive) {
+            <div class="crawl-form-body">
+              <div class="form-group">
+                <label>Keyword <span class="required">*</span></label>
+                <div class="keyword-tag-input" [class.kti-disabled]="isSubmitting">
+                  @for (kw of crawlKeywords; track kw; let i = $index) {
+                    <span class="kw-chip">{{ kw }}<button type="button" class="kw-chip-remove" (click)="removeCrawlKeyword(i)">✕</button></span>
+                  }
+                  <input
+                    type="text"
+                    class="kw-chip-input"
+                    [(ngModel)]="crawlKeywordInput"
+                    [placeholder]="crawlKeywords.length === 0 ? 'Ketik keyword, tekan Enter untuk tambah...' : 'Tambah keyword lain...'"
+                    (keydown)="onKeywordInputKeydown($event)"
+                    (blur)="addCrawlKeyword()"
+                    [disabled]="isSubmitting" />
+                </div>
+                <small>Enter atau koma untuk tambah keyword. Beberapa keyword digabung dengan <strong>OR</strong>. Gunakan tanda kutip manual jika ingin exact phrase, contoh: <code>"indonesia emas"</code>.</small>
+                @if (crawlKeywords.length > 0) {
+                  <div class="query-preview">
+                    <span class="qp-label">Query X.com:</span>
+                    <code class="qp-text">{{ crawlQuery }}</code>
+                  </div>
+                }
+              </div>
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label>Target Jumlah Tweet</label>
+                  <input
+                    type="number"
+                    [(ngModel)]="targetCount"
+                    min="10"
+                    max="500"
+                    [disabled]="isSubmitting" />
+                  <small>Maks. 500 per crawl</small>
+                </div>
+                <div class="form-group">
+                  <label>Filter Pencarian</label>
+                  <div class="filter-toggles">
+                    <label class="filter-toggle">
+                      <input type="checkbox" [(ngModel)]="filterRetweets" [disabled]="isSubmitting" />
+                      <span>Hapus retweet</span>
+                      <code class="filter-code">-filter:retweets</code>
+                    </label>
+                    <label class="filter-toggle">
+                      <input type="checkbox" [(ngModel)]="langId" [disabled]="isSubmitting" />
+                      <span>Bahasa Indonesia saja</span>
+                      <code class="filter-code">lang:id</code>
+                      <span class="filter-warn">⚠ bisa menghilangkan banyak tweet</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label>Sejak Tanggal (opsional)</label>
+                  <input type="date" [(ngModel)]="sinceDate" [max]="untilDate || today" [disabled]="isSubmitting" />
+                </div>
+                <div class="form-group">
+                  <label>Sampai Tanggal (opsional)</label>
+                  <input type="date" [(ngModel)]="untilDate" [min]="sinceDate" [max]="today" [disabled]="isSubmitting" />
+                </div>
+              </div>
+              @if (sinceDate || untilDate) {
+                @if (isMultiMonth) {
+                  <div class="date-hint date-hint-multi">
+                    📅 Rentang mencakup <strong>{{ monthlyChunks.length }} bulan</strong> — akan membuat <strong>{{ monthlyChunks.length }} job</strong> otomatis (1 per bulan, ~{{ monthlyChunks.length * targetCount }} tweet total)
+                    <div class="month-chips">
+                      @for (chunk of monthlyChunks.slice(0, 8); track chunk.since) {
+                        <span class="month-chip">{{ chunk.label }}</span>
+                      }
+                      @if (monthlyChunks.length > 8) {
+                        <span class="month-chip month-chip-more">+{{ monthlyChunks.length - 8 }} bulan</span>
+                      }
+                    </div>
+                  </div>
+                } @else {
+                  <div class="date-hint">
+                    📅 Mengumpulkan tweet
+                    @if (sinceDate) { dari <strong>{{ sinceDate }}</strong> }
+                    @if (untilDate) { sampai <strong>{{ untilDate }}</strong> (inklusif) }
+                  </div>
+                }
+              }
+
+              @if (credentialsLoaded) {
+                <div class="credentials-info-row">
+                  @if (cookieStatus?.hasCookies) {
+                    <span class="cred-ok">🍪 Session X.com aktif — <strong>{{ cookieStatus!.count }} cookies</strong></span>
+                  } @else {
+                    <span class="cred-missing">⚠️ Belum ada session X.com — <a routerLink="/profile">import cookies di Profil</a> untuk hasil lebih banyak</span>
+                  }
+                </div>
+              }
+
+              <div class="form-actions">
+                <button
+                  class="btn-primary"
+                  (click)="submitCrawlJob()"
+                  [disabled]="isSubmitting || crawlKeywords.length === 0">
+                  @if (isSubmitting) {
+                    <span>⏳ Mengirim...</span>
+                  } @else if (isMultiMonth) {
+                    <span>🚀 Mulai {{ monthlyChunks.length }} Job (per bulan)</span>
+                  } @else {
+                    <span>🚀 Mulai Crawl</span>
+                  }
+                </button>
+                <button class="btn-secondary" (click)="showCrawlForm = false" [disabled]="isSubmitting">
+                  Batal
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- ============ JOB HISTORY ============ -->
+        @if (jobs.length > 0) {
+          <div class="section-card">
+            <div class="section-header">
+              <h3>📈 History Jobs <span class="count-chip">{{ jobs.length }}</span></h3>
+              <input
+                class="job-search-input"
+                type="text"
+                [(ngModel)]="jobSearchQuery"
+                placeholder="🔍 Cari keyword..." />
+            </div>
+            @if (filteredJobs.length === 0) {
+              <p class="no-jobs-found">Tidak ada job yang cocok dengan pencarian "{{ jobSearchQuery }}".</p>
+            } @else {
+              <div class="table-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Keyword</th>
+                      <th>Rentang Tanggal</th>
+                      <th>Status</th>
+                      <th>Progress</th>
+                      <th>Terkumpul</th>
+                      <th>Dibuat</th>
+                      <th>Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (job of filteredJobs; track job.jobId) {
+                      <tr>
+                        <td><span class="keyword-cell">{{ job.keyword }}</span></td>
+                        <td class="date-range-cell">
+                          @if (job.sinceDate || job.untilDate) {
+                            <span class="date-range-text">
+                              {{ job.sinceDate || '…' }} → {{ job.untilDate || '…' }}
+                            </span>
+                          } @else {
+                            <span class="date-range-none">Semua waktu</span>
+                          }
+                        </td>
+                        <td>
+                          <span class="status-pill" [class]="'pill-' + job.status">
+                            {{ getStatusIcon(job.status) }} {{ job.status }}
+                          </span>
+                        </td>
+                        <td class="progress-cell">
+                          <div class="mini-progress-track">
+                            <div class="mini-progress-fill" [style.width]="job.progress + '%'"></div>
+                          </div>
+                          <span class="mini-pct">{{ job.progress }}%</span>
+                        </td>
+                        <td>{{ job.collectedCount }} / {{ job.targetCount }}</td>
+                        <td class="date-cell">{{ formatDate(job.createdAt) }}</td>
+                        <td class="actions-cell">
+                          @if (job.status === 'processing' || job.status === 'queued') {
+                            <button class="btn-icon btn-danger" (click)="cancelJob(job.jobId)" title="Batalkan">⛔</button>
+                            <button class="btn-icon btn-info" (click)="trackJob(job)" title="Pantau di monitor">👁️</button>
+                          }
+                          @if (job.status === 'failed' || job.status === 'suspended') {
+                            <button
+                              class="btn-icon btn-warning"
+                              (click)="resumeJob(job.jobId)"
+                              [title]="(job.sinceDate || job.untilDate) ? ('Ulangi crawl: ' + (job.sinceDate || '…') + ' → ' + (job.untilDate || '…')) : 'Ulangi crawl (tanpa filter tanggal)'">
+                              🔄
+                            </button>
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- ============ TWEETS TABLE ============ -->
+        <div class="section-card tweets-section" id="tweets-section">
+          <div class="section-header">
+            <h3>
+              📱 Tweets Terkumpul
+              <span class="count-chip">{{ collectionTotalTweets || selectedCollection.tweetCount || 0 }}</span>
+            </h3>
+            <div class="tweets-header-actions">
+              @if (hasSelectedTweets) {
+                <button class="btn-danger btn-sm" (click)="bulkDeleteTweets()">
+                  🗑️ Hapus {{ selectedCount }} Dipilih
+                </button>
+              }
+              <button
+                class="btn-secondary btn-sm"
+                (click)="loadCollectionTweets(selectedCollection!.collectionId, 1)">
+                🔄 Refresh
+              </button>
+            </div>
+          </div>
+
+          @if (isLoadingTweets) {
+            <div class="loading-inline">⏳ Memuat tweets...</div>
+          } @else if (collectionTweets.length > 0) {
+
+            <!-- Select-all row -->
+            <div class="select-all-row">
+              <label class="select-all-label">
+                <input
+                  type="checkbox"
+                  [checked]="allTweetsSelected"
+                  (change)="toggleSelectAllTweets()" />
+                <span>{{ allTweetsSelected ? 'Batalkan semua' : 'Pilih semua di halaman ini' }}</span>
+              </label>
+              @if (hasSelectedTweets) {
+                <span class="selected-count-badge">{{ selectedCount }} dipilih</span>
+              }
+            </div>
+
+            <div class="tweet-list">
+              @for (tweet of collectionTweets; track tweet.id || $index; let i = $index) {
+                <div class="tweet-item" [class.tweet-selected]="selectedTweetIds.has(tweet.id)">
+                  <span class="tweet-number">{{ (collectionPage - 1) * 20 + i + 1 }}</span>
+                  <input
+                    type="checkbox"
+                    class="tweet-checkbox"
+                    [checked]="selectedTweetIds.has(tweet.id)"
+                    (change)="toggleSelectTweet(tweet.id)" />
+                  <div class="tweet-body">
+                    <div class="tweet-header">
+                      <span class="tweet-author">@{{ tweet.username }}</span>
+                      <div class="tweet-dates">
+                        @if (tweet.createdAt) {
+                          <span class="tweet-date tweet-date-real" title="Tanggal tweet di X.com">
+                            📅 {{ formatDate(tweet.createdAt) }}
+                          </span>
+                        } @else {
+                          <span class="tweet-date tweet-date-import" title="Tanggal diimport (tanggal asli tidak tersedia)">
+                            📥 {{ formatDate(tweet.importedAt) }}
+                          </span>
+                        }
+                      </div>
+                      <button class="tweet-delete-btn" (click)="deleteTweet(tweet.id)" title="Hapus tweet">🗑️</button>
+                    </div>
+                    <p class="tweet-text">{{ tweet.text }}</p>
+                    @if (tweet.url) {
+                      <a [href]="tweet.url" target="_blank" rel="noopener" class="tweet-link">
+                        Lihat di X.com ↗
+                      </a>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+
+            <div class="pagination-row">
+              <button
+                class="btn-page"
+                [disabled]="collectionPage <= 1"
+                (click)="loadCollectionTweets(selectedCollection!.collectionId, collectionPage - 1)">
+                ← Sebelumnya
+              </button>
+              <span class="page-info">
+                Halaman {{ collectionPage }} dari {{ collectionTotalPages }}
+                <span class="page-total">({{ collectionTotalTweets }} tweets)</span>
+              </span>
+              <button
+                class="btn-page"
+                [disabled]="collectionPage >= collectionTotalPages"
+                (click)="loadCollectionTweets(selectedCollection!.collectionId, collectionPage + 1)">
+                Berikutnya →
+              </button>
+            </div>
+
+            <!-- Jump to page -->
+            @if (collectionTotalPages > 2) {
+              <div class="jump-page-row">
+                <span>Ke halaman:</span>
+                <input
+                  type="number"
+                  class="jump-page-input"
+                  [(ngModel)]="jumpPageInput"
+                  [min]="1"
+                  [max]="collectionTotalPages"
+                  (keydown.enter)="goToJumpPage()" />
+                <button class="btn-secondary btn-sm" (click)="goToJumpPage()">Go</button>
+                <span class="jump-page-hint">dari {{ collectionTotalPages }}</span>
+              </div>
+            }
+
+          } @else {
+            <div class="empty-tweets">
+              <p>Belum ada tweet yang terkumpul dalam database ini.</p>
+              <button class="btn-primary btn-sm" (click)="showCrawlForm = true">
+                🚀 Mulai Crawl Sekarang
+              </button>
+            </div>
+          }
+        </div>
+
+      </div>
+    }
+
+    <!-- ================================================================
+         MODAL: Buat Collection Baru
+         ================================================================ -->
+    @if (showCreateDialog) {
+      <div class="modal-overlay" (click)="showCreateDialog = false">
+        <div class="modal-box" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h3>🗄️ Buat Database Crawling Baru</h3>
+            <button class="modal-close" (click)="showCreateDialog = false">✕</button>
+          </div>
+
+          <div class="form-group">
+            <label>Nama Database <span class="required">*</span></label>
+            <input
+              type="text"
+              [(ngModel)]="newCollectionName"
+              placeholder="Contoh: Analisis Sentimen Pemilu 2024"
+              maxlength="255" />
+          </div>
+          <div class="form-group">
+            <label>Deskripsi (opsional)</label>
+            <textarea
+              [(ngModel)]="newCollectionDescription"
+              placeholder="Jelaskan tujuan pengumpulan data ini..."
+              rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Keywords (pisahkan dengan koma, opsional)</label>
+            <input
+              type="text"
+              [(ngModel)]="newCollectionKeywords"
+              placeholder="pemilu, pilpres, capres" />
+            <small>Hanya sebagai label — tidak mempengaruhi proses crawl</small>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn-primary" (click)="createCollection()">✅ Buat Database</button>
+            <button class="btn-secondary" (click)="showCreateDialog = false">Batal</button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ================================================================
+         MODAL: Edit Collection
+         ================================================================ -->
+    @if (showEditDialog && editingCollection) {
+      <div class="modal-overlay" (click)="showEditDialog = false">
+        <div class="modal-box" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h3>✏️ Edit Database Crawling</h3>
+            <button class="modal-close" (click)="showEditDialog = false">✕</button>
+          </div>
+
+          <div class="form-group">
+            <label>Nama Database <span class="required">*</span></label>
+            <input
+              type="text"
+              [(ngModel)]="editCollectionName"
+              placeholder="Contoh: Analisis Sentimen Pemilu 2024"
+              maxlength="255" />
+          </div>
+          <div class="form-group">
+            <label>Deskripsi (opsional)</label>
+            <textarea
+              [(ngModel)]="editCollectionDescription"
+              placeholder="Jelaskan tujuan pengumpulan data ini..."
+              rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Keywords (pisahkan dengan koma, opsional)</label>
+            <input
+              type="text"
+              [(ngModel)]="editCollectionKeywords"
+              placeholder="pemilu, pilpres, capres" />
+            <small>Hanya sebagai label — tidak mempengaruhi proses crawl</small>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn-primary" (click)="saveEditCollection()">💾 Simpan</button>
+            <button class="btn-secondary" (click)="showEditDialog = false">Batal</button>
+          </div>
+        </div>
+      </div>
+    }
+
+  </div>
+</div>
