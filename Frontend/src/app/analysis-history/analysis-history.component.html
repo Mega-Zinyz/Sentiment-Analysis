@@ -202,6 +202,225 @@
           </div>
         </div>
         
+        <!-- ─── Parameter Analisis ─────────────────────────────── -->
+        <div class="hist-params-bar" *ngIf="selectedTestSplit !== null || selectedNeutralMin !== null">
+          <span class="hist-param-item" *ngIf="selectedTestSplit !== null">
+            <span class="hist-param-label">Train/Test Split</span>
+            <span class="hist-param-value">{{ ((1 - selectedTestSplit) * 100).toFixed(0) }}/{{ (selectedTestSplit * 100).toFixed(0) }}</span>
+          </span>
+          <ng-container *ngIf="selectedNeutralMin !== null">
+            <span class="hist-param-sep">|</span>
+            <span class="hist-param-item">
+              <span class="hist-param-label">neutralMin</span>
+              <span class="hist-param-value">{{ selectedNeutralMin }}</span>
+            </span>
+            <span class="hist-param-sep">|</span>
+            <span class="hist-param-item">
+              <span class="hist-param-label">neutralMax</span>
+              <span class="hist-param-value">{{ selectedNeutralMax }}</span>
+            </span>
+          </ng-container>
+        </div>
+
+        <!-- Training Metrics Section (legacy / old format) -->
+        <div class="metrics-section" *ngIf="selectedAnalysis && getMetrics(selectedAnalysis) as metrics">
+          <div class="metrics-header">
+            <h4>
+              <i class="fas fa-chart-bar"></i>
+              Metrik Model
+              <span class="metrics-source-badge" [class.test-badge]="isTestMetrics(selectedAnalysis)">
+                {{ isTestMetrics(selectedAnalysis) ? 'Test Set' : 'Training Set' }}
+              </span>
+              <span class="split-info-badge" *ngIf="getTestSplit(selectedAnalysis) as ts">
+                Split {{ (1-ts)*100 | number:'1.0-0' }}/{{ ts*100 | number:'1.0-0' }}
+              </span>
+            </h4>
+          </div>
+          <div class="metrics-grid">
+            <!-- Overall scores — support both old (test_accuracy) and new (accuracy) field names -->
+            <div class="metric-card accent-blue">
+              <div class="metric-label">{{ isTestMetrics(selectedAnalysis) ? 'Akurasi Test Set' : 'Akurasi Training' }}</div>
+              <div class="metric-value">{{ formatPercent(metrics.test_accuracy ?? metrics.accuracy ?? metrics.training_accuracy) }}</div>
+              <div class="metric-sub" *ngIf="isTestMetrics(selectedAnalysis) && metrics.train_samples">
+                {{ metrics.train_samples }} train / {{ metrics.test_samples }} test
+              </div>
+            </div>
+            <div class="metric-card accent-purple">
+              <div class="metric-label">Cross-Validation</div>
+              <div class="metric-value">{{ formatPercent(metrics.cross_validation_mean) }}</div>
+              <div class="metric-sub">± {{ formatPercent(metrics.cross_validation_std) }}</div>
+            </div>
+            <div class="metric-card accent-teal" *ngIf="metrics.classification_report && metrics.classification_report['weighted avg'] as wa">
+              <div class="metric-label">F1 (Weighted)</div>
+              <div class="metric-value">{{ formatScore(wa['f1-score']) }}</div>
+            </div>
+            <div class="metric-card accent-orange" *ngIf="metrics.classification_report && metrics.classification_report['macro avg'] as ma">
+              <div class="metric-label">F1 (Macro)</div>
+              <div class="metric-value">{{ formatScore(ma['f1-score']) }}</div>
+            </div>
+          </div>
+
+          <!-- Per-class table (old format only — new format uses the panel below) -->
+          <div class="metrics-table-wrap" *ngIf="metrics.classification_report">
+            <table class="metrics-table">
+              <thead>
+                <tr>
+                  <th>Kelas</th>
+                  <th>Precision</th>
+                  <th>Recall</th>
+                  <th>F1-Score</th>
+                  <th>Support</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="metrics.classification_report.positive as c" class="row-positive">
+                  <td><span class="class-badge positive">Positive</span></td>
+                  <td>{{ formatScore(c.precision) }}</td>
+                  <td>{{ formatScore(c.recall) }}</td>
+                  <td>{{ formatScore(c['f1-score']) }}</td>
+                  <td>{{ c.support }}</td>
+                </tr>
+                <tr *ngIf="metrics.classification_report.negative as c" class="row-negative">
+                  <td><span class="class-badge negative">Negative</span></td>
+                  <td>{{ formatScore(c.precision) }}</td>
+                  <td>{{ formatScore(c.recall) }}</td>
+                  <td>{{ formatScore(c['f1-score']) }}</td>
+                  <td>{{ c.support }}</td>
+                </tr>
+                <tr *ngIf="metrics.classification_report.neutral as c" class="row-neutral">
+                  <td><span class="class-badge neutral">Neutral</span></td>
+                  <td>{{ formatScore(c.precision) }}</td>
+                  <td>{{ formatScore(c.recall) }}</td>
+                  <td>{{ formatScore(c['f1-score']) }}</td>
+                  <td>{{ c.support }}</td>
+                </tr>
+                <tr class="row-avg" *ngIf="metrics.classification_report['weighted avg'] as wa">
+                  <td><span class="class-badge avg">Weighted Avg</span></td>
+                  <td>{{ formatScore(wa.precision) }}</td>
+                  <td>{{ formatScore(wa.recall) }}</td>
+                  <td>{{ formatScore(wa['f1-score']) }}</td>
+                  <td>{{ wa.support }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ─── ComplementNB Official Metrics Panel (new Python format) ── -->
+        <div class="hist-metrics-panel" *ngIf="selectedCNBMetrics">
+          <div class="hist-panel-header">
+            <h4>Metrik Evaluasi Resmi — ComplementNB + Sample Weight</h4>
+            <span class="hist-mode-badge" *ngIf="selectedIsInset">Mode: InSet Lexicon</span>
+          </div>
+          <p class="hist-panel-sub">Dihitung pada <strong>20% data uji</strong> (held-out) — gunakan angka ini untuk laporan skripsi.</p>
+
+          <div class="hist-metrics-cards">
+            <div class="hist-metric-card">
+              <div class="hist-metric-label">Akurasi</div>
+              <div class="hist-metric-value">{{ fmtPct(selectedCNBMetrics.accuracy) }}</div>
+            </div>
+            <div class="hist-metric-card" *ngIf="selectedCNBMetrics.cross_validation_mean">
+              <div class="hist-metric-label">CV (5-fold, train set)</div>
+              <div class="hist-metric-value">{{ fmtPct(selectedCNBMetrics.cross_validation_mean) }}
+                <small>± {{ fmtPct(selectedCNBMetrics.cross_validation_std) }}</small>
+              </div>
+            </div>
+            <div class="hist-metric-card">
+              <div class="hist-metric-label">Train / Test</div>
+              <div class="hist-metric-value">{{ selectedCNBMetrics.train_samples | number }} / {{ selectedCNBMetrics.test_samples | number }}</div>
+            </div>
+          </div>
+
+          <table class="hist-metrics-table">
+            <thead>
+              <tr><th>Kelas</th><th>Precision</th><th>Recall</th><th>F1-Score</th><th>Support</th></tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cls of ['Positive','Negative','Neutral']">
+                <td><span [class]="cls.toLowerCase() + '-text'">{{ cls }}</span></td>
+                <td>{{ fmtPct(getPerClassData(selectedCNBMetrics, cls)?.precision) }}</td>
+                <td>{{ fmtPct(getPerClassData(selectedCNBMetrics, cls)?.recall) }}</td>
+                <td>{{ fmtPct(getPerClassData(selectedCNBMetrics, cls)?.f1) }}</td>
+                <td>{{ getPerClassData(selectedCNBMetrics, cls)?.support ?? '—' }}</td>
+              </tr>
+              <tr class="hist-avg-row">
+                <td>Macro Avg</td>
+                <td>{{ fmtPct(selectedCNBMetrics.macro_avg?.precision) }}</td>
+                <td>{{ fmtPct(selectedCNBMetrics.macro_avg?.recall) }}</td>
+                <td>{{ fmtPct(selectedCNBMetrics.macro_avg?.f1) }}</td>
+                <td>{{ selectedCNBMetrics.total_test_samples ?? '—' }}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- Confusion Matrix -->
+          <ng-container *ngIf="selectedCNBMetrics.confusion_matrix">
+            <h5 class="hist-cm-title">Confusion Matrix (20% test set)</h5>
+            <table class="hist-cm-table">
+              <thead>
+                <tr>
+                  <th>Aktual \ Prediksi</th>
+                  <th *ngFor="let col of ['Positive','Negative','Neutral']">{{ col }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of selectedCNBMetrics.confusion_matrix; let r = index">
+                  <td class="hist-cm-row-label">{{ ['Positive','Negative','Neutral'][r] }}</td>
+                  <td *ngFor="let cell of row; let c = index"
+                      [class.hist-cm-correct]="r === c">{{ cell }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </ng-container>
+        </div>
+
+        <!-- ── Comparison Panel: Baseline MNB vs ComplementNB ── -->
+        <div class="hist-comparison-panel" *ngIf="selectedCNBMetrics && selectedBaselineMetrics">
+          <h4>📊 Perbandingan Sebelum vs Sesudah Penanganan Imbalance</h4>
+          <p class="hist-panel-sub">MultinomialNB (baseline) vs ComplementNB + Sample Weight (primary) — keduanya dievaluasi pada 20% test set yang sama.</p>
+
+          <div class="hist-comparison-acc">
+            <div class="hist-acc-card baseline">
+              <div class="hist-acc-label">MultinomialNB (Baseline)</div>
+              <div class="hist-acc-value">{{ fmtPct(selectedBaselineMetrics.accuracy) }}</div>
+            </div>
+            <div class="hist-acc-arrow">→</div>
+            <div class="hist-acc-card primary">
+              <div class="hist-acc-label">ComplementNB + Weight</div>
+              <div class="hist-acc-value">{{ fmtPct(selectedCNBMetrics.accuracy) }}</div>
+            </div>
+          </div>
+
+          <table class="hist-metrics-table">
+            <thead>
+              <tr>
+                <th>Kelas</th>
+                <th colspan="3" class="hist-th-group">MultinomialNB (Sebelum)</th>
+                <th colspan="3" class="hist-th-group primary-group">ComplementNB (Sesudah)</th>
+              </tr>
+              <tr>
+                <th></th>
+                <th>P</th><th>R</th><th>F1</th>
+                <th class="primary-col">P</th><th class="primary-col">R</th><th class="primary-col">F1</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let cls of ['Positive','Negative','Neutral']">
+                <td><span [class]="cls.toLowerCase() + '-text'">{{ cls }}</span></td>
+                <td>{{ fmtPct(getPerClassData(selectedBaselineMetrics, cls)?.precision) }}</td>
+                <td>{{ fmtPct(getPerClassData(selectedBaselineMetrics, cls)?.recall) }}</td>
+                <td>{{ fmtPct(getPerClassData(selectedBaselineMetrics, cls)?.f1) }}</td>
+                <td class="primary-col">{{ fmtPct(getPerClassData(selectedCNBMetrics, cls)?.precision) }}</td>
+                <td class="primary-col">{{ fmtPct(getPerClassData(selectedCNBMetrics, cls)?.recall) }}</td>
+                <td class="primary-col"
+                    [class.highlight-improvement]="(getPerClassData(selectedCNBMetrics, cls)?.f1 ?? 0) > (getPerClassData(selectedBaselineMetrics, cls)?.f1 ?? 0)">
+                  {{ fmtPct(getPerClassData(selectedCNBMetrics, cls)?.f1) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
         <div class="details-loading" *ngIf="loadingDetails">
           <div class="loading-content">
             <div class="spinner"></div>
@@ -218,9 +437,12 @@
               Analysis Results
             </h4>
             <div class="view-actions">
-              <button class="btn btn-sm btn-outline" (click)="exportResults()" title="Export results">
-                <i class="fas fa-download"></i>
-                Export
+              <button class="btn btn-sm btn-export-excel"
+                [disabled]="exportingExcel"
+                (click)="exportResults()"
+                title="Export semua data sebagai Excel">
+                <i class="fas" [class.fa-file-excel]="!exportingExcel" [class.fa-spinner]="exportingExcel" [class.fa-spin]="exportingExcel"></i>
+                {{ exportingExcel ? 'Mengekspor...' : 'Export Excel' }}
               </button>
               <button class="btn btn-sm btn-outline" (click)="viewAnalysisInsights(selectedAnalysis!.id)" title="View detailed insights">
                 <i class="fas fa-chart-line"></i>

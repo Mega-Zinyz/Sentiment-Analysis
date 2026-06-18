@@ -1,4 +1,5 @@
 const { getDb } = require('../config/mysql-database');
+const XLSX = require('xlsx');
 
 /**
  * Get analysis history with pagination
@@ -47,36 +48,12 @@ async function getAnalysisHistoryHandler(req, res) {
       LIMIT ${limit} OFFSET ${offset}
     `, [userId]);
     
-    // Transform data to match frontend expectations
+    // Transform data — pass raw results JSON so frontend can parse all formats
     const processedAnalyses = analyses.map(analysis => {
-      let sentimentDistribution = {};
-      let parsedResults = {};
-      
-      try {
-        parsedResults = JSON.parse(analysis.results || '{}');
-        if (parsedResults.sentimentDistribution) {
-          // Handle nested sentimentDistribution (library analysis)
-          const dist = parsedResults.sentimentDistribution;
-          sentimentDistribution = {
-            positive: dist.positive || dist.Positive || 0,
-            negative: dist.negative || dist.Negative || 0,
-            neutral: dist.neutral || dist.Neutral || 0
-          };
-        } else if (parsedResults.positive !== undefined || parsedResults.Positive !== undefined) {
-          // Handle direct sentiment counts format (both lowercase and capitalized)
-          sentimentDistribution = {
-            positive: parsedResults.positive || parsedResults.Positive || 0,
-            negative: parsedResults.negative || parsedResults.Negative || 0,
-            neutral: parsedResults.neutral || parsedResults.Neutral || 0
-          };
-        }
-      } catch (error) {
-        console.error('Error parsing results:', error);
-      }
-      
-      const completionRate = analysis.total_items > 0 ? 
-        Math.round((analysis.processed_items / analysis.total_items) * 100) : 100;
-      
+      const completionRate = analysis.total_items > 0
+        ? Math.round((analysis.processed_items / analysis.total_items) * 100)
+        : 100;
+
       return {
         id: analysis.id,
         user_id: analysis.user_id,
@@ -87,12 +64,12 @@ async function getAnalysisHistoryHandler(req, res) {
         total_items: analysis.total_items || 0,
         processed_items: analysis.processed_items || 0,
         training_samples: analysis.training_samples || 0,
-        sentiment_distribution: JSON.stringify(sentimentDistribution),
+        sentiment_distribution: analysis.results || '{}',   // raw JSON — frontend parses
         status: analysis.status || 'completed',
         error_message: analysis.error_message,
         processing_time: analysis.processing_time_ms,
         duration: analysis.processing_time_ms ? `${Math.round(analysis.processing_time_ms / 1000)}s` : '0s',
-        completionRate: completionRate,
+        completionRate,
         created_at: analysis.created_at,
         completed_at: analysis.completed_at || analysis.created_at
       };
@@ -233,7 +210,7 @@ async function getAnalysisDetailsHandler(req, res) {
         total_items: analysis.total_items || 0,
         processed_items: analysis.processed_items || 0,
         training_samples: analysis.training_samples || 0,
-        sentiment_distribution: JSON.stringify(sentimentDistribution),
+        sentiment_distribution: analysis.results || '{}',   // raw JSON — frontend parses
         status: analysis.status || 'completed',
         processing_time: analysis.processing_time_ms,
         created_at: analysis.created_at,
@@ -355,9 +332,144 @@ async function getAnalysisStatsHandler(req, res) {
   }
 }
 
+/**
+ * Export all analysis results as Excel
+ * GET /api/analysis-history/:analysisId/export/excel
+ */
+async function exportAnalysisExcelHandler(req, res) {
+  try {
+    const userId = req.user.userId;
+    const { analysisId } = req.params;
+    const db = getDb();
+
+    const [analysisInfo] = await db.execute(
+      `SELECT id, session_id, session_name, analysis_type, total_items, results
+       FROM analysis_history WHERE id = ? AND user_id = ?`,
+      [analysisId, userId]
+    );
+
+    if (analysisInfo.length === 0) {
+      return res.status(404).json({ error: 'Analysis not found' });
+    }
+
+    const analysis = analysisInfo[0];
+
+    const [rows] = await db.execute(
+      `SELECT id, raw_data, clean_text, predicted_sentiment, prediction_confidence,
+              timestamp_extracted, username_extracted, created_at
+       FROM raw_twitter_data
+       WHERE user_id = ? AND session_id = ?
+       ORDER BY id ASC`,
+      [userId, analysis.session_id]
+    );
+
+    const sheetData = rows.map((r, i) => ({
+      No: i + 1,
+      Text: r.clean_text || r.raw_data || '',
+      'Text Asli': r.raw_data || '',
+      Sentimen: r.predicted_sentiment || '',
+      Confidence: r.prediction_confidence != null
+        ? (r.prediction_confidence * 100).toFixed(1) + '%'
+        : '',
+      Username: r.username_extracted || '',
+      'Tanggal Tweet': r.timestamp_extracted || '',
+      'Diproses Pada': r.created_at
+        ? new Date(r.created_at).toLocaleString('id-ID')
+        : ''
+    }));
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(sheetData);
+
+    // Column widths
+    ws['!cols'] = [
+      { wch: 5 }, { wch: 60 }, { wch: 60 }, { wch: 12 },
+      { wch: 12 }, { wch: 20 }, { wch: 22 }, { wch: 22 }
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Hasil Analisis');
+
+    const safeName = (analysis.session_name || 'analisis')
+      .replace(/[^a-zA-Z0-9_\- ]/g, '')
+      .replace(/\s+/g, '_')
+      .substring(0, 50);
+
+    const filename = `${safeName}_${Date.now()}.xlsx`;
+    const buffer = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Length', buffer.length);
+    res.send(buffer);
+
+  } catch (error) {
+    console.error('Error in exportAnalysisExcelHandler:', error);
+    res.status(500).json({ error: 'Failed to export Excel', details: error.message });
+  }
+}
+
+/**
+ * Get latest model metrics for training data quality display
+ * GET /api/analysis-history/latest-metrics
+ */
+async function getLatestModelMetricsHandler(req, res) {
+  try {
+    const userId = req.user.userId;
+    const db = getDb();
+
+    const [rows] = await db.execute(
+      `SELECT id, session_name, analysis_type, training_samples, results, created_at
+       FROM analysis_history
+       WHERE user_id = ? AND status = 'completed' AND results IS NOT NULL
+       ORDER BY created_at DESC
+       LIMIT 5`,
+      [userId]
+    );
+
+    if (rows.length === 0) {
+      return res.json({ success: true, metrics: null });
+    }
+
+    // Find the first row that has modelMetrics stored
+    let modelMetrics = null;
+    let analysisContext = null;
+
+    for (const row of rows) {
+      try {
+        const stored = JSON.parse(row.results || '{}');
+        if (stored.testMetrics) {
+          modelMetrics = { ...stored.testMetrics, source: 'test_set', testSplit: stored.testSplit };
+        } else if (stored.trainingMetrics) {
+          modelMetrics = { ...stored.trainingMetrics, source: 'training_set' };
+        } else if (stored.metrics) {
+          modelMetrics = { ...stored.metrics, source: 'training_set' };
+        }
+
+        if (modelMetrics) {
+          analysisContext = {
+            id: row.id,
+            session_name: row.session_name,
+            analysis_type: row.analysis_type,
+            training_samples: row.training_samples,
+            created_at: row.created_at
+          };
+          break;
+        }
+      } catch {}
+    }
+
+    res.json({ success: true, metrics: modelMetrics, analysis: analysisContext });
+  } catch (error) {
+    console.error('Error in getLatestModelMetricsHandler:', error);
+    res.status(500).json({ error: 'Failed to get latest metrics', details: error.message });
+  }
+}
+
 module.exports = {
   getAnalysisHistoryHandler,
   getAnalysisDetailsHandler,
   deleteAnalysisHandler,
-  getAnalysisStatsHandler
+  getAnalysisStatsHandler,
+  exportAnalysisExcelHandler,
+  getLatestModelMetricsHandler
 };

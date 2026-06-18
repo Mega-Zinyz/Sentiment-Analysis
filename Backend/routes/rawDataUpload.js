@@ -6,30 +6,51 @@ const csv = require('csv-parser');
 const { Readable } = require('stream');
 const fs = require('fs');
 const path = require('path');
+const XLSX = require('xlsx');
+
+const uploadDir = path.join(__dirname, '../temp/uploads');
 
 // Configure multer for CSV file upload (store in temp directory)
 const upload = multer({
   storage: multer.diskStorage({
     destination: (req, file, cb) => {
-      const uploadDir = path.join(__dirname, '../temp/uploads');
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
+      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
       cb(null, uploadDir);
     },
     filename: (req, file, cb) => {
-      const uniqueName = `${Date.now()}_${file.originalname}`;
-      cb(null, uniqueName);
+      cb(null, `${Date.now()}_${file.originalname}`);
     }
   }),
-  limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB limit for large datasets
-  },
+  limits: { fileSize: 50 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     if (file.mimetype === 'text/csv' || file.originalname.endsWith('.csv')) {
       cb(null, true);
     } else {
       cb(new Error('Only CSV files are allowed'), false);
+    }
+  }
+});
+
+// Configure multer for Excel file upload
+const uploadExcel = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+      cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+      cb(null, `${Date.now()}_${file.originalname}`);
+    }
+  }),
+  limits: { fileSize: 50 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    const isExcel = file.originalname.endsWith('.xlsx') || file.originalname.endsWith('.xls') ||
+      file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+      file.mimetype === 'application/vnd.ms-excel';
+    if (isExcel) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only Excel files (.xlsx, .xls) are allowed'), false);
     }
   }
 });
@@ -403,7 +424,8 @@ async function getSessionsHandler(req, res) {
       total_items: session.total_items,
       labeled_items: session.labeled_items,
       predicted_items: session.predicted_items,
-      status: session.status, // Use status from data_sessions table
+      status: session.status,
+      analysis_type: session.analysis_type,
       labeling_progress: `${session.labeled_items}/15`,
       can_analyze: session.labeled_items >= 15 && session.status !== 'processing',
       created_at: session.created_at,
@@ -1084,10 +1106,133 @@ async function deleteRawDataItemHandler(req, res) {
   }
 }
 
+/**
+ * Upload and process Excel (.xlsx) file
+ * POST /api/raw-data/upload-excel
+ */
+async function uploadExcelFileHandler(req, res) {
+  let filePath = null;
+  try {
+    const userId = req.user.userId;
+    const sessionName = req.body.sessionName || 'Excel Upload';
+
+    if (!req.file) {
+      return res.status(400).json({ error: 'No Excel file uploaded' });
+    }
+
+    filePath = req.file.path;
+    console.log(`📁 Excel file uploaded: ${filePath}`);
+
+    // Parse workbook
+    const wb = XLSX.readFile(filePath);
+    const sheetName = wb.SheetNames[0];
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], { defval: '' });
+
+    if (!rows || rows.length === 0) {
+      fs.unlinkSync(filePath);
+      return res.status(400).json({ error: 'File Excel kosong atau tidak dapat dibaca' });
+    }
+
+    // Detect text column (prioritize 'text', then common alternatives)
+    const firstRow = rows[0];
+    const keys = Object.keys(firstRow);
+    const textCol = keys.find(k => /^text$/i.test(k)) ||
+      keys.find(k => /^tweet$/i.test(k)) ||
+      keys.find(k => /^content$/i.test(k)) ||
+      keys.find(k => /^message$/i.test(k)) ||
+      keys.find(k => /^kalimat$/i.test(k)) ||
+      keys[0];
+
+    const usernameCol = keys.find(k => /^username$/i.test(k)) || keys.find(k => /^user$/i.test(k)) || null;
+    const dateCol = keys.find(k => /^created_at$/i.test(k)) || keys.find(k => /^date$/i.test(k)) ||
+      keys.find(k => /^tanggal$/i.test(k)) || null;
+
+    console.log(`📊 Excel: ${rows.length} rows, text column: "${textCol}"`);
+
+    const db = getDb();
+    const sessionId = `${sessionName}_${Date.now()}`;
+
+    await db.execute(
+      `INSERT INTO data_sessions (user_id, session_id, session_name, status, started_at) VALUES (?, ?, ?, 'uploading', NOW())`,
+      [userId, sessionId, sessionName]
+    );
+
+    // Clean and insert in chunks
+    const CHUNK_SIZE = 2000;
+    const validItems = [];
+    let invalidCount = 0;
+
+    for (const row of rows) {
+      const rawText = String(row[textCol] || '').trim();
+      const cleanText = rawText
+        .toLowerCase()
+        .replace(/https?:\/\/[^\s]+/g, '')
+        .replace(/@\w+/g, '')
+        .replace(/#(\w+)/g, '$1')
+        .replace(/\brt\b/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      if (cleanText.length < 3) { invalidCount++; continue; }
+
+      const username = usernameCol ? String(row[usernameCol] || 'unknown') : 'unknown';
+      const createdAt = dateCol && row[dateCol] ? new Date(row[dateCol]) : null;
+      const timestamp = createdAt && !isNaN(createdAt.getTime()) ? createdAt : null;
+
+      validItems.push([userId, sessionId, rawText, timestamp, username, cleanText]);
+    }
+
+    if (validItems.length < 15) {
+      await db.execute(`DELETE FROM data_sessions WHERE session_id = ? AND user_id = ?`, [sessionId, userId]);
+      fs.unlinkSync(filePath);
+      return res.status(400).json({
+        error: `Hanya ${validItems.length} data valid ditemukan. Minimal 15 data diperlukan.`,
+        total: rows.length,
+        valid: validItems.length,
+        invalid: invalidCount
+      });
+    }
+
+    let totalInserted = 0;
+    for (let i = 0; i < validItems.length; i += CHUNK_SIZE) {
+      const chunk = validItems.slice(i, i + CHUNK_SIZE);
+      const placeholders = chunk.map(() => '(?, ?, ?, ?, ?, ?)').join(', ');
+      const [result] = await db.execute(
+        `INSERT INTO raw_twitter_data (user_id, session_id, raw_data, timestamp_extracted, username_extracted, clean_text) VALUES ${placeholders}`,
+        chunk.flat()
+      );
+      totalInserted += result.affectedRows;
+    }
+
+    await db.execute(
+      `UPDATE data_sessions SET status = 'uploaded', total_items = ?, valid_items = ?, invalid_items = ?, completed_at = NOW() WHERE session_id = ? AND user_id = ?`,
+      [totalInserted, totalInserted, invalidCount, sessionId, userId]
+    );
+
+    fs.unlinkSync(filePath);
+    console.log(`✅ Excel import: ${totalInserted} valid, ${invalidCount} invalid`);
+
+    res.json({
+      success: true,
+      sessionId,
+      totalItems: totalInserted,
+      invalidItems: invalidCount,
+      message: `${totalInserted} data berhasil diimport dari Excel`
+    });
+
+  } catch (error) {
+    console.error('Error in uploadExcelFileHandler:', error);
+    if (filePath && fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    res.status(500).json({ error: 'Gagal memproses file Excel', details: error.message });
+  }
+}
+
 module.exports = {
   uploadRawDataHandler,
   uploadCsvFileHandler,
   upload,
+  uploadExcelFileHandler,
+  uploadExcel,
   getSessionsHandler,
   getSessionDataHandler,
   getUploadProgressHandler,

@@ -31,11 +31,12 @@ interface CrawlJob {
   targetCount: number;
   collectedCount: number;
   progress: number;
-  statusMessage?: string;
+  statusMessage?: string | null;
   createdAt: string;
-  completedAt?: string;
-  sinceDate?: string;
-  untilDate?: string;
+  updatedAt?: string | null;
+  completedAt?: string | null;
+  sinceDate?: string | null;
+  untilDate?: string | null;
 }
 
 interface LiveLog {
@@ -102,6 +103,8 @@ export class CrawlerNewComponent implements OnInit, OnDestroy {
   // Job history
   jobs: CrawlJob[] = [];
   jobSearchQuery = '';
+  jobsPage = 1;
+  readonly jobsPageSize = 8;
 
   // Tweet bulk selection
   selectedTweetIds = new Set<number>();
@@ -115,8 +118,33 @@ export class CrawlerNewComponent implements OnInit, OnDestroy {
 
   // Send to analysis
   isSendingToAnalysis = false;
+  isExportingExcel = false;
+
+  // Confirm modal
+  confirmModal = {
+    visible: false,
+    title: '',
+    message: '',
+    resolve: null as ((val: boolean) => void) | null,
+  };
 
   constructor(private http: HttpClient, private authService: AuthService, private router: Router) {}
+
+  private showConfirm(title: string, message: string): Promise<boolean> {
+    return new Promise(resolve => {
+      this.confirmModal = { visible: true, title, message, resolve };
+    });
+  }
+
+  onConfirmOk() {
+    this.confirmModal.visible = false;
+    this.confirmModal.resolve?.(true);
+  }
+
+  onConfirmCancel() {
+    this.confirmModal.visible = false;
+    this.confirmModal.resolve?.(false);
+  }
 
   ngOnInit() {
     this.initializeWebSocket();
@@ -304,7 +332,7 @@ export class CrawlerNewComponent implements OnInit, OnDestroy {
 
   async deleteCollection(col: CrawlerCollection, event: Event) {
     event.stopPropagation();
-    if (!confirm(`Hapus database "${col.name}" beserta semua tweet di dalamnya?`)) return;
+    if (!await this.showConfirm('Hapus Collection', `Hapus database "${col.name}" beserta semua tweet di dalamnya?`)) return;
     try {
       await lastValueFrom(
         this.http.delete<any>(`${environment.apiUrl}/crawler/collections/${col.collectionId}`)
@@ -322,7 +350,7 @@ export class CrawlerNewComponent implements OnInit, OnDestroy {
 
   async deleteTweet(tweetId: number) {
     if (!this.selectedCollection) return;
-    if (!confirm('Hapus tweet ini dari database?')) return;
+    if (!await this.showConfirm('Hapus Tweet', 'Hapus tweet ini dari database?')) return;
     try {
       await lastValueFrom(
         this.http.delete<any>(
@@ -396,9 +424,11 @@ export class CrawlerNewComponent implements OnInit, OnDestroy {
   }
 
   async loadCollectionJobs() {
+    if (!this.selectedCollection) return;
     try {
+      const cid = encodeURIComponent(this.selectedCollection.collectionId);
       const response = await lastValueFrom(
-        this.http.get<any>(`${environment.apiUrl}/crawler/jobs?limit=50`)
+        this.http.get<any>(`${environment.apiUrl}/crawler/jobs?limit=50&collectionId=${cid}`)
       );
       if (response?.success) {
         this.jobs = response.jobs.map((j: any) => {
@@ -532,10 +562,9 @@ export class CrawlerNewComponent implements OnInit, OnDestroy {
     const query = this.crawlQuery;
 
     if (isMulti) {
-      const ok = confirm(
-        `Rentang tanggal mencakup ${chunks.length} bulan.\n\n` +
-        `Sistem akan membuat ${chunks.length} job crawl terpisah (masing-masing 1 bulan, target ${this.targetCount} tweet/bulan).\n\n` +
-        `Total maksimal: ~${chunks.length * this.targetCount} tweet\n\nLanjutkan?`
+      const ok = await this.showConfirm(
+        'Konfirmasi Multi-Job Crawl',
+        `Rentang tanggal mencakup ${chunks.length} bulan.\n\nSistem akan membuat ${chunks.length} job crawl terpisah (masing-masing 1 bulan, target ${this.targetCount} tweet/bulan).\n\nTotal maksimal: ~${chunks.length * this.targetCount} tweet`
       );
       if (!ok) return;
     }
@@ -616,7 +645,7 @@ export class CrawlerNewComponent implements OnInit, OnDestroy {
   }
 
   async cancelJob(jobId: string) {
-    if (!confirm('Batalkan job ini?')) return;
+    if (!await this.showConfirm('Batalkan Job', 'Batalkan job crawl ini?')) return;
     try {
       const response = await lastValueFrom(
         this.http.post<any>(`${environment.apiUrl}/crawler/cancel/${jobId}`, {})
@@ -635,7 +664,7 @@ export class CrawlerNewComponent implements OnInit, OnDestroy {
   }
 
   async resumeJob(jobId: string) {
-    if (!confirm('Mulai ulang job ini? Job lama akan dibatalkan dan job baru akan antri.')) return;
+    if (!await this.showConfirm('Mulai Ulang Job', 'Job lama akan dibatalkan dan job baru akan masuk antrian. Lanjutkan?')) return;
     try {
       const response = await lastValueFrom(
         this.http.post<any>(`${environment.apiUrl}/crawler/resume/${jobId}`, {})
@@ -684,7 +713,38 @@ export class CrawlerNewComponent implements OnInit, OnDestroy {
   get filteredJobs(): CrawlJob[] {
     if (!this.jobSearchQuery.trim()) return this.jobs;
     const q = this.jobSearchQuery.toLowerCase().trim();
-    return this.jobs.filter(j => j.keyword.toLowerCase().includes(q));
+    return this.jobs.filter(j =>
+      j.keyword.toLowerCase().includes(q) ||
+      j.jobId.toLowerCase().includes(q) ||
+      j.status.toLowerCase().includes(q)
+    );
+  }
+
+  get jobsTotalPages(): number {
+    return Math.max(1, Math.ceil(this.filteredJobs.length / this.jobsPageSize));
+  }
+
+  get pagedJobs(): CrawlJob[] {
+    const start = (this.jobsPage - 1) * this.jobsPageSize;
+    return this.filteredJobs.slice(start, start + this.jobsPageSize);
+  }
+
+  onJobSearchChange() {
+    this.jobsPage = 1;
+  }
+
+  shortJobId(jobId: string): string {
+    return jobId.slice(0, 8).toUpperCase();
+  }
+
+  jobDuration(job: CrawlJob): string {
+    const end = job.completedAt ? new Date(job.completedAt) : (job.status === 'processing' ? new Date() : null);
+    if (!end) return '';
+    const start = new Date(job.createdAt);
+    const sec = Math.round((end.getTime() - start.getTime()) / 1000);
+    if (sec < 60) return `${sec}d`;
+    if (sec < 3600) return `${Math.floor(sec / 60)}m ${sec % 60}d`;
+    return `${Math.floor(sec / 3600)}j ${Math.floor((sec % 3600) / 60)}m`;
   }
 
   toggleSelectTweet(id: number) {
@@ -706,7 +766,7 @@ export class CrawlerNewComponent implements OnInit, OnDestroy {
   async bulkDeleteTweets() {
     if (!this.selectedCollection || this.selectedTweetIds.size === 0) return;
     const count = this.selectedTweetIds.size;
-    if (!confirm(`Hapus ${count} tweet yang dipilih dari database?`)) return;
+    if (!await this.showConfirm('Hapus Tweet', `Hapus ${count} tweet yang dipilih dari database?`)) return;
     try {
       const ids = Array.from(this.selectedTweetIds);
       await lastValueFrom(
@@ -729,12 +789,39 @@ export class CrawlerNewComponent implements OnInit, OnDestroy {
     this.loadCollectionTweets(this.selectedCollection.collectionId, page);
   }
 
+  async exportToExcel(collection: CrawlerCollection) {
+    if (!collection.tweetCount || collection.tweetCount === 0) {
+      this.setError('Tidak ada tweet untuk diekspor');
+      return;
+    }
+    this.isExportingExcel = true;
+    try {
+      const response = await lastValueFrom(
+        this.http.get(
+          `${environment.apiUrl}/crawler/collections/${collection.collectionId}/export/excel`,
+          { responseType: 'blob' }
+        )
+      );
+      const url = window.URL.createObjectURL(response as Blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${collection.name.replace(/[^a-z0-9_\-]/gi, '_')}_${Date.now()}.xlsx`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      this.setSuccess(`Export berhasil: ${collection.tweetCount} tweets → Excel`);
+    } catch (error: any) {
+      this.setError(error?.error?.error || 'Gagal mengekspor ke Excel');
+    } finally {
+      this.isExportingExcel = false;
+    }
+  }
+
   async sendToAnalysis(collection: CrawlerCollection) {
     if (!collection.tweetCount || collection.tweetCount === 0) {
       this.setError('Collection belum memiliki tweet untuk dianalisis');
       return;
     }
-    if (!confirm(`Kirim ${collection.tweetCount} tweet dari "${collection.name}" ke halaman analisis sentimen?`)) return;
+    if (!await this.showConfirm('Kirim ke Analisis', `Kirim ${collection.tweetCount} tweet dari "${collection.name}" ke halaman analisis sentimen?`)) return;
 
     try {
       this.isSendingToAnalysis = true;

@@ -4,6 +4,7 @@ const { getDb } = require('../config/mysql-database');
 const { v4: uuidv4 } = require('uuid');
 const AuditLogger = require('../utils/auditLogger');
 const { cancelCrawlJob } = require('../utils/job-queue');
+const XLSX = require('xlsx');
 
 /**
  * Get all collections for user
@@ -493,6 +494,68 @@ router.delete('/:collectionId/tweets/:tweetId', async (req, res) => {
   } catch (error) {
     console.error('Error deleting tweet:', error);
     res.status(500).json({ error: 'Failed to delete tweet' });
+  }
+});
+
+/**
+ * Export collection tweets as Excel file
+ * GET /api/crawler/collections/:collectionId/export/excel
+ */
+router.get('/:collectionId/export/excel', async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { collectionId } = req.params;
+    const db = getDb();
+
+    const [collections] = await db.execute(
+      `SELECT id, name FROM crawler_collections WHERE user_id = ? AND collection_id = ? AND status != 'deleted'`,
+      [userId, collectionId]
+    );
+    if (collections.length === 0) {
+      return res.status(404).json({ error: 'Collection not found' });
+    }
+    const collection = collections[0];
+
+    const [tweets] = await db.execute(
+      `SELECT tweet_id, text, username, created_at_tweet, url, likes, retweets, replies,
+              sentiment_label, manual_label, notes, imported_at
+       FROM crawler_tweets
+       WHERE user_id = ? AND collection_id = ?
+       ORDER BY imported_at ASC`,
+      [userId, collection.id]
+    );
+
+    const rows = tweets.map((t, i) => ({
+      No: i + 1,
+      tweet_id: t.tweet_id || '',
+      text: t.text || '',
+      username: t.username || '',
+      created_at: t.created_at_tweet ? new Date(t.created_at_tweet).toISOString() : '',
+      url: t.url || '',
+      likes: t.likes || 0,
+      retweets: t.retweets || 0,
+      replies: t.replies || 0,
+      sentiment_label: t.sentiment_label || '',
+      manual_label: t.manual_label || '',
+      notes: t.notes || '',
+      imported_at: t.imported_at ? new Date(t.imported_at).toISOString() : ''
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Tweets');
+
+    const safeCollectionName = collection.name.replace(/[^a-z0-9_\-]/gi, '_');
+    const filename = `crawler_${safeCollectionName}_${Date.now()}.xlsx`;
+
+    const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.send(buf);
+  } catch (error) {
+    console.error('Error exporting collection to Excel:', error);
+    res.status(500).json({ error: 'Failed to export collection' });
   }
 });
 

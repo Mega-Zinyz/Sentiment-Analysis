@@ -1,0 +1,197 @@
+<mxfile host="Electron">
+  <diagram id="sd06_riwayat" name="Page-1">
+    <mxGraphModel dx="975" dy="586" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="1">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- PARTICIPANTS -->
+        <!-- x-centers: User=65, History Page=195, Backend=330, Database=475 -->
+        <mxCell id="p_user" value="User" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="10" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p_hp" value="Riwayat&lt;br&gt;Analisis" style="shape=umlBoundary;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="157.5" y="20" width="75" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="p_be" value="Backend&lt;br&gt;API" style="ellipse;shape=umlControl;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="299.38" y="10" width="61.25" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="p_db" value="Database" style="shape=umlBoundary;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="437.5" y="20" width="75" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- LIFELINES -->
+        <mxCell id="ll_user" value="" style="endArrow=none;html=1;dashed=1;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="65" y="92" as="sourcePoint" />
+            <mxPoint x="65" y="660" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ll_hp" value="" style="endArrow=none;html=1;dashed=1;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="195" y="92" as="sourcePoint" />
+            <mxPoint x="195" y="660" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ll_be" value="" style="endArrow=none;html=1;dashed=1;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="330" y="92" as="sourcePoint" />
+            <mxPoint x="330" y="660" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ll_db" value="" style="endArrow=none;html=1;dashed=1;strokeColor=#000000;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="475" y="92" as="sourcePoint" />
+            <mxPoint x="475" y="660" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ACTIVATION BOXES -->
+        <mxCell id="act_hp1" value="" style="html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="190" y="140" width="10" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="act_be1" value="" style="html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="325" y="183" width="10" height="117" as="geometry" />
+        </mxCell>
+        <mxCell id="act_db1" value="" style="html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="470" y="218" width="10" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="act_hp2" value="" style="html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="190" y="360" width="10" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="act_be2" value="" style="html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="325" y="403" width="10" height="177" as="geometry" />
+        </mxCell>
+        <mxCell id="act_db2" value="" style="html=1;fillColor=#ffffff;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="470" y="438" width="10" height="105" as="geometry" />
+        </mxCell>
+
+        <!-- MESSAGES - Phase 1: Daftar riwayat -->
+
+        <!-- 1: User → History Page: Buka Riwayat Analisis -->
+        <mxCell id="m1" value="Buka Riwayat Analisis" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#000000;labelBackgroundColor=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="65" y="150" as="sourcePoint" />
+            <mxPoint x="190" y="150" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- 2: History Page → Backend: GET Riwayat -->
+        <mxCell id="m2" value="GET /api/analysis-history?page=1&amp;limit=20" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#000000;labelBackgroundColor=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="200" y="193" as="sourcePoint" />
+            <mxPoint x="325" y="193" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- 3: Backend → Database: Query Riwayat -->
+        <mxCell id="m3" value="SELECT analysis_history (paginated)" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#000000;labelBackgroundColor=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="335" y="228" as="sourcePoint" />
+            <mxPoint x="470" y="228" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- 4: Database self: Query -->
+        <mxCell id="m4" value="ORDER BY created_at DESC" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#000000;rounded=0;curved=0;labelBackgroundColor=none;" edge="1" parent="1">
+          <mxGeometry relative="1" x="-0.2593" y="5" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="520" y="243" />
+              <mxPoint x="520" y="268" />
+            </Array>
+            <mxPoint x="480" y="243" as="sourcePoint" />
+            <mxPoint x="480" y="268" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- 5: Database → Backend: Daftar Riwayat (dashed) -->
+        <mxCell id="m5" value="Daftar Riwayat &amp; totalCount" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;strokeColor=#000000;labelBackgroundColor=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="470" y="283" as="sourcePoint" />
+            <mxPoint x="335" y="283" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- 6: Backend → History Page: Daftar Riwayat (dashed) -->
+        <mxCell id="m6" value="Daftar Riwayat Analisis" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;strokeColor=#000000;labelBackgroundColor=none;" edge="1" parent="1">
+          <mxGeometry relative="1" x="0.4667" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="325" y="295" as="sourcePoint" />
+            <mxPoint x="200" y="295" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- MESSAGES - Phase 2: Detail riwayat & export -->
+
+        <!-- 7: User → History Page: Pilih Riwayat -->
+        <mxCell id="m7" value="Pilih Riwayat Analisis" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#000000;labelBackgroundColor=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="65" y="370" as="sourcePoint" />
+            <mxPoint x="190" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- 8: History Page → Backend: GET Detail -->
+        <mxCell id="m8" value="GET /api/analysis-history/:id" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#000000;labelBackgroundColor=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="200" y="413" as="sourcePoint" />
+            <mxPoint x="325" y="413" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- 9: Backend → Database: Query Detail -->
+        <mxCell id="m9" value="SELECT analysis_results WHERE id=:id" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#000000;labelBackgroundColor=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="335" y="448" as="sourcePoint" />
+            <mxPoint x="470" y="448" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- 10: Database self: Fetch Detail -->
+        <mxCell id="m10" value="Fetch Detail &amp; Agregasi Sentimen" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#000000;rounded=0;curved=0;labelBackgroundColor=none;" edge="1" parent="1">
+          <mxGeometry relative="1" x="-0.2593" y="5" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="520" y="463" />
+              <mxPoint x="520" y="493" />
+            </Array>
+            <mxPoint x="480" y="463" as="sourcePoint" />
+            <mxPoint x="480" y="493" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- 11: Database → Backend: Detail & Metrik (dashed) -->
+        <mxCell id="m11" value="Detail Analisis &amp; Metrik Evaluasi" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;strokeColor=#000000;labelBackgroundColor=none;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="470" y="503" as="sourcePoint" />
+            <mxPoint x="335" y="503" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- 12: Backend self: Format Export -->
+        <mxCell id="m12" value="Format Data untuk Export (JSON/CSV)" style="html=1;verticalAlign=bottom;endArrow=block;endFill=1;strokeColor=#000000;rounded=0;curved=0;labelBackgroundColor=none;" edge="1" parent="1">
+          <mxGeometry relative="1" x="-0.2593" y="5" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="375" y="518" />
+              <mxPoint x="375" y="543" />
+            </Array>
+            <mxPoint x="335" y="518" as="sourcePoint" />
+            <mxPoint x="335" y="543" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- 13: Backend → History Page: Detail & Export (dashed) -->
+        <mxCell id="m13" value="Detail Riwayat, Grafik, Export Link" style="html=1;verticalAlign=bottom;endArrow=open;dashed=1;strokeColor=#000000;labelBackgroundColor=none;" edge="1" parent="1">
+          <mxGeometry relative="1" x="0.4667" as="geometry">
+            <mxPoint as="offset" />
+            <mxPoint x="325" y="570" as="sourcePoint" />
+            <mxPoint x="200" y="570" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

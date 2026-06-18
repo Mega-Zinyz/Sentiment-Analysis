@@ -34,11 +34,17 @@
       (click)="currentView = 'monitor'">
       ⏳ Monitor
     </button>
-    <button 
-      class="tab-button" 
+    <button
+      class="tab-button"
       [class.active]="currentView === 'history'"
       (click)="currentView = 'history'">
       📈 History
+    </button>
+    <button
+      class="tab-button"
+      [class.active]="currentView === 'collections'"
+      (click)="currentView = 'collections'; loadCollections()">
+      📦 Collections
     </button>
   </div>
 
@@ -318,6 +324,46 @@
     </div>
   </div>
 
+  <!-- Collections View -->
+  <div *ngIf="currentView === 'collections'" class="view-content collections-view">
+    <div class="history-card">
+      <div class="collections-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h2>📦 Collections</h2>
+        <button class="btn-secondary" (click)="loadCollections()">🔄 Refresh</button>
+      </div>
+
+      <div *ngIf="collections.length > 0" class="collections-grid">
+        <div *ngFor="let col of collections" class="collection-card">
+          <div class="collection-info">
+            <h4>{{ col.name }}</h4>
+            <p *ngIf="col.description" class="col-desc">{{ col.description }}</p>
+            <div class="col-meta">
+              <span class="badge">🐦 {{ col.tweetCount }} tweets</span>
+              <span class="badge">🔑 {{ col.keywords.join(', ') || '-' }}</span>
+              <span class="badge status-{{ col.status }}">{{ col.status }}</span>
+            </div>
+            <small class="col-date">Dibuat: {{ formatDate(col.createdAt) }}</small>
+          </div>
+          <div class="collection-actions" style="display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;">
+            <button
+              class="btn-primary"
+              (click)="exportCollectionExcel(col.collectionId, col.name)"
+              [disabled]="exportingCollectionId === col.collectionId || col.tweetCount === 0"
+              title="Export semua tweet ke Excel">
+              <span *ngIf="exportingCollectionId !== col.collectionId">📥 Export Excel</span>
+              <span *ngIf="exportingCollectionId === col.collectionId">⏳ Exporting...</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="collections.length === 0" class="empty-state">
+        <p>Belum ada collections</p>
+        <small>Collections dibuat otomatis saat crawl job dijalankan</small>
+      </div>
+    </div>
+  </div>
+
   <!-- History View -->
   <div *ngIf="currentView === 'history'" class="view-content history-view">
     <div class="history-card">
@@ -355,22 +401,30 @@
               <td class="duration">{{ getDuration(job.createdAt, job.completedAt) }}</td>
               <td class="date">{{ formatDate(job.createdAt) }}</td>
               <td class="actions">
-                <button 
-                  class="btn-small btn-info" 
+                <button
+                  class="btn-small btn-info"
                   (click)="selectJob(job)"
                   title="Monitor job ini">
                   👁️
                 </button>
-                <button 
+                <button
+                  *ngIf="job.collectedCount > 0"
+                  class="btn-small btn-success"
+                  (click)="exportJobExcel(job)"
+                  [disabled]="exportingJobId === job.jobId"
+                  title="Export tweet ke Excel">
+                  {{ exportingJobId === job.jobId ? '⏳' : '📥' }}
+                </button>
+                <button
                   *ngIf="job.status === 'processing' || job.status === 'queued'"
-                  class="btn-small btn-danger" 
+                  class="btn-small btn-danger"
                   (click)="cancelJob(job.jobId)"
                   title="Batalkan job ini">
                   ❌
                 </button>
-                <button 
+                <button
                   *ngIf="job.status === 'failed' || job.status === 'suspended' || job.status === 'error'"
-                  class="btn-small btn-warning" 
+                  class="btn-small btn-warning"
                   (click)="resumeJob(job.jobId)"
                   title="Lanjutkan job ini (kumpulkan sisa target)">
                   🔄

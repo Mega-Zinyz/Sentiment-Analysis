@@ -6,11 +6,40 @@ import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { environment } from '../../environments/environment';
 
+interface ClassMetrics {
+  precision: number;
+  recall: number;
+  'f1-score': number;
+  support: number;
+}
+
+interface TrainingMetrics {
+  // Training-set fields
+  training_accuracy?: number;
+  training_samples?: number;
+  // Test-set fields (present when test split was applied)
+  test_accuracy?: number;
+  train_samples?: number;
+  test_samples?: number;
+  test_split_ratio?: number;
+  // Cross-validation (present in both paths)
+  cross_validation_mean?: number;
+  cross_validation_std?: number;
+  classification_report: {
+    positive?: ClassMetrics;
+    negative?: ClassMetrics;
+    neutral?: ClassMetrics;
+    'macro avg'?: ClassMetrics;
+    'weighted avg'?: ClassMetrics;
+    accuracy?: number;
+  };
+}
+
 interface AnalysisHistory {
   id: number;
   session_id: string;
   analysis_name: string;
-  analysis_type: 'manual' | 'api';
+  analysis_type: 'manual' | 'api' | 'library';
   source_description: string;
   total_items: number;
   processed_items: number;
@@ -57,6 +86,7 @@ export class AnalysisHistoryComponent implements OnInit, OnDestroy {
   
   loading = false;
   loadingDetails = false;
+  exportingExcel = false;
   
   private apiUrl = environment.apiUrl;
   
@@ -134,10 +164,26 @@ export class AnalysisHistoryComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Eagerly computed metrics for the open modal — avoids method calls in template
+  selectedCNBMetrics: any = null;
+  selectedBaselineMetrics: any = null;
+  selectedIsInset = false;
+  selectedTestSplit: number | null = null;
+  selectedNeutralMin: number | null = null;
+  selectedNeutralMax: number | null = null;
+
   async viewAnalysisDetails(analysis: AnalysisHistory) {
     this.selectedAnalysis = analysis;
     this.showDetails = true;
     this.detailsPage = 1;
+    // Compute metrics once so the template only reads simple properties
+    this.selectedCNBMetrics      = this.getComplementNBMetrics(analysis);
+    this.selectedBaselineMetrics = this.getBaselineMetrics(analysis);
+    this.selectedIsInset         = this.isInsetMode(analysis);
+    const r = this.parseResults(analysis.sentiment_distribution);
+    this.selectedTestSplit  = r.testSplit;
+    this.selectedNeutralMin = r.neutralMin;
+    this.selectedNeutralMax = r.neutralMax;
     this.renderer.addClass(this.document.body, 'modal-open');
     await this.loadAnalysisDetails();
   }
@@ -213,6 +259,12 @@ export class AnalysisHistoryComponent implements OnInit, OnDestroy {
   closeDetails() {
     this.showDetails = false;
     this.selectedAnalysis = null;
+    this.selectedCNBMetrics = null;
+    this.selectedBaselineMetrics = null;
+    this.selectedIsInset = false;
+    this.selectedTestSplit = null;
+    this.selectedNeutralMin = null;
+    this.selectedNeutralMax = null;
     this.analysisDetails = [];
     this.renderer.removeClass(this.document.body, 'modal-open');
   }
@@ -278,14 +330,97 @@ export class AnalysisHistoryComponent implements OnInit, OnDestroy {
     return type === 'api' ? '🔗' : '👤';
   }
 
-  getSentimentCount(distributionStr: string, sentiment: string): number {
-    if (!distributionStr) return 0;
+  private parseResults(distributionStr: string): {
+    sentimentCounts: Record<string, number>,
+    trainingMetrics: any | null,
+    testMetrics: any | null,
+    baselineTestMetrics: any | null,
+    isInsetMode: boolean,
+    testSplit: number | null,
+    neutralMin: number | null,
+    neutralMax: number | null
+  } {
+    const empty = { sentimentCounts: {}, trainingMetrics: null, testMetrics: null, baselineTestMetrics: null, isInsetMode: false, testSplit: null, neutralMin: null, neutralMax: null };
+    if (!distributionStr) return empty;
     try {
-      const distribution = JSON.parse(distributionStr);
-      return distribution[sentiment] || 0;
+      const parsed = JSON.parse(distributionStr);
+
+      if (parsed.sentimentCounts) {
+        return {
+          sentimentCounts: parsed.sentimentCounts,
+          trainingMetrics: parsed.trainingMetrics || null,
+          testMetrics: parsed.testMetrics || null,
+          baselineTestMetrics: parsed.baselineTestMetrics || null,
+          isInsetMode: !!parsed.isInsetMode,
+          testSplit: parsed.testSplit ?? null,
+          neutralMin: parsed.neutralMin ?? null,
+          neutralMax: parsed.neutralMax ?? null
+        };
+      }
+
+      if (parsed.sentimentDistribution) {
+        return { ...empty, sentimentCounts: parsed.sentimentDistribution };
+      }
+
+      if (parsed.positive !== undefined || parsed.negative !== undefined || parsed.neutral !== undefined) {
+        return { ...empty, sentimentCounts: parsed };
+      }
+
+      return empty;
     } catch {
-      return 0;
+      return empty;
     }
+  }
+
+  getSentimentCount(distributionStr: string, sentiment: string): number {
+    return this.parseResults(distributionStr).sentimentCounts[sentiment] || 0;
+  }
+
+  getMetrics(analysis: AnalysisHistory): any | null {
+    const r = this.parseResults(analysis.sentiment_distribution);
+    return r.testMetrics || r.trainingMetrics;
+  }
+
+  getBaselineMetrics(analysis: AnalysisHistory): any | null {
+    return this.parseResults(analysis.sentiment_distribution).baselineTestMetrics;
+  }
+
+  isInsetMode(analysis: AnalysisHistory): boolean {
+    return this.parseResults(analysis.sentiment_distribution).isInsetMode;
+  }
+
+  isTestMetrics(analysis: AnalysisHistory): boolean {
+    return !!this.parseResults(analysis.sentiment_distribution).testMetrics;
+  }
+
+  getTestSplit(analysis: AnalysisHistory): number | null {
+    return this.parseResults(analysis.sentiment_distribution).testSplit;
+  }
+
+  /** Returns testMetrics if it uses the new per_class format (ComplementNB output) */
+  getComplementNBMetrics(analysis: AnalysisHistory): any | null {
+    const r = this.parseResults(analysis.sentiment_distribution);
+    return r.testMetrics?.per_class ? r.testMetrics : null;
+  }
+
+  /** Safe accessor for per_class data — avoids ?.[dynamic] in templates */
+  getPerClassData(metrics: any, cls: string): any {
+    if (!metrics || !metrics.per_class) return null;
+    return metrics.per_class[cls] || null;
+  }
+
+  fmtPct(v: number | undefined | null): string {
+    return v != null ? (v * 100).toFixed(2) + '%' : 'N/A';
+  }
+
+  formatPercent(value: number | undefined): string {
+    if (value == null) return 'N/A';
+    return (value * 100).toFixed(1) + '%';
+  }
+
+  formatScore(value: number | undefined): string {
+    if (value == null) return 'N/A';
+    return value.toFixed(4);
   }
 
   getPageNumbers(): number[] {
@@ -392,96 +527,34 @@ export class AnalysisHistoryComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Export results functionality
-  exportResults(): void {
+  // Export all results as Excel via backend endpoint
+  async exportResults(): Promise<void> {
+    if (!this.selectedAnalysis || this.exportingExcel) return;
+    this.exportingExcel = true;
     try {
-      console.log('Export button clicked');
-      console.log('Selected analysis:', this.selectedAnalysis);
-      console.log('Analysis details:', this.analysisDetails);
-      
-      if (!this.selectedAnalysis) {
-        console.error('No analysis selected');
-        alert('No analysis selected for export');
-        return;
-      }
+      const token = localStorage.getItem('token');
+      const response = await this.http.get(
+        `${this.apiUrl}/analysis-history/${this.selectedAnalysis.id}/export/excel`,
+        { headers: { Authorization: `Bearer ${token}` }, responseType: 'blob' }
+      ).toPromise();
 
-      if (!this.analysisDetails.length) {
-        console.error('No analysis details available');
-        alert('No data available to export. Please ensure the analysis results have loaded.');
-        return;
-      }
-
-      console.log('Generating CSV...');
-      const csvContent = this.generateCSV();
-      console.log('CSV generated, length:', csvContent.length);
-      
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link: any = this.renderer.createElement('a');
-      
-      if (link.download !== undefined) {
-        const url = URL.createObjectURL(blob);
-        this.renderer.setAttribute(link, 'href', url);
-        const filename = this.generateFilename(this.selectedAnalysis);
-        this.renderer.setAttribute(link, 'download', filename);
-        this.renderer.setStyle(link, 'visibility', 'hidden');
-        this.renderer.appendChild(this.document.body, link);
-        // Click the link programmatically
-        (link as HTMLElement).click();
-        this.renderer.removeChild(this.document.body, link);
-        console.log('Export completed successfully');
-      } else {
-        console.error('Download not supported');
-        alert('Download not supported in this browser');
-      }
+      const blob = response as Blob;
+      const url = URL.createObjectURL(blob);
+      const a = this.renderer.createElement('a') as HTMLAnchorElement;
+      a.href = url;
+      const safeName = (this.selectedAnalysis.analysis_name || 'analisis')
+        .replace(/[^a-zA-Z0-9_\- ]/g, '').replace(/\s+/g, '_').substring(0, 50);
+      a.download = `${safeName}_${Date.now()}.xlsx`;
+      this.renderer.appendChild(this.document.body, a);
+      a.click();
+      this.renderer.removeChild(this.document.body, a);
+      URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Export error:', error);
-      alert('An error occurred while exporting: ' + (error as Error).message);
+      console.error('Export Excel error:', error);
+      alert('Gagal mengekspor Excel. Coba lagi.');
+    } finally {
+      this.exportingExcel = false;
     }
-  }
-
-  private generateCSV(): string {
-    const headers = [
-      'ID',
-      'Text',
-      'Clean Text',
-      'Sentiment',
-      'Predicted Sentiment',
-      'Confidence',
-      'Training Sample',
-      'Timestamp',
-      'Username'
-    ];
-
-    const rows = this.analysisDetails.map(detail => [
-      detail.id,
-      `"${(detail.text || '').replace(/"/g, '""')}"`,
-      `"${(detail.clean_text || '').replace(/"/g, '""')}"`,
-      detail.sentiment || '',
-      detail.predicted_sentiment || '',
-      detail.prediction_confidence || detail.confidence || '',
-      detail.is_training_sample ? 'Yes' : 'No',
-      detail.timestamp_extracted || '',
-      detail.username_extracted || ''
-    ]);
-
-    return [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
-  }
-
-  private generateFilename(analysis: AnalysisHistory): string {
-    // Sanitize the analysis name for use as filename
-    const sanitizedName = (analysis.analysis_name || 'Unnamed Analysis')
-      .replace(/[^a-zA-Z0-9\s\-_]/g, '') // Remove special characters
-      .replace(/\s+/g, '_') // Replace spaces with underscores
-      .substring(0, 50); // Limit length
-
-    // Add timestamp to make filename unique
-    const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
-    
-    // Include analysis type and item count for context
-    const analysisType = analysis.analysis_type === 'api' ? 'API' : 'Manual';
-    const itemCount = analysis.total_items || 0;
-    
-    return `${sanitizedName}_${analysisType}_${itemCount}items_${timestamp}.csv`;
   }
 
   // Expose Math to template

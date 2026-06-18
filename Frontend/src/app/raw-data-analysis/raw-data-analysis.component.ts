@@ -12,6 +12,7 @@ interface RawDataSession {
   labeled_items: number;
   predicted_items: number;
   status: string;
+  analysis_type?: string;
   can_analyze: boolean;
   created_at: string;
   updated_at: string;
@@ -37,7 +38,8 @@ interface LabelingData {
 export class RawDataAnalysisComponent implements OnInit, OnDestroy {
   // UI State
   analysisMode: 'choose' | 'crawler' | 'upload-file' = 'choose';
-  currentStep: 'upload' | 'library-selection' | 'labeling' | 'analyzing' | 'results' = 'upload';
+  currentStep: 'upload' | 'method-selection' | 'inset' | 'library-selection' | 'labeling' | 'analyzing' | 'results' = 'upload';
+  analysisMethod: 'inset' | 'library' | 'manual' | null = null;
   
   // Forms
   uploadForm: FormGroup;
@@ -49,6 +51,9 @@ export class RawDataAnalysisComponent implements OnInit, OnDestroy {
   newLibraryDescription: string = '';
   librarySelectionMode: 'existing' | 'new' = 'existing';
   importingToLibrary = false;
+
+  // Train/Test Split
+  testSplit: number = 0.2; // default 80/20
   resettingLabels = false;
   
   // Data
@@ -107,7 +112,8 @@ export class RawDataAnalysisComponent implements OnInit, OnDestroy {
   // Utility methods for template
   Math = Math;
   
-  // Labeling progress
+  // Labeling progress — minPerClass is updated from backend based on dataset size
+  minPerClass = 5;
   labelingProgress = {
     positive: 0,
     negative: 0,
@@ -144,6 +150,27 @@ export class RawDataAnalysisComponent implements OnInit, OnDestroy {
   // Error handling
   error: string = '';
   success: string = '';
+
+  // ── InSet auto-labeling state ─────────────────────────────────────────────
+  insetStatus: 'idle' | 'loading' | 'done' | 'error' = 'idle';
+  insetDistribution: { Positive: number; Negative: number; Neutral: number } | null = null;
+  insetCoverage: { withMatches: number; noMatches: number; matchRate: string } | null = null;
+  insetTotal = 0;
+  insetLexiconSize = 0;
+  neutralMin = -0.5;
+  neutralMax = 0.5;
+  relabelLoading = false;
+
+  // ── Official evaluation metrics (from Python 20% held-out test split) ─────
+  officialTestMetrics: any | null = null;          // ComplementNB + sample_weight (PRIMARY)
+  officialBaselineMetrics: any | null = null;      // MultinomialNB baseline (for thesis comparison)
+  officialTrainingMetrics: any | null = null;
+  analysisIsInsetMode = false;
+
+  // ── Parameters used in the last/loaded analysis (for display in results) ──
+  usedTestSplit: number = 0.2;
+  usedNeutralMin: number | null = null;
+  usedNeutralMax: number | null = null;
 
   private apiUrl = environment.apiUrl;
 
@@ -200,9 +227,7 @@ export class RawDataAnalysisComponent implements OnInit, OnDestroy {
   // ========== Mode Selection ==========
   
   selectCrawler() {
-    this.analysisMode = 'crawler';
-    // Redirect to the crawler interface for Playwright-based X/Twitter scraping
-    window.location.href = '/home';
+    this.router.navigate(['/crawler']);
   }
 
   selectUploadFile() {
@@ -229,28 +254,27 @@ export class RawDataAnalysisComponent implements OnInit, OnDestroy {
         return;
       }
       
-      if (file.type === 'text/plain' || file.name.endsWith('.txt') || 
-          file.type === 'text/csv' || file.name.endsWith('.csv') ||
-          file.type === 'application/csv' || file.name.endsWith('.tsv') ||
-          file.type === 'text/tab-separated-values') {
+      const isExcel = file.name.endsWith('.xlsx') || file.name.endsWith('.xls') ||
+        file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+        file.type === 'application/vnd.ms-excel';
+      const isCsv = file.type === 'text/csv' || file.name.endsWith('.csv') || file.type === 'application/csv';
+      const isTxt = file.type === 'text/plain' || file.name.endsWith('.txt') ||
+        file.name.endsWith('.tsv') || file.type === 'text/tab-separated-values';
+
+      if (isExcel || isCsv || isTxt) {
         this.selectedFile = file;
         console.log('✅ File stored in this.selectedFile:', file.name);
-        
-        // Show warning for large files
-        if (file.size > 5 * 1024 * 1024) { // 5MB
+
+        if (file.size > 5 * 1024 * 1024) {
           console.log(`⚠️ Large file detected: ${(file.size / (1024 * 1024)).toFixed(1)}MB`);
         }
-        
-        // For CSV files, upload directly to backend instead of reading in browser
-        if (file.name.endsWith('.csv') || file.type === 'text/csv' || file.type === 'application/csv') {
-          console.log('📁 CSV file selected - will upload directly to backend');
-          // Don't read the file content - we'll send it directly
-        } else {
-          // For TXT files, still read in browser for compatibility
+
+        if (isTxt) {
           this.readFileContent(file);
         }
+        // CSV dan Excel dikirim langsung ke backend
       } else {
-        this.setError('Please select a .txt, .csv, or .tsv file containing raw crawl data');
+        this.setError('Please select a .txt, .csv, .tsv, or .xlsx file containing raw data');
       }
     }
   }
@@ -400,34 +424,43 @@ export class RawDataAnalysisComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const file = this.selectedFile;
+    const isExcel = file.name.endsWith('.xlsx') || file.name.endsWith('.xls') ||
+      file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+      file.type === 'application/vnd.ms-excel';
+
     const formData = new FormData();
-    formData.append('csvFile', this.selectedFile);
-    formData.append('sessionName', this.uploadForm.value.sessionName || 'File Upload');
+    const sessionName = this.uploadForm.value.sessionName || 'File Upload';
+
+    if (isExcel) {
+      formData.append('excelFile', file);
+    } else {
+      formData.append('csvFile', file);
+    }
+    formData.append('sessionName', sessionName);
 
     const headers = new HttpHeaders({
       'Authorization': `Bearer ${localStorage.getItem('token')}`
     });
 
-    this.http.post<any>(`${environment.apiUrl}/raw-data/upload-csv`, formData, { headers })
+    const endpoint = isExcel
+      ? `${environment.apiUrl}/raw-data/upload-excel`
+      : `${environment.apiUrl}/raw-data/upload-csv`;
+
+    this.http.post<any>(endpoint, formData, { headers })
       .subscribe({
         next: (response) => {
           console.log('✅ File uploaded successfully:', response);
-          this.setSuccess(`File uploaded! Processing in background for session: ${response.sessionId}`);
+          this.setSuccess(`File berhasil diupload! Session: ${response.sessionId} (${response.totalItems} data)`);
           this.loading.upload = false;
-          
-          // Start monitoring the upload progress
           this.monitorUploadProgress(response.sessionId);
-          
-          // Refresh sessions list
           this.loadSessions();
-          
-          // Reset form
           this.uploadForm.reset();
           this.selectedFile = null;
         },
         error: (error) => {
           console.error('❌ File upload failed:', error);
-          this.setError(error.error?.error || 'Failed to upload file');
+          this.setError(error.error?.error || 'Gagal mengupload file');
           this.loading.upload = false;
         }
       });
@@ -768,9 +801,9 @@ export class RawDataAnalysisComponent implements OnInit, OnDestroy {
     this.uploadProgress.isActive = false;
     this.uploadProgress.status = 'completed';
     this.uploadProgress.percentComplete = 100;
-    
+
     this.setSuccess(`Successfully processed ${response.stats.validAfterProcessing} items`);
-    this.currentSession = { 
+    this.currentSession = {
       session_id: response.sessionId,
       total_items: response.stats.validAfterProcessing,
       labeled_items: 0,
@@ -780,10 +813,10 @@ export class RawDataAnalysisComponent implements OnInit, OnDestroy {
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };
-    
-    // Go to library selection first, before labeling or importing
-    this.currentStep = 'library-selection';
-    this.loadWordLibraries();
+
+    // Go to method selection first
+    this.currentStep = 'method-selection';
+    this.analysisMethod = null;
     this.loading.upload = false;
   }
 
@@ -848,38 +881,94 @@ export class RawDataAnalysisComponent implements OnInit, OnDestroy {
 
   selectSession(session: RawDataSession) {
     this.currentSession = session;
-    
-    // If session is completed, redirect to analysis insights
+
+    // Completed sessions → load metrics from history and show results directly
     if (session.status === 'completed') {
-      // Find the analysis history for this session and redirect to insights
-      this.http.get<any>(`${this.apiUrl}/analysis-history`, { headers: this.getHeaders() })
-        .subscribe({
-          next: (response) => {
-            const analyses = response.analyses || [];
-            const analysis = analyses.find((a: any) => a.session_id === session.session_id);
-            if (analysis) {
-              // Redirect to insights page
-              this.router.navigate(['/analysis-insights', analysis.id]);
-            } else {
-              this.setError('Analysis results not found');
-            }
-          },
-          error: (error) => {
-            console.error('Error loading analysis history:', error);
-            this.setError('Failed to load analysis results');
-          }
-        });
+      this.loadCompletedSessionResults(session);
       return;
     }
-    
+
     // Check if there's an ongoing analysis for this session
     this.checkForOngoingAnalysis(session);
-    
-    // If no ongoing analysis was found, go to library selection
+
+    // If no ongoing analysis was found, show method selection
     if (this.currentStep !== 'analyzing') {
-      this.currentStep = 'library-selection';
-      this.loadWordLibraries();
+      this.currentStep = 'method-selection';
     }
+  }
+
+  /** Go straight to method-selection so user can re-run with new parameters */
+  reanalyzeSession(session: RawDataSession) {
+    this.currentSession = session;
+    this.officialTestMetrics     = null;
+    this.officialBaselineMetrics = null;
+    this.officialTrainingMetrics = null;
+    this.analysisResults         = null;
+    this.analysisIsInsetMode     = session.analysis_type === 'inset';
+    this.analysisMethod          = session.analysis_type === 'inset' ? 'inset' : null;
+    this.neutralMin              = -0.5;
+    this.neutralMax              =  0.5;
+    this.testSplit               = 0.2;
+    this.currentStep             = 'method-selection';
+  }
+
+  private loadCompletedSessionResults(session: RawDataSession) {
+    this.http.get<any>(`${this.apiUrl}/analysis-history?limit=50`, { headers: this.getHeaders() })
+      .subscribe({
+        next: (response) => {
+          const analyses = response.analyses || [];
+          const analysis = analyses.find((a: any) => a.session_id === session.session_id);
+
+          if (analysis) {
+            let parsedResults: any = {};
+            try {
+              const raw = analysis.sentiment_distribution;
+              parsedResults = typeof raw === 'string' ? JSON.parse(raw) : (raw || {});
+            } catch (_) { parsedResults = {}; }
+
+            const isInset = session.analysis_type === 'inset' || !!parsedResults.isInsetMode;
+            this.analysisMethod       = isInset ? 'inset' : 'library';
+            this.analysisIsInsetMode  = isInset;
+            this.officialTestMetrics     = parsedResults.testMetrics         || null;
+            this.officialBaselineMetrics = parsedResults.baselineTestMetrics || null;
+            this.officialTrainingMetrics = parsedResults.trainingMetrics     || null;
+
+            // Restore analysis parameters for display in results step
+            this.usedTestSplit  = parsedResults.testSplit  ?? 0.2;
+            this.usedNeutralMin = parsedResults.neutralMin ?? (isInset ? -0.5 : null);
+            this.usedNeutralMax = parsedResults.neutralMax ?? (isInset ?  0.5 : null);
+
+            const sc = parsedResults.sentimentCounts || {};
+            this.analysisProgress = {
+              ...this.analysisProgress,
+              isActive:    false,
+              status:      'completed',
+              totalItems:  session.total_items || 0,
+              sentimentCounts: {
+                positive: sc.positive ?? sc.Positive ?? 0,
+                negative: sc.negative ?? sc.Negative ?? 0,
+                neutral:  sc.neutral  ?? sc.Neutral  ?? 0
+              }
+            };
+            this.analysisResults = parsedResults;
+            this.currentStep     = 'results';
+          } else {
+            // No history entry found — for InSet let them re-adjust, else go to method selection
+            if (session.analysis_type === 'inset') {
+              this.analysisMethod = 'inset';
+              this.currentStep    = 'inset';
+              this.insetStatus    = 'loading';
+              this.loadInsetDistribution();
+            } else {
+              this.currentStep = 'method-selection';
+            }
+          }
+        },
+        error: () => {
+          this.setError('Gagal memuat hasil analisis. Silakan coba lagi.');
+          this.currentStep = 'method-selection';
+        }
+      });
   }
 
   deleteSession(session: RawDataSession) {
@@ -906,16 +995,21 @@ export class RawDataAnalysisComponent implements OnInit, OnDestroy {
   loadLabelingData() {
     if (!this.currentSession) return;
 
+    // Check if this session already has InSet scores (resuming a session)
+    this.loadInsetDistribution();
+
     this.loading.labeling = true;
     this.http.get(`${this.apiUrl}/raw-data/labeling/${this.currentSession.session_id}`, { headers: this.getHeaders() })
       .subscribe({
         next: (response: any) => {
           this.labelingData = response.unlabeledData || [];
+          if (response.minPerClass) this.minPerClass = response.minPerClass;
+          // needsLabeling now comes with lowercase keys from backend
           this.labelingProgress = {
             positive: response.currentLabels.Positive,
             negative: response.currentLabels.Negative,
             neutral: response.currentLabels.Neutral,
-            needed: response.needsLabeling
+            needed: response.needsLabeling  // { positive, negative, neutral }
           };
           this.loading.labeling = false;
         },
@@ -944,14 +1038,15 @@ export class RawDataAnalysisComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (response: any) => {
           this.setSuccess(`Labeled as ${sentiment}`);
+          if (response.minPerClass) this.minPerClass = response.minPerClass;
           this.labelingProgress = {
             positive: response.currentLabels.Positive,
             negative: response.currentLabels.Negative,
             neutral: response.currentLabels.Neutral,
-            needed: {
-              positive: Math.max(0, 5 - response.currentLabels.Positive),
-              negative: Math.max(0, 5 - response.currentLabels.Negative),
-              neutral: Math.max(0, 5 - response.currentLabels.Neutral)
+            needed: response.needsLabeling || {
+              positive: Math.max(0, this.minPerClass - response.currentLabels.Positive),
+              negative: Math.max(0, this.minPerClass - response.currentLabels.Negative),
+              neutral:  Math.max(0, this.minPerClass - response.currentLabels.Neutral)
             }
           };
           
@@ -984,15 +1079,15 @@ export class RawDataAnalysisComponent implements OnInit, OnDestroy {
         next: (response: any) => {
           this.setSuccess(`✅ ${response.labelsCleared} labels cleared. Reloading data...`);
           
-          // Reset progress
+          // Reset progress — keep minPerClass as-is (will refresh from backend on reload)
           this.labelingProgress = {
             positive: 0,
             negative: 0,
             neutral: 0,
             needed: {
-              positive: 5,
-              negative: 5,
-              neutral: 5
+              positive: this.minPerClass,
+              negative: this.minPerClass,
+              neutral:  this.minPerClass
             }
           };
           
@@ -1040,20 +1135,42 @@ export class RawDataAnalysisComponent implements OnInit, OnDestroy {
     this.selectedFile = null;
     this.uploadForm.reset();
     this.currentStep = 'upload';
+    this.analysisMethod = null;
     this.clearMessages();
   }
 
   // ========== Helper Methods ==========
 
   get totalLabelingNeeded(): number {
-    return this.labelingProgress.needed.positive + 
-           this.labelingProgress.needed.negative + 
-           this.labelingProgress.needed.neutral;
+    return (this.labelingProgress.needed.positive || 0) +
+           (this.labelingProgress.needed.negative || 0) +
+           (this.labelingProgress.needed.neutral  || 0);
+  }
+
+  get totalLabelingTarget(): number {
+    return this.minPerClass * 3;
+  }
+
+  /** Expected per-class requirement computed from session size (before backend call) */
+  get expectedMinPerClass(): number {
+    const total = this.currentSession?.total_items || 0;
+    if (total < 1) return 5;
+    return Math.max(5, Math.ceil(total * 0.2 / 3));
+  }
+
+  get expectedTotalLabeling(): number {
+    return this.expectedMinPerClass * 3;
+  }
+
+  get totalLabeled(): number {
+    return (this.labelingProgress.positive || 0) +
+           (this.labelingProgress.negative || 0) +
+           (this.labelingProgress.neutral  || 0);
   }
 
   get labelingProgressPercent(): number {
-    const total = this.labelingProgress.positive + this.labelingProgress.negative + this.labelingProgress.neutral;
-    return Math.round((total / 15) * 100);
+    const target = this.totalLabelingTarget;
+    return target > 0 ? Math.round((this.totalLabeled / target) * 100) : 0;
   }
 
   getSentimentClass(sentiment: string): string {
@@ -1643,7 +1760,8 @@ export class RawDataAnalysisComponent implements OnInit, OnDestroy {
 
     this.http.post<any>(`${this.apiUrl}/raw-data/analyze-with-library`, {
       sessionId: this.currentSession.session_id,
-      libraryId: this.selectedLibraryId
+      libraryId: this.selectedLibraryId,
+      testSplit: this.testSplit
     }, { headers: this.getHeaders() })
       .subscribe({
         next: (response) => {
@@ -1793,6 +1911,71 @@ export class RawDataAnalysisComponent implements OnInit, OnDestroy {
     this.router.navigate(['/train-data']);
   }
 
+  // ========== Method Selection ==========
+
+  selectMethod(method: 'inset' | 'library' | 'manual') {
+    this.analysisMethod = method;
+    switch (method) {
+      case 'inset':
+        this.currentStep = 'inset';
+        this.insetStatus = 'loading';
+        this.loadInsetDistribution();
+        break;
+      case 'library':
+        this.currentStep = 'library-selection';
+        this.loadWordLibraries();
+        break;
+      case 'manual':
+        this.currentStep = 'library-selection';
+        this.loadWordLibraries();
+        break;
+    }
+  }
+
+  backToMethodSelection() {
+    this.currentStep = 'method-selection';
+    this.analysisMethod = null;
+  }
+
+  get progressSteps(): Array<{ label: string; key: string }> {
+    switch (this.analysisMethod) {
+      case 'inset':
+        return [
+          { label: 'Upload',   key: 'upload' },
+          { label: 'Metode',   key: 'method-selection' },
+          { label: 'InSet',    key: 'inset' },
+          { label: 'Analisis', key: 'analyzing' },
+          { label: 'Hasil',    key: 'results' }
+        ];
+      case 'library':
+        return [
+          { label: 'Upload',   key: 'upload' },
+          { label: 'Metode',   key: 'method-selection' },
+          { label: 'Library',  key: 'library-selection' },
+          { label: 'Analisis', key: 'analyzing' },
+          { label: 'Hasil',    key: 'results' }
+        ];
+      case 'manual':
+        return [
+          { label: 'Upload',   key: 'upload' },
+          { label: 'Metode',   key: 'method-selection' },
+          { label: 'Library',  key: 'library-selection' },
+          { label: 'Labeling', key: 'labeling' }
+        ];
+      default:
+        return [
+          { label: 'Upload',   key: 'upload' },
+          { label: 'Metode',   key: 'method-selection' },
+          { label: 'Analisis', key: 'analyzing' },
+          { label: 'Hasil',    key: 'results' }
+        ];
+    }
+  }
+
+  get currentStepIndex(): number {
+    return this.progressSteps.findIndex(s => s.key === this.currentStep);
+  }
+
   returnToSessionsWhileAnalyzing() {
     // Save analysis state to localStorage so we can restore it
     if (this.analysisProgress.progressKey) {
@@ -1816,82 +1999,110 @@ export class RawDataAnalysisComponent implements OnInit, OnDestroy {
   }
 
   checkForOngoingAnalysis(session: any) {
-    // First check if session status is 'processing'
-    if (session.status === 'processing') {
-      console.log('📊 Session is processing, checking for ongoing analysis...');
-      
-      // Check localStorage first
-      const savedState = localStorage.getItem('ongoing_analysis');
-      if (savedState) {
-        try {
-          const analysisState = JSON.parse(savedState);
-          if (analysisState.sessionId === session.session_id) {
-            // Resume the analysis view with saved state
-            this.currentSession = session;
-            this.selectedLibraryId = analysisState.libraryId;
-            this.analysisProgress = {
-              isActive: true,
-              progressKey: analysisState.progressKey,
-              status: 'processing',
-              totalItems: analysisState.totalItems,
-              processedItems: 0,
-              currentBatch: 0,
-              totalBatches: 0,
-              libraryName: analysisState.libraryName,
-              sentimentCounts: { positive: 0, negative: 0, neutral: 0 },
-              startTime: new Date(analysisState.startedAt),
-              completedAt: null,
-              error: ''
-            };
-            this.currentStep = 'analyzing';
-            this.startProgressPolling();
-            console.log('✅ Resumed ongoing analysis from localStorage:', analysisState.progressKey);
-            return;
-          }
-        } catch (error) {
-          console.error('Error parsing saved analysis state:', error);
-        }
-      }
-      
-      // If no localStorage, try to find the progress key by checking backend
-      // Progress key format: sessionId_library
-      const progressKey = `${session.session_id}_library`;
-      
-      // Try to fetch progress from backend
-      this.http.get<any>(`${this.apiUrl}/raw-data/library-progress/${progressKey}`, {
+    if (session.status !== 'processing') return;
+    console.log('📊 Session is processing, checking for ongoing analysis...');
+
+    // ── InSet analysis: progress key is just sessionId ────────────────
+    if (session.analysis_type === 'inset') {
+      this.http.get<any>(`${this.apiUrl}/raw-data/analyze/${session.session_id}/progress`, {
         headers: this.getHeaders()
       }).subscribe({
         next: (progress) => {
-          if (progress && progress.status === 'processing') {
-            console.log('✅ Found ongoing analysis on backend:', progressKey);
-            
-            // Restore analysis view
-            this.currentSession = session;
-            this.selectedLibraryId = progress.libraryId;
-            this.analysisProgress = {
-              isActive: true,
-              progressKey: progressKey,
-              status: 'processing',
-              totalItems: progress.totalItems,
-              processedItems: progress.processedItems || 0,
-              currentBatch: progress.currentBatch || 0,
-              totalBatches: progress.totalBatches || 0,
-              libraryName: progress.libraryName || 'Word Library',
-              sentimentCounts: { positive: 0, negative: 0, neutral: 0 },
-              startTime: new Date(progress.startedAt),
-              completedAt: null,
-              error: ''
-            };
+          if (!progress || progress.status === 'idle') return;
+
+          this.analysisMethod = 'inset';
+          this.analysisProgress = {
+            ...this.analysisProgress,
+            isActive:       progress.status === 'processing',
+            status:         progress.status,
+            totalItems:     progress.totalItems     || session.total_items || 0,
+            processedItems: progress.processedItems || 0,
+            currentBatch:   progress.currentBatch   || 0,
+            totalBatches:   progress.totalBatches   || 0,
+            libraryName:    'InSet Lexicon (TF-IDF + Naive Bayes)',
+            sentimentCounts: progress.sentimentCounts || { positive: 0, negative: 0, neutral: 0 },
+            startTime:      new Date(progress.startedAt || Date.now()),
+            completedAt:    progress.completedAt ? new Date(progress.completedAt) : null,
+            error:          progress.error || ''
+          };
+
+          if (progress.status === 'processing') {
             this.currentStep = 'analyzing';
-            this.startProgressPolling();
+            this.pollInsetAnalysisProgress();
+          } else if (progress.status === 'completed') {
+            this.officialTestMetrics     = progress.testMetrics         || null;
+            this.officialBaselineMetrics = progress.baselineTestMetrics || null;
+            this.officialTrainingMetrics = progress.trainingMetrics     || null;
+            this.analysisIsInsetMode     = true;
+            this.currentStep = 'results';
           }
         },
-        error: (error) => {
-          // Silently ignore 404 - just means no ongoing analysis
-          // This is expected behavior when session is completed or not being analyzed
-        }
+        error: () => { /* no inset progress found, go to method selection */ }
       });
+      return;
     }
+
+    // ── Library analysis: progress key is sessionId_library ──────────
+    // Check localStorage first
+    const savedState = localStorage.getItem('ongoing_analysis');
+    if (savedState) {
+      try {
+        const analysisState = JSON.parse(savedState);
+        if (analysisState.sessionId === session.session_id) {
+          this.currentSession = session;
+          this.selectedLibraryId = analysisState.libraryId;
+          this.analysisMethod = 'library';
+          this.analysisProgress = {
+            isActive: true,
+            progressKey: analysisState.progressKey,
+            status: 'processing',
+            totalItems: analysisState.totalItems,
+            processedItems: 0,
+            currentBatch: 0,
+            totalBatches: 0,
+            libraryName: analysisState.libraryName,
+            sentimentCounts: { positive: 0, negative: 0, neutral: 0 },
+            startTime: new Date(analysisState.startedAt),
+            completedAt: null,
+            error: ''
+          };
+          this.currentStep = 'analyzing';
+          this.startProgressPolling();
+          return;
+        }
+      } catch (_) {}
+    }
+
+    // Fallback: query backend for library progress
+    const progressKey = `${session.session_id}_library`;
+    this.http.get<any>(`${this.apiUrl}/raw-data/library-progress/${progressKey}`, {
+      headers: this.getHeaders()
+    }).subscribe({
+      next: (progress) => {
+        if (progress && progress.status === 'processing') {
+          this.currentSession = session;
+          this.selectedLibraryId = progress.libraryId;
+          this.analysisMethod = 'library';
+          this.analysisProgress = {
+            isActive: true,
+            progressKey: progressKey,
+            status: 'processing',
+            totalItems: progress.totalItems,
+            processedItems: progress.processedItems || 0,
+            currentBatch: progress.currentBatch || 0,
+            totalBatches: progress.totalBatches || 0,
+            libraryName: progress.libraryName || 'Word Library',
+            sentimentCounts: { positive: 0, negative: 0, neutral: 0 },
+            startTime: new Date(progress.startedAt),
+            completedAt: null,
+            error: ''
+          };
+          this.currentStep = 'analyzing';
+          this.startProgressPolling();
+        }
+      },
+      error: () => {}
+    });
   }
 
   // ========== Data Viewer ==========
@@ -2026,6 +2237,180 @@ export class RawDataAnalysisComponent implements OnInit, OnDestroy {
         this.loadingData = false;
       }
     });
+  }
+
+  // ── InSet auto-labeling methods ───────────────────────────────────────────
+
+  /** Run InSet scoring on all tweets in the current session. */
+  autoLabelWithInset() {
+    if (!this.currentSession) return;
+    this.insetStatus = 'loading';
+    this.error = '';
+
+    this.http.post<any>(
+      `${this.apiUrl}/raw-data/auto-label/${this.currentSession.session_id}`,
+      { neutralMin: this.neutralMin, neutralMax: this.neutralMax },
+      { headers: this.getHeaders() }
+    ).subscribe({
+      next: (res) => {
+        this.insetStatus       = 'done';
+        this.insetDistribution = res.distribution;
+        this.insetCoverage     = res.coverage;
+        this.insetTotal        = res.total;
+        this.insetLexiconSize  = res.lexiconSize;
+      },
+      error: (err) => {
+        this.insetStatus = 'error';
+        this.error = err.error?.error || 'Auto-labeling gagal. Pastikan InSet sudah di-seed.';
+      }
+    });
+  }
+
+  /**
+   * Re-classify using stored inset_score values and the current threshold
+   * sliders — NO lexicon re-load on the server.
+   */
+  relabelWithThreshold() {
+    if (!this.currentSession || this.insetStatus !== 'done') return;
+    this.relabelLoading = true;
+    this.error = '';
+
+    this.http.post<any>(
+      `${this.apiUrl}/raw-data/relabel/${this.currentSession.session_id}`,
+      { neutralMin: this.neutralMin, neutralMax: this.neutralMax },
+      { headers: this.getHeaders() }
+    ).subscribe({
+      next: (res) => {
+        this.insetDistribution = res.distribution;
+        this.relabelLoading    = false;
+      },
+      error: (err) => {
+        this.error = err.error?.error || 'Relabel gagal.';
+        this.relabelLoading = false;
+      }
+    });
+  }
+
+  /** Load distribution from server (for existing sessions that already have inset_score). */
+  loadInsetDistribution() {
+    if (!this.currentSession) return;
+
+    this.http.get<any>(
+      `${this.apiUrl}/raw-data/label-distribution/${this.currentSession.session_id}`,
+      { headers: this.getHeaders() }
+    ).subscribe({
+      next: (res) => {
+        if (res.labeled > 0) {
+          this.insetStatus = 'done';
+          this.insetTotal  = res.labeled; // use labeled count, not total
+          const d = res.distribution as Record<string, { count: number }>;
+          this.insetDistribution = {
+            Positive: d['Positive']?.count || 0,
+            Negative: d['Negative']?.count || 0,
+            Neutral:  d['Neutral']?.count  || 0
+          };
+        } else {
+          this.insetStatus = 'idle';
+        }
+      },
+      error: () => { this.insetStatus = 'idle'; }
+    });
+  }
+
+  /** Go back to threshold controls so user can re-label and re-run analysis. */
+  backToThresholdAdjustment() {
+    this.officialTestMetrics     = null;
+    this.officialBaselineMetrics = null;
+    this.officialTrainingMetrics = null;
+    this.currentStep  = 'inset';
+    this.analysisMethod = 'inset';
+    this.insetStatus  = 'loading';
+    this.loadInsetDistribution();
+  }
+
+  /** Kick off TF-IDF + NB analysis using InSet-labeled rows as training. */
+  runInsetAnalysis() {
+    if (!this.currentSession) return;
+    this.currentStep = 'analyzing';
+    this.error = '';
+
+    this.analysisProgress = {
+      ...this.analysisProgress,
+      isActive:       true,
+      status:         'processing',
+      totalItems:     this.insetTotal,
+      processedItems: 0,
+      libraryName:    'InSet Lexicon (TF-IDF + Naive Bayes)',
+      sentimentCounts: { positive: 0, negative: 0, neutral: 0 }
+    };
+
+    // Capture params used for this analysis run (shown in results)
+    this.usedTestSplit   = this.testSplit;
+    this.usedNeutralMin  = this.neutralMin;
+    this.usedNeutralMax  = this.neutralMax;
+
+    this.http.post<any>(
+      `${this.apiUrl}/raw-data/analyze/${this.currentSession.session_id}`,
+      { testSplit: this.testSplit, neutralMin: this.neutralMin, neutralMax: this.neutralMax },
+      { headers: this.getHeaders() }
+    ).subscribe({
+      next: (res) => {
+        // Poll progress after request accepted
+        this.pollInsetAnalysisProgress();
+      },
+      error: (err) => {
+        this.error = err.error?.error || 'Analisis gagal.';
+        this.currentStep = 'inset';
+      }
+    });
+  }
+
+  private pollInsetAnalysisProgress() {
+    if (!this.currentSession) return;
+    const sessionId = this.currentSession.session_id;
+
+    const poll = setInterval(() => {
+      this.http.get<any>(
+        `${this.apiUrl}/raw-data/analyze/${sessionId}/progress`,
+        { headers: this.getHeaders() }
+      ).subscribe({
+        next: (progress) => {
+          if (progress.status === 'completed') {
+            clearInterval(poll);
+            this.analysisProgress.status        = 'completed';
+            this.analysisProgress.sentimentCounts = progress.sentimentCounts || { positive: 0, negative: 0, neutral: 0 };
+            // Capture official evaluation metrics
+            this.officialTestMetrics     = progress.testMetrics         || null; // ComplementNB
+            this.officialBaselineMetrics = progress.baselineTestMetrics || null; // MultinomialNB
+            this.officialTrainingMetrics = progress.trainingMetrics     || null;
+            this.analysisIsInsetMode     = progress.isInsetMode         || false;
+            this.currentStep = 'results';
+            this.cdr.detectChanges();
+          } else if (progress.status === 'failed') {
+            clearInterval(poll);
+            this.error = progress.error || 'Analisis gagal.';
+            this.currentStep = 'inset';
+          } else {
+            this.analysisProgress.processedItems = progress.processedItems || 0;
+            this.analysisProgress.currentBatch   = progress.currentBatch   || 0;
+            this.analysisProgress.totalBatches   = progress.totalBatches   || 0;
+            this.cdr.detectChanges();
+          }
+        },
+        error: () => clearInterval(poll)
+      });
+    }, 3000);
+  }
+
+  /** Helper: return percent string for a count relative to total */
+  insetPct(count: number): string {
+    if (!this.insetTotal || this.insetTotal === 0) return '0%';
+    return ((count / this.insetTotal) * 100).toFixed(1) + '%';
+  }
+
+  /** Format a float metric for display */
+  fmtPct(v: number | undefined): string {
+    return v != null ? (v * 100).toFixed(2) + '%' : 'N/A';
   }
 
   ngOnDestroy() {

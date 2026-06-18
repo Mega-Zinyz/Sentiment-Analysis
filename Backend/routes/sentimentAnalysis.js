@@ -1,4 +1,5 @@
 const { getDb } = require('../config/mysql-database');
+const { autoCreateValidationSample } = require('./analysisValidation');
 const { spawn, spawnSync } = require('child_process');
 const path = require('path');
 const fs = require('fs');
@@ -25,48 +26,111 @@ async function analyzeSentimentHandler(req, res) {
     userId = req.user.userId;
     sessionId = req.params.sessionId;
     const db = getDb();
-    
+
+    // Accept optional parameters from request body
+    const { testSplit, neutralMin, neutralMax } = req.body || {};
+    const resolvedTestSplit = [0, 0.1, 0.2, 0.3].includes(Number(testSplit))
+      ? Number(testSplit)
+      : 0.2;
+
     console.log('Starting sentiment analysis for session ' + sessionId + ', user ' + userId);
-    
-    // Get training data
-    const [trainingData] = await db.execute(`
-      SELECT id, clean_text, sentiment_label
-      FROM raw_twitter_data 
-      WHERE user_id = ? AND session_id = ? AND is_training_sample = TRUE
-      ORDER BY id
-    `, [userId, sessionId]);
-    
-    if (trainingData.length < 15) {
-      return res.status(400).json({ 
-        error: `Insufficient training data. Found ${trainingData.length}, need at least 15 labeled samples` 
-      });
-    }
-    
-    // Validate training data distribution
-    const labelCounts = trainingData.reduce((counts, item) => {
-      counts[item.sentiment_label] = (counts[item.sentiment_label] || 0) + 1;
-      return counts;
-    }, {});
-    
-    if (labelCounts.Positive < 5 || labelCounts.Negative < 5 || labelCounts.Neutral < 5) {
-      return res.status(400).json({ 
-        error: 'Need at least 5 samples each of Positive, Negative, and Neutral sentiment',
-        currentDistribution: labelCounts
-      });
-    }
-    
-    // Get unlabeled data for prediction
-    const [unlabeledData] = await db.execute(`
-      SELECT id, clean_text
-      FROM raw_twitter_data 
-      WHERE user_id = ? AND session_id = ? AND is_training_sample = FALSE
-      ORDER BY id
-    `, [userId, sessionId]);
-    
-    if (unlabeledData.length === 0) {
-      return res.status(400).json({ 
-        error: 'No unlabeled data found for prediction' 
-      });
+
+    // ── Detect InSet mode ─────────────────────────────────────────────────
+    // InSet mode: user ran auto-label → inset_score IS NOT NULL on all rows.
+    // Legacy mode: user labeled manually → is_training_sample = TRUE on subset.
+    const [[{ insetCount }]] = await db.execute(
+      `SELECT COUNT(*) AS insetCount FROM raw_twitter_data
+       WHERE user_id = ? AND session_id = ? AND inset_score IS NOT NULL`,
+      [userId, sessionId]
+    );
+    const hasInsetLabels = insetCount > 0;
+
+    let trainingData, unlabeledData, minPerClass;
+
+    if (hasInsetLabels) {
+      // ── InSet mode ──────────────────────────────────────────────────────
+      console.log(`[${sessionId}] InSet mode: using ${insetCount} InSet-labeled rows as training`);
+      minPerClass = 30; // fixed minimum, not proportional to dataset size
+
+      [trainingData] = await db.execute(`
+        SELECT id, clean_text, sentiment_label
+        FROM raw_twitter_data
+        WHERE user_id = ? AND session_id = ?
+          AND inset_score IS NOT NULL AND sentiment_label IS NOT NULL
+        ORDER BY id
+      `, [userId, sessionId]);
+
+      // Validate per-class minimum
+      const labelCounts = trainingData.reduce((c, item) => {
+        c[item.sentiment_label] = (c[item.sentiment_label] || 0) + 1;
+        return c;
+      }, {});
+
+      for (const cls of ['Positive', 'Negative', 'Neutral']) {
+        if ((labelCounts[cls] || 0) < minPerClass) {
+          return res.status(400).json({
+            error: `Kelas "${cls}" hanya punya ${labelCounts[cls] || 0} sampel InSet (butuh min ${minPerClass}). Sesuaikan threshold atau tambah data.`,
+            currentDistribution: labelCounts
+          });
+        }
+      }
+
+      // In InSet mode, predict ALL tweets (model refines raw InSet labels)
+      [unlabeledData] = await db.execute(`
+        SELECT id, clean_text
+        FROM raw_twitter_data
+        WHERE user_id = ? AND session_id = ?
+        ORDER BY id
+      `, [userId, sessionId]);
+
+    } else {
+      // ── Legacy manual-labeling mode ──────────────────────────────────────
+      [trainingData] = await db.execute(`
+        SELECT id, clean_text, sentiment_label
+        FROM raw_twitter_data
+        WHERE user_id = ? AND session_id = ? AND is_training_sample = TRUE
+        ORDER BY id
+      `, [userId, sessionId]);
+
+      // Dynamic minimum: ceil(total × 0.2 / 3), floor at 5
+      const [[sessionRow]] = await db.execute(
+        `SELECT total_items FROM data_sessions WHERE session_id = ? AND user_id = ?`,
+        [sessionId, userId]
+      );
+      const totalItems = sessionRow?.total_items || 0;
+      minPerClass      = Math.max(5, Math.ceil(totalItems * 0.2 / 3));
+      const totalMin   = minPerClass * 3;
+
+      if (trainingData.length < totalMin) {
+        return res.status(400).json({
+          error: `Data training kurang. Ditemukan ${trainingData.length}, butuh minimal ${totalMin} sampel (${minPerClass} per kelas = round(${totalItems} × 0.2 / 3))`
+        });
+      }
+
+      const labelCounts = trainingData.reduce((c, item) => {
+        c[item.sentiment_label] = (c[item.sentiment_label] || 0) + 1;
+        return c;
+      }, {});
+
+      if ((labelCounts.Positive || 0) < minPerClass ||
+          (labelCounts.Negative || 0) < minPerClass ||
+          (labelCounts.Neutral  || 0) < minPerClass) {
+        return res.status(400).json({
+          error: `Butuh minimal ${minPerClass} sampel per kelas (Positive, Negative, Neutral) = round(${totalItems} × 0.2 / 3)`,
+          currentDistribution: labelCounts
+        });
+      }
+
+      [unlabeledData] = await db.execute(`
+        SELECT id, clean_text
+        FROM raw_twitter_data
+        WHERE user_id = ? AND session_id = ? AND is_training_sample = FALSE
+        ORDER BY id
+      `, [userId, sessionId]);
+
+      if (unlabeledData.length === 0) {
+        return res.status(400).json({ error: 'No unlabeled data found for prediction' });
+      }
     }
     
     console.log(`\n${'='.repeat(60)}`);
@@ -102,16 +166,16 @@ async function analyzeSentimentHandler(req, res) {
     
     // Update data_sessions to 'processing' status
     await db.execute(`
-      UPDATE data_sessions 
-      SET status = 'processing', analysis_type = 'manual', training_samples = ?
+      UPDATE data_sessions
+      SET status = 'processing', analysis_type = ?, training_samples = ?
       WHERE session_id = ? AND user_id = ?
-    `, [trainingData.length, sessionId, userId]);
-    
+    `, [hasInsetLabels ? 'inset' : 'manual', trainingData.length, sessionId, userId]);
+
     // Initialize progress tracking
     if (!global.sentimentProgress) {
       global.sentimentProgress = new Map();
     }
-    
+
     global.sentimentProgress.set(sessionId, {
       status: 'processing',
       totalItems: unlabeledData.length,
@@ -119,12 +183,16 @@ async function analyzeSentimentHandler(req, res) {
       currentBatch: 0,
       totalBatches: totalBatches,
       predictions: [],
+      isInsetMode: hasInsetLabels,
       startTime: new Date(),
       lastUpdate: new Date()
     });
     
     let allPredictions = [];
-    
+    let trainingMetrics      = null; // from Python: accuracy on full training set
+    let testMetrics          = null; // ComplementNB on 20% held-out set (PRIMARY / OFFICIAL)
+    let baselineTestMetrics  = null; // MultinomialNB on same split (for thesis comparison)
+
     // Choose processing method based on worker pool availability
     if (workerPool) {
       console.log('🚀 Using high-performance worker pool for sentiment analysis...');
@@ -225,7 +293,8 @@ async function analyzeSentimentHandler(req, res) {
             pythonScript,
             '--train-file', trainingFile,
             '--predict-file', predictionFile,
-            '--output-file', resultsFile
+            '--output-file', resultsFile,
+            '--test-split', String(resolvedTestSplit)
           ], {
             maxBuffer: 10 * 1024 * 1024, // 10MB buffer
             timeout: 120000, // 2 minutes timeout per batch
@@ -265,12 +334,28 @@ async function analyzeSentimentHandler(req, res) {
             throw new Error(`Batch ${batchIndex + 1} prediction count mismatch. Expected ${predictionTexts.length}, got ${batchResults.predictions?.length || 0}`);
           }
           
+          // Capture metrics from first batch (same model for all batches)
+          if (batchIndex === 0) {
+            if (batchResults.metrics || batchResults.training_metrics) {
+              trainingMetrics = batchResults.training_metrics || batchResults.metrics;
+              console.log(`📊 [${sessionId}] Training metrics: accuracy=${trainingMetrics.training_accuracy?.toFixed(4)}`);
+            }
+            if (batchResults.test_metrics) {
+              testMetrics = batchResults.test_metrics;
+              console.log(`📊 [${sessionId}] Test metrics ComplementNB (PRIMARY 20% holdout): accuracy=${testMetrics.accuracy?.toFixed(4)}`);
+            }
+            if (batchResults.baseline_test_metrics) {
+              baselineTestMetrics = batchResults.baseline_test_metrics;
+              console.log(`📊 [${sessionId}] Baseline MNB test metrics: accuracy=${baselineTestMetrics.accuracy?.toFixed(4)}`);
+            }
+          }
+
           // Store predictions with original data IDs
           const batchPredictions = batchResults.predictions.map((prediction, idx) => ({
             id: batchData[idx].id,
             prediction: prediction
           }));
-          
+
           allPredictions.push(...batchPredictions);
           
           // Update progress
@@ -356,10 +441,50 @@ async function analyzeSentimentHandler(req, res) {
     // Calculate final statistics
     const predictions = allPredictions.map(p => p.prediction);
     const sentimentCounts = predictions.reduce((counts, sentiment) => {
-      const normalizedSentiment = sentiment.toLowerCase();
+      const normalizedSentiment = typeof sentiment === 'string'
+        ? sentiment.toLowerCase()
+        : (sentiment?.label || 'neutral').toLowerCase();
       counts[normalizedSentiment] = (counts[normalizedSentiment] || 0) + 1;
       return counts;
     }, { positive: 0, negative: 0, neutral: 0 });
+
+    // If metrics not captured yet (worker-pool path), run Python once just for training metrics
+    if (!trainingMetrics) {
+      try {
+        const tempDir = os.tmpdir();
+        const metricsTimestamp = Date.now();
+        const mTrainFile  = path.join(tempDir, `mtrain_${sessionId}_${metricsTimestamp}.json`);
+        const mPredFile   = path.join(tempDir, `mpred_${sessionId}_${metricsTimestamp}.json`);
+        const mResultFile = path.join(tempDir, `mresult_${sessionId}_${metricsTimestamp}.json`);
+        const pythonScript = path.join(__dirname, '..', 'python', 'sentiment_analysis_batch.py');
+
+        fs.writeFileSync(mTrainFile, JSON.stringify(trainingDataFormatted, null, 2));
+        // Use only 1 sample for prediction (just to satisfy the script's requirement)
+        fs.writeFileSync(mPredFile, JSON.stringify([trainingDataFormatted[0].text], null, 2));
+
+        const mResult = spawnSync(pythonPath, [
+          pythonScript,
+          '--train-file', mTrainFile,
+          '--predict-file', mPredFile,
+          '--output-file', mResultFile,
+          '--test-split', String(resolvedTestSplit)
+        ], { timeout: 60000, encoding: 'buffer', stdio: ['pipe', 'pipe', 'pipe'] });
+
+        if (mResult.status === 0 && fs.existsSync(mResultFile)) {
+          const mData = JSON.parse(fs.readFileSync(mResultFile, 'utf-8'));
+          trainingMetrics     = mData.training_metrics || mData.metrics || null;
+          testMetrics         = mData.test_metrics          || null;
+          baselineTestMetrics = mData.baseline_test_metrics || null;
+          console.log(`📊 [${sessionId}] Metrics (fallback): train=${trainingMetrics?.training_accuracy?.toFixed(4)}, CNB=${testMetrics?.accuracy?.toFixed(4) ?? 'N/A'}, MNB=${baselineTestMetrics?.accuracy?.toFixed(4) ?? 'N/A'}`);
+        }
+
+        for (const f of [mTrainFile, mPredFile, mResultFile]) {
+          try { if (fs.existsSync(f)) fs.unlinkSync(f); } catch {}
+        }
+      } catch (metricsErr) {
+        console.warn(`⚠️ [${sessionId}] Could not compute training metrics:`, metricsErr.message);
+      }
+    }
     
     // Update progress to completed
     const progressData = global.sentimentProgress.get(sessionId);
@@ -367,49 +492,73 @@ async function analyzeSentimentHandler(req, res) {
     progressData.processedItems = unlabeledData.length;
     progressData.predictions = predictions;
     progressData.sentimentCounts = sentimentCounts;
+    progressData.testMetrics         = testMetrics         || null; // ComplementNB (PRIMARY)
+    progressData.baselineTestMetrics = baselineTestMetrics || null; // MultinomialNB (comparison)
+    progressData.trainingMetrics = trainingMetrics || null;
+    progressData.isInsetMode = hasInsetLabels;
+    progressData.testSplit   = resolvedTestSplit;
+    progressData.neutralMin  = hasInsetLabels ? (neutralMin ?? -0.5) : null;
+    progressData.neutralMax  = hasInsetLabels ? (neutralMax ??  0.5) : null;
     progressData.lastUpdate = new Date();
     
     const processingTimeMs = new Date() - progressData.startTime;
     
     // Save analysis to history
+    let newAnalysisId = null;
     try {
       // Determine session name from sessionId
       const sessionParts = sessionId.split('_');
       const sessionName = sessionParts[0] || 'Unknown Session';
-      
+
       // Insert analysis history record
-      await db.execute(`
-        INSERT INTO analysis_history 
-        (user_id, session_id, session_name, analysis_type, source_description, 
-         total_items, processed_items, training_samples, results, status, 
+      const [histResult] = await db.execute(`
+        INSERT INTO analysis_history
+        (user_id, session_id, session_name, analysis_type, source_description,
+         total_items, processed_items, training_samples, results, status,
          processing_time_ms, completed_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
       `, [
         userId,
         sessionId,
         sessionName,
-        'manual', // Default to manual, can be enhanced later
+        hasInsetLabels ? 'library' : 'manual',
         `Sentiment analysis of ${predictions.length} items from ${sessionName} dataset`,
         unlabeledData.length,
         predictions.length,
         trainingData.length,
-        JSON.stringify(sentimentCounts),
+        JSON.stringify({
+          sentimentCounts,
+          trainingMetrics:      trainingMetrics      || null,
+          testMetrics:          testMetrics          || null, // ComplementNB (PRIMARY)
+          baselineTestMetrics:  baselineTestMetrics  || null, // MultinomialNB (comparison)
+          isInsetMode:          hasInsetLabels,
+          testSplit:            resolvedTestSplit,
+          neutralMin:           hasInsetLabels ? (neutralMin ?? -0.5) : null,
+          neutralMax:           hasInsetLabels ? (neutralMax ??  0.5) : null
+        }),
         'completed',
         processingTimeMs
       ]);
-      
-      console.log(`📝 [${sessionId}] Analysis saved to history table`);
+      newAnalysisId = histResult.insertId;
+
+      console.log(`📝 [${sessionId}] Analysis saved to history table (id=${newAnalysisId})`);
     } catch (historyError) {
       console.error(`❌ [${sessionId}] Failed to save analysis history:`, historyError.message);
       // Don't fail the main request if history save fails
     }
-    
+
     // Update data_sessions to 'completed' status
     await db.execute(`
-      UPDATE data_sessions 
+      UPDATE data_sessions
       SET status = 'completed', processed_items = ?, completed_at = NOW()
       WHERE session_id = ? AND user_id = ?
     `, [predictions.length, sessionId, userId]);
+
+    // Auto-create validation sample (fire-and-forget)
+    if (newAnalysisId) {
+      autoCreateValidationSample(newAnalysisId, userId, sessionId)
+        .catch(err => console.error(`⚠️ [${sessionId}] Auto-create validation failed:`, err.message));
+    }
     
     console.log(`\n${'='.repeat(60)}`);
     console.log(`✅ [${sessionId}] SENTIMENT ANALYSIS COMPLETED SUCCESSFULLY`);
@@ -600,12 +749,17 @@ async function analyzeWithLibraryHandler(req, res) {
   
   try {
     userId = req.user.userId;
-    const { sessionId: reqSessionId, libraryId } = req.body;
+    const { sessionId: reqSessionId, libraryId, testSplit } = req.body;
     sessionId = reqSessionId;
 
     if (!sessionId || !libraryId) {
       return res.status(400).json({ error: 'Session ID and Library ID are required' });
     }
+
+    // Validate testSplit: accept 0 (no split), 0.1, 0.2, 0.3
+    const resolvedTestSplit = [0, 0.1, 0.2, 0.3].includes(Number(testSplit))
+      ? Number(testSplit)
+      : 0.2;
 
     const db = getDb();
 
@@ -774,6 +928,7 @@ async function analyzeWithLibraryHandler(req, res) {
       libraryId: libraryId,
       libraryName: libraries[0].name,
       trainingSamples: librarySamples.length,
+      testSplit: resolvedTestSplit,
       startedAt: new Date(),
       startTime: new Date(),
       lastUpdate: new Date()
@@ -785,11 +940,12 @@ async function analyzeWithLibraryHandler(req, res) {
       message: 'Analysis started',
       sessionId: sessionId,
       progressKey: progressKey,
-      totalItems: tweets.length
+      totalItems: tweets.length,
+      testSplit: resolvedTestSplit
     });
 
     // Process asynchronously
-    processLibraryAnalysis(userId, sessionId, progressKey, tweets, trainingDataFormatted, totalBatches, BATCH_SIZE, db, workerPool)
+    processLibraryAnalysis(userId, sessionId, progressKey, tweets, trainingDataFormatted, totalBatches, BATCH_SIZE, db, workerPool, resolvedTestSplit)
       .catch(error => {
         console.error('Error in background processing:', error);
         if (global.sentimentProgress.has(progressKey)) {
@@ -810,15 +966,65 @@ async function analyzeWithLibraryHandler(req, res) {
 /**
  * Background processing for library-based analysis
  */
-async function processLibraryAnalysis(userId, sessionId, progressKey, tweets, trainingDataFormatted, totalBatches, BATCH_SIZE, db, workerPool) {
+async function processLibraryAnalysis(userId, sessionId, progressKey, tweets, trainingDataFormatted, totalBatches, BATCH_SIZE, db, workerPool, testSplit = 0.2) {
   let allPredictions = [];
-  
+  let testMetrics = null;
+  let trainingMetrics = null;
+
   try {
     console.log(`\n${'='.repeat(60)}`);
     console.log(`📚 [${progressKey}] STARTING LIBRARY-BASED ANALYSIS`);
     console.log(`   Total items: ${tweets.length}`);
     console.log(`   Batches: ${totalBatches}`);
+    console.log(`   Test split: ${testSplit > 0 ? (testSplit * 100) + '%' : 'disabled'}`);
     console.log(`${'='.repeat(60)}\n`);
+
+    // ── Run train/test evaluation ONCE before batch predictions ──────
+    if (testSplit > 0 && trainingDataFormatted.length >= 10) {
+      try {
+        const evalTs = Date.now();
+        const tmpDir = os.tmpdir();
+        const evalTrainFile  = path.join(tmpDir, `evaltrain_${progressKey}_${evalTs}.json`);
+        const evalPredFile   = path.join(tmpDir, `evalpred_${progressKey}_${evalTs}.json`);
+        const evalResultFile = path.join(tmpDir, `evalresult_${progressKey}_${evalTs}.json`);
+        const pythonScript   = path.join(__dirname, '..', 'python', 'sentiment_analysis_batch.py');
+        const pythonPath     = process.env.PYTHON_PATH || (os.platform() === 'win32' ? 'python' : 'python3');
+
+        fs.writeFileSync(evalTrainFile, JSON.stringify(trainingDataFormatted, null, 2));
+        // Use a single dummy predict text — evaluation result is what matters
+        fs.writeFileSync(evalPredFile, JSON.stringify([trainingDataFormatted[0].text]));
+
+        const evalResult = spawnSync(pythonPath, [
+          pythonScript,
+          '--train-file', evalTrainFile,
+          '--predict-file', evalPredFile,
+          '--output-file', evalResultFile,
+          '--test-split', String(testSplit)
+        ], { timeout: 120000, encoding: 'buffer', stdio: ['pipe', 'pipe', 'pipe'] });
+
+        if (evalResult.status === 0 && fs.existsSync(evalResultFile)) {
+          const evalData = JSON.parse(fs.readFileSync(evalResultFile, 'utf-8'));
+          testMetrics = evalData.test_metrics || null;
+          // Always capture training metrics as fallback (Python always computes them)
+          trainingMetrics = evalData.training_metrics || evalData.metrics || null;
+
+          if (testMetrics) {
+            console.log(`📊 [${progressKey}] Test evaluation done: accuracy=${testMetrics.test_accuracy?.toFixed(4)} (${testMetrics.train_samples} train / ${testMetrics.test_samples} test)`);
+          } else if (trainingMetrics) {
+            console.log(`📊 [${progressKey}] Test split skipped (small dataset), training accuracy=${trainingMetrics.training_accuracy?.toFixed(4)}`);
+          }
+        } else {
+          const errMsg = evalResult.stderr ? evalResult.stderr.toString('utf-8') : 'unknown';
+          console.warn(`⚠️ [${progressKey}] Test evaluation failed: ${errMsg.substring(0, 200)}`);
+        }
+
+        for (const f of [evalTrainFile, evalPredFile, evalResultFile]) {
+          try { if (fs.existsSync(f)) fs.unlinkSync(f); } catch {}
+        }
+      } catch (evalErr) {
+        console.warn(`⚠️ [${progressKey}] Could not run test evaluation:`, evalErr.message);
+      }
+    }
     
     if (workerPool) {
       console.log(`🚀 [${progressKey}] Using worker pool for parallel processing...`);
@@ -976,14 +1182,15 @@ async function processLibraryAnalysis(userId, sessionId, progressKey, tweets, tr
       progress.completedAt = completedAt;
       
       // Save to analysis_history
+      let newAnalysisId = null;
       try {
         const processingTimeMs = completedAt - new Date(progress.startedAt);
-        
+
         // Determine session name from sessionId
         const sessionParts = sessionId.split('_');
         const sessionName = sessionParts[0] || sessionId;
-        
-        await db.execute(`
+
+        const [histResult] = await db.execute(`
           INSERT INTO analysis_history (
             user_id,
             session_id,
@@ -1009,7 +1216,10 @@ async function processLibraryAnalysis(userId, sessionId, progressKey, tweets, tr
           progress.processedItems,
           progress.trainingSamples || 0,
           JSON.stringify({
-            sentimentDistribution: sentimentCounts,
+            sentimentCounts,
+            testMetrics: testMetrics || null,
+            trainingMetrics: trainingMetrics || null,
+            testSplit: testSplit,
             libraryName: progress.libraryName,
             libraryId: progress.libraryId
           }),
@@ -1018,22 +1228,29 @@ async function processLibraryAnalysis(userId, sessionId, progressKey, tweets, tr
           new Date(progress.startedAt),
           completedAt
         ]);
-        
-        console.log(`📝 [${progressKey}] Analysis saved to history table`);
+        newAnalysisId = histResult.insertId;
+
+        console.log(`📝 [${progressKey}] Analysis saved to history table (id=${newAnalysisId})`);
       } catch (historyError) {
         console.error(`❌ [${progressKey}] Error saving to analysis_history:`, historyError);
         // Don't fail the analysis if history saving fails
       }
-      
+
       // Update data_sessions to 'completed' status
       try {
         await db.execute(`
-          UPDATE data_sessions 
+          UPDATE data_sessions
           SET status = 'completed', processed_items = ?, analysis_type = 'library', completed_at = ?
           WHERE session_id = ? AND user_id = ?
         `, [progress.processedItems, completedAt, sessionId, userId]);
       } catch (sessionError) {
         console.error(`❌ [${progressKey}] Error updating data_sessions:`, sessionError);
+      }
+
+      // Auto-create validation sample (fire-and-forget)
+      if (newAnalysisId) {
+        autoCreateValidationSample(newAnalysisId, userId, sessionId)
+          .catch(err => console.error(`⚠️ [${progressKey}] Auto-create validation failed:`, err.message));
       }
     }
     

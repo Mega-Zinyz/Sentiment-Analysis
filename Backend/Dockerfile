@@ -28,12 +28,20 @@ RUN npm install --production
 
 # Copy Python requirements and install
 COPY requirements.txt ./
-RUN pip3 install --no-cache-dir --break-system-packages -r requirements.txt
+# Install smaller packages first, then spaCy separately with higher timeout
+RUN pip3 install --no-cache-dir --break-system-packages --timeout 300 \
+    scikit-learn numpy PySastrawi click
+# spaCy is large (~33MB wheel) — retry up to 3 times if download is interrupted
+RUN for i in 1 2 3; do \
+      pip3 install --no-cache-dir --break-system-packages --timeout 300 spacy && break; \
+      echo "spaCy install attempt $i failed, retrying in 10s..."; \
+      sleep 10; \
+    done
 
-# Download spacy language model
-RUN python3 -m spacy download xx_ent_wiki_sm --break-system-packages 2>/dev/null || \
-    python3 -m spacy download xx_ent_wiki_sm 2>/dev/null || \
-    echo "Spacy model will be downloaded at runtime"
+# Download spacy language model (required for NLP preprocessing)
+RUN python3 -m spacy download xx_ent_wiki_sm --break-system-packages || \
+    python3 -m spacy download xx_ent_wiki_sm || \
+    echo "WARNING: spaCy model download failed — sentiment analysis will not work"
 
 # Copy application code
 COPY . .

@@ -22,7 +22,7 @@ class PlaywrightCrawler {
       sinceDate: config.sinceDate || null,
       untilDate: config.untilDate || null,
       // Increased max scrolls for better coverage
-      maxScrolls: config.maxScrolls || 10,
+      maxScrolls: config.maxScrolls || 20,
       minScrollDelay: config.minScrollDelay || 2000,
       maxScrollDelay: config.maxScrollDelay || 4500,
       ...config
@@ -228,6 +228,15 @@ class PlaywrightCrawler {
               break;
             }
 
+            // Detect mid-scroll login wall (X.com shows this overlay WITHOUT changing URL)
+            const midScrollLoginWall = await this.page.locator(
+              '[data-testid="sheetDialog"], [data-testid="LoginForm"], [aria-label="Sign in to X"], [data-testid="login-dialog"]'
+            ).first().isVisible({ timeout: 800 }).catch(() => false);
+            if (midScrollLoginWall) {
+              logger.warn(`⚠️  X.com login wall appeared mid-scroll after ${allTweets.length} tweets — stopping. Provide valid cookies in Profile settings for more results.`);
+              break;
+            }
+
             const pageTweets = await this.extractTweets();
 
             let newCount = 0;
@@ -254,10 +263,19 @@ class PlaywrightCrawler {
 
             if (newCount === 0) {
               consecutiveEmptyScrolls++;
-              if (consecutiveEmptyScrolls >= 2) {
-                logger.warn('⚠️  No new tweets after 2 consecutive scrolls, stopping');
+              // Check if X.com is showing a genuine "no more results" state
+              const noMoreResults = await this.page.locator(
+                '[data-testid="empty_state_header_text"], [data-testid="emptyState"]'
+              ).isVisible({ timeout: 1000 }).catch(() => false);
+              if (noMoreResults) {
+                logger.warn('⚠️  X.com shows no more results, stopping');
                 break;
               }
+              if (consecutiveEmptyScrolls >= 4) {
+                logger.warn('⚠️  No new tweets after 4 consecutive scrolls, stopping');
+                break;
+              }
+              logger.info(`⏳ Empty scroll ${consecutiveEmptyScrolls}/4 — waiting longer for X.com to load...`);
             } else {
               consecutiveEmptyScrolls = 0;
             }
@@ -268,12 +286,20 @@ class PlaywrightCrawler {
             logger.info(`⏱️  Waiting ${Math.round(scrollDelay)}ms before scroll ${scrolls + 1}...`);
             await this.page.waitForTimeout(scrollDelay);
 
-            // Scroll to bottom of page (more effective than fixed pixel amounts)
+            // X.com uses a virtualized scroll container — scrolling document.body alone
+            // doesn't trigger lazy-loading of more tweets. Target the primary column
+            // first, then fall back to window scroll for good measure.
             await this.page.evaluate(() => {
+              const col = document.querySelector('[data-testid="primaryColumn"]') ||
+                          document.querySelector('main[role="main"]');
+              if (col) {
+                col.scrollTop = col.scrollHeight;
+              }
               window.scrollTo(0, document.body.scrollHeight);
             });
 
-            await this.page.waitForTimeout(1500 + Math.random() * 1000);
+            // Give X.com enough time to lazy-load the next batch of tweets
+            await this.page.waitForTimeout(2500 + Math.random() * 1500);
             scrolls++;
           }
 

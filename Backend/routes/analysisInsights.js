@@ -1,4 +1,10 @@
 const { getDb } = require('../config/mysql-database');
+const { spawnSync } = require('child_process');
+const path = require('path');
+const fs = require('fs');
+const os = require('os');
+const pythonPath = process.env.PYTHON_PATH || (os.platform() === 'win32' ? 'python' : 'python3');
+const pythonScript = path.join(__dirname, '..', 'python', 'sentiment_analysis_batch.py');
 
 /**
  * Get comprehensive analysis insights including charts, word clouds, and statistics
@@ -40,27 +46,28 @@ async function getAnalysisInsightsHandler(req, res) {
       ORDER BY id
     `, [analysis.session_id]);
     
-    // Parse results to get sentiment distribution
+    // Parse results to get sentiment distribution — handles all stored formats
     let sentimentDistribution = { positive: 0, negative: 0, neutral: 0 };
     try {
       const results = JSON.parse(analysis.results || '{}');
-      if (results.sentimentDistribution) {
-        // Handle nested sentimentDistribution (library analysis)
-        const dist = results.sentimentDistribution;
-        sentimentDistribution = {
-          positive: parseInt(dist.positive || dist.Positive || 0),
-          negative: parseInt(dist.negative || dist.Negative || 0),
-          neutral: parseInt(dist.neutral || dist.Neutral || 0)
-        };
+
+      const parseCounts = (obj) => ({
+        positive: parseInt(obj.positive || obj.Positive || 0),
+        negative: parseInt(obj.negative || obj.Negative || 0),
+        neutral:  parseInt(obj.neutral  || obj.Neutral  || 0)
+      });
+
+      if (results.sentimentCounts) {
+        // New format (both ML path and library path after our update)
+        sentimentDistribution = parseCounts(results.sentimentCounts);
+      } else if (results.sentimentDistribution) {
+        // Old library format
+        sentimentDistribution = parseCounts(results.sentimentDistribution);
       } else if (results.positive !== undefined || results.Positive !== undefined) {
-        // Handle direct sentiment counts format (both lowercase and capitalized)
-        sentimentDistribution = {
-          positive: parseInt(results.positive || results.Positive || 0),
-          negative: parseInt(results.negative || results.Negative || 0),
-          neutral: parseInt(results.neutral || results.Neutral || 0)
-        };
+        // Very old direct format
+        sentimentDistribution = parseCounts(results);
       }
-      
+
       console.log('📊 Sentiment distribution parsed:', sentimentDistribution);
     } catch (error) {
       console.error('Error parsing analysis results:', error);
@@ -68,7 +75,124 @@ async function getAnalysisInsightsHandler(req, res) {
     
     // Generate comprehensive insights
     const insights = await generateAnalysisInsights(rawDataResults, sentimentDistribution, analysis);
-    
+
+    // Parse model metrics from stored results
+    let modelMetrics = null;
+    let storedResultsObj = {};
+    try {
+      storedResultsObj = JSON.parse(analysis.results || '{}');
+      if (storedResultsObj.testMetrics) {
+        modelMetrics = { ...storedResultsObj.testMetrics, source: 'test_set', testSplit: storedResultsObj.testSplit };
+      } else if (storedResultsObj.trainingMetrics) {
+        modelMetrics = { ...storedResultsObj.trainingMetrics, source: 'training_set' };
+      } else if (storedResultsObj.metrics) {
+        modelMetrics = { ...storedResultsObj.metrics, source: 'training_set' };
+      }
+    } catch {}
+
+    console.log(`📊 [analysis #${analysisId}] stored metrics: testMetrics=${!!storedResultsObj.testMetrics} trainingMetrics=${!!storedResultsObj.trainingMetrics} modelMetrics=${!!modelMetrics}`);
+
+    // On-the-fly computation for old analyses that don't have stored metrics
+    if (!modelMetrics) {
+      try {
+        let trainingDataForCompute = [];
+
+        if (analysis.analysis_type === 'library') {
+          // Resolve libraryId — stored in results, or fall back to user's most populated library
+          let libraryId = storedResultsObj.libraryId;
+          if (!libraryId) {
+            const [libRows] = await db.execute(
+              `SELECT l.id FROM word_libraries l
+               JOIN word_library_samples s ON s.library_id = l.id
+               WHERE l.user_id = ?
+               GROUP BY l.id ORDER BY COUNT(*) DESC LIMIT 1`,
+              [userId]
+            );
+            libraryId = libRows[0]?.id;
+          }
+          if (libraryId) {
+            const [libSamples] = await db.execute(
+              `SELECT tweet_text, sentiment FROM word_library_samples WHERE library_id = ?`,
+              [libraryId]
+            );
+            trainingDataForCompute = libSamples.map(s => ({
+              text: s.tweet_text,
+              label: (s.sentiment || 'neutral').toLowerCase()
+            }));
+            console.log(`📚 [analysis #${analysisId}] Library #${libraryId}: ${trainingDataForCompute.length} training samples for on-the-fly metrics`);
+          }
+        } else {
+          // ML manual path — use labeled training samples from raw_twitter_data
+          const [trainSamples] = await db.execute(
+            `SELECT clean_text, sentiment_label FROM raw_twitter_data WHERE session_id = ? AND is_training_sample = TRUE`,
+            [analysis.session_id]
+          );
+          trainingDataForCompute = trainSamples.map(s => ({
+            text: s.clean_text,
+            label: (s.sentiment_label || 'neutral').toLowerCase()
+          }));
+          console.log(`🏷️ [analysis #${analysisId}] Manual path: ${trainingDataForCompute.length} training samples for on-the-fly metrics`);
+        }
+
+        if (trainingDataForCompute.length >= 10) {
+          const ts = Date.now();
+          const tmpDir = os.tmpdir();
+          const trainFile = path.join(tmpDir, `otf_train_${analysisId}_${ts}.json`);
+          const predFile  = path.join(tmpDir, `otf_pred_${analysisId}_${ts}.json`);
+          const outFile   = path.join(tmpDir, `otf_out_${analysisId}_${ts}.json`);
+
+          fs.writeFileSync(trainFile, JSON.stringify(trainingDataForCompute));
+          fs.writeFileSync(predFile, JSON.stringify([trainingDataForCompute[0].text]));
+
+          const result = spawnSync(pythonPath, [
+            pythonScript,
+            '--train-file', trainFile,
+            '--predict-file', predFile,
+            '--output-file', outFile,
+            '--test-split', '0.2'
+          ], { timeout: 60000, encoding: 'buffer', stdio: ['pipe', 'pipe', 'pipe'] });
+
+          if (result.status === 0 && fs.existsSync(outFile)) {
+            const computed = JSON.parse(fs.readFileSync(outFile, 'utf-8'));
+            const tm  = computed.test_metrics     || null;
+            const trm = computed.training_metrics || computed.metrics || null;
+
+            if (tm) {
+              modelMetrics = { ...tm,  source: 'test_set',     testSplit: 0.2 };
+            } else if (trm) {
+              modelMetrics = { ...trm, source: 'training_set' };
+            }
+
+            if (modelMetrics) {
+              // Cache back to DB so next load is instant
+              const updatedResults = JSON.stringify({
+                ...storedResultsObj,
+                testMetrics: tm  || null,
+                trainingMetrics: trm || null,
+                testSplit: 0.2
+              });
+              await db.execute(
+                `UPDATE analysis_history SET results = ? WHERE id = ? AND user_id = ?`,
+                [updatedResults, analysisId, userId]
+              );
+              console.log(`💾 [analysis #${analysisId}] On-the-fly metrics computed & cached (source=${modelMetrics.source})`);
+            }
+          } else {
+            const stderr = result.stderr ? result.stderr.toString('utf-8').substring(0, 300) : 'unknown';
+            console.error(`❌ [analysis #${analysisId}] On-the-fly Python failed: ${stderr}`);
+          }
+
+          for (const f of [trainFile, predFile, outFile]) {
+            try { if (fs.existsSync(f)) fs.unlinkSync(f); } catch {}
+          }
+        } else {
+          console.log(`⚠️ [analysis #${analysisId}] Not enough training data (${trainingDataForCompute.length}) for on-the-fly metrics`);
+        }
+      } catch (otfErr) {
+        console.error(`❌ [analysis #${analysisId}] On-the-fly metrics error:`, otfErr.message);
+      }
+    }
+
     res.json({
       success: true,
       analysis: {
@@ -85,6 +209,7 @@ async function getAnalysisInsightsHandler(req, res) {
         created_at: analysis.created_at,
         completed_at: analysis.completed_at
       },
+      modelMetrics,
       insights
     });
     
@@ -374,22 +499,61 @@ function generateTrainingVsPredictionChart(rawData) {
   };
 }
 
+// Shared stopword set for all word-frequency functions.
+// Covers English function words, Indonesian stopwords, and URL/social-media fragments
+// that slip through text cleaning (http, https, com, dlvr, bit, ly, t, co, etc.).
+const WORD_STOP_SET = new Set([
+  // URL & social-media fragments
+  'http', 'https', 'www', 'com', 'net', 'org', 'co', 'id', 'io',
+  'bit', 'ly', 'dlvr', 'it', 'goo', 'gl', 'ow', 'tco', 'amp',
+  'rt', 'via', 'pic', 'twitter', 'instagram', 'youtube', 'tiktok',
+  // English function words
+  'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to',
+  'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be',
+  'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did',
+  'will', 'would', 'could', 'should', 'may', 'might', 'must', 'can',
+  'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'it',
+  'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your',
+  'his', 'its', 'our', 'their', 'not', 'no', 'so', 'if', 'as',
+  // Indonesian function & filler words
+  'yang', 'dan', 'di', 'ke', 'dari', 'ini', 'itu', 'untuk', 'dengan',
+  'pada', 'adalah', 'atau', 'juga', 'tidak', 'sudah', 'karena', 'jadi',
+  'oleh', 'sebagai', 'ada', 'akan', 'bisa', 'telah', 'lebih', 'dalam',
+  'pun', 'nih', 'lah', 'kah', 'tah', 'deh', 'dong', 'sih', 'yah',
+  'ya', 'iya', 'oke', 'oke', 'wah', 'hmm', 'hah', 'nah',
+  'apa', 'siapa', 'bagaimana', 'mengapa', 'dimana', 'kapan', 'berapa',
+  'dapat', 'harus', 'boleh', 'mau', 'ingin', 'perlu', 'buat', 'guna',
+  'terhadap', 'kepada', 'tentang', 'seperti', 'hingga', 'sebab',
+  'dg', 'dgn', 'yg', 'sy', 'gw', 'gue', 'lo', 'lu', 'aku', 'kamu',
+  'saya', 'kami', 'kita', 'mereka', 'dia', 'nya', 'mu', 'ku',
+  'jika', 'kalau', 'maka', 'agar', 'supaya', 'namun', 'tetapi',
+  'melainkan', 'bahwa', 'saat', 'ketika', 'setelah', 'sebelum',
+  'paling', 'sangat', 'sekali', 'agak', 'terlalu', 'cukup',
+  'sebuah', 'suatu', 'satu', 'dua', 'tiga', 'dst'
+]);
+
+/** Strip URLs and extract clean word tokens from a tweet text */
+function extractWords(rawText) {
+  let text = (rawText || '').toLowerCase();
+  // Remove URLs (http/https/www variants including t.co links)
+  text = text.replace(/https?:\/\/\S+|www\.\S+/g, ' ');
+  // Remove mentions and hashtag symbols (keep the word itself)
+  text = text.replace(/@\w+/g, ' ');
+  text = text.replace(/#/g, ' ');
+  // Remove non-word characters (punctuation, emoji residue, numbers-only tokens)
+  return (text.match(/\b[a-z]{3,}\b/g) || []).filter(w => !WORD_STOP_SET.has(w));
+}
+
 // Word analysis functions
 function generateWordCounts(rawData) {
   const wordCounts = {};
-  const stopWords = new Set(['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'can', 'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'its', 'our', 'their']);
-  
+
   rawData.forEach(item => {
-    const text = (item.clean_text || '').toLowerCase();
-    const words = text.match(/\b\w+\b/g) || [];
-    
-    words.forEach(word => {
-      if (word.length > 2 && !stopWords.has(word)) {
-        wordCounts[word] = (wordCounts[word] || 0) + 1;
-      }
+    extractWords(item.clean_text).forEach(word => {
+      wordCounts[word] = (wordCounts[word] || 0) + 1;
     });
   });
-  
+
   // Return top 50 words
   return Object.entries(wordCounts)
     .sort(([,a], [,b]) => b - a)
@@ -399,28 +563,20 @@ function generateWordCounts(rawData) {
 
 function generateWordCloudData(rawData) {
   const wordCounts = {};
-  const stopWords = new Set(['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'can', 'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'its', 'our', 'their']);
-  
+
   rawData.forEach(item => {
-    const text = (item.clean_text || '').toLowerCase();
-    const words = text.match(/\b\w+\b/g) || [];
-    
-    words.forEach(word => {
-      if (word.length > 2 && !stopWords.has(word)) {
-        wordCounts[word] = (wordCounts[word] || 0) + 1;
-      }
+    extractWords(item.clean_text).forEach(word => {
+      wordCounts[word] = (wordCounts[word] || 0) + 1;
     });
   });
-  
+
   // Return top 100 words with size based on frequency
-  const maxCount = Math.max(...Object.values(wordCounts));
-  return Object.entries(wordCounts)
-    .sort(([,a], [,b]) => b - a)
-    .slice(0, 100)
-    .map(([text, count]) => ({
-      text,
-      size: Math.max(12, Math.min(48, (count / maxCount) * 48))
-    }));
+  const entries = Object.entries(wordCounts).sort(([,a], [,b]) => b - a).slice(0, 100);
+  const maxCount = entries.length > 0 ? entries[0][1] : 1;
+  return entries.map(([text, count]) => ({
+    text,
+    size: Math.max(12, Math.min(48, (count / maxCount) * 48))
+  }));
 }
 
 function generateSentimentKeywords(rawData) {
@@ -429,24 +585,18 @@ function generateSentimentKeywords(rawData) {
     negative: {},
     neutral: {}
   };
-  
-  const stopWords = new Set(['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by']);
+
+  // (uses shared WORD_STOP_SET via extractWords)
   
   rawData.forEach(item => {
     const sentiment = item.predicted_sentiment;
     if (!sentiment) return;
-    
-    // Convert database sentiment values to lowercase keys
+
     const sentimentKey = sentiment.toLowerCase();
-    if (!sentimentWords[sentimentKey]) return; // Skip if invalid sentiment
-    
-    const text = (item.clean_text || '').toLowerCase();
-    const words = text.match(/\b\w+\b/g) || [];
-    
-    words.forEach(word => {
-      if (word.length > 2 && !stopWords.has(word)) {
-        sentimentWords[sentimentKey][word] = (sentimentWords[sentimentKey][word] || 0) + 1;
-      }
+    if (!sentimentWords[sentimentKey]) return;
+
+    extractWords(item.clean_text).forEach(word => {
+      sentimentWords[sentimentKey][word] = (sentimentWords[sentimentKey][word] || 0) + 1;
     });
   });
   
@@ -467,15 +617,14 @@ function generateNgramAnalysis(rawData) {
   const trigrams = {};
   
   rawData.slice(0, 1000).forEach(item => { // Limit for performance
-    const text = (item.clean_text || '').toLowerCase();
-    const words = text.match(/\b\w+\b/g) || [];
-    
+    const words = extractWords(item.clean_text);
+
     // Generate bigrams
     for (let i = 0; i < words.length - 1; i++) {
       const bigram = `${words[i]} ${words[i + 1]}`;
       bigrams[bigram] = (bigrams[bigram] || 0) + 1;
     }
-    
+
     // Generate trigrams
     for (let i = 0; i < words.length - 2; i++) {
       const trigram = `${words[i]} ${words[i + 1]} ${words[i + 2]}`;

@@ -92,13 +92,22 @@
           <span class="bc-sep">/</span>
           <span class="bc-current">{{ selectedCollection.name }}</span>
           <span class="status-pill" [class]="'pill-' + selectedCollection.status">{{ selectedCollection.status }}</span>
-          <button
-            class="btn-analyze"
-            [disabled]="isSendingToAnalysis || !selectedCollection.tweetCount"
-            (click)="sendToAnalysis(selectedCollection)"
-            title="Kirim tweet ke halaman analisis sentimen">
-            {{ isSendingToAnalysis ? '⏳ Memindahkan...' : '🔬 Analisis Sentimen' }}
-          </button>
+          <div class="breadcrumb-actions">
+            <button
+              class="btn-export-excel"
+              [disabled]="isExportingExcel || !selectedCollection.tweetCount"
+              (click)="exportToExcel(selectedCollection)"
+              title="Download semua tweet sebagai file Excel">
+              {{ isExportingExcel ? '⏳ Mengekspor...' : '📥 Export Excel' }}
+            </button>
+            <button
+              class="btn-analyze"
+              [disabled]="isSendingToAnalysis || !selectedCollection.tweetCount"
+              (click)="sendToAnalysis(selectedCollection)"
+              title="Kirim tweet ke halaman analisis sentimen">
+              {{ isSendingToAnalysis ? '⏳ Memindahkan...' : '🔬 Analisis Sentimen' }}
+            </button>
+          </div>
         </div>
 
         <!-- Transfer progress banner -->
@@ -368,50 +377,92 @@
                 class="job-search-input"
                 type="text"
                 [(ngModel)]="jobSearchQuery"
-                placeholder="🔍 Cari keyword..." />
+                (ngModelChange)="onJobSearchChange()"
+                placeholder="🔍 Cari keyword, ID, status..." />
             </div>
+
             @if (filteredJobs.length === 0) {
-              <p class="no-jobs-found">Tidak ada job yang cocok dengan pencarian "{{ jobSearchQuery }}".</p>
+              <p class="no-jobs-found">Tidak ada job yang cocok dengan "{{ jobSearchQuery }}".</p>
             } @else {
               <div class="table-wrapper">
-                <table class="data-table">
+                <table class="data-table jobs-detail-table">
                   <thead>
                     <tr>
-                      <th>Keyword</th>
+                      <th class="th-num">#</th>
+                      <th>Keyword &amp; ID</th>
                       <th>Rentang Tanggal</th>
                       <th>Status</th>
                       <th>Progress</th>
                       <th>Terkumpul</th>
-                      <th>Dibuat</th>
+                      <th>Waktu</th>
                       <th>Aksi</th>
                     </tr>
                   </thead>
                   <tbody>
-                    @for (job of filteredJobs; track job.jobId) {
-                      <tr>
-                        <td><span class="keyword-cell">{{ job.keyword }}</span></td>
+                    @for (job of pagedJobs; track job.jobId; let i = $index) {
+                      <tr [class.job-row-active]="job.status === 'processing'">
+                        <!-- Sequential number (global across pages) -->
+                        <td class="job-num-cell">
+                          <span class="job-num">{{ (jobsPage - 1) * jobsPageSize + i + 1 }}</span>
+                        </td>
+
+                        <!-- Keyword + short ID -->
+                        <td class="job-kw-cell">
+                          <span class="keyword-cell">{{ job.keyword }}</span>
+                          <span class="job-short-id" [title]="job.jobId">{{ shortJobId(job.jobId) }}</span>
+                          @if (job.statusMessage && (job.status === 'failed' || job.status === 'suspended' || job.status === 'error')) {
+                            <span class="job-err-msg" [title]="job.statusMessage">⚠ {{ job.statusMessage | slice:0:60 }}{{ job.statusMessage!.length > 60 ? '…' : '' }}</span>
+                          }
+                        </td>
+
+                        <!-- Date range -->
                         <td class="date-range-cell">
                           @if (job.sinceDate || job.untilDate) {
                             <span class="date-range-text">
-                              {{ job.sinceDate || '…' }} → {{ job.untilDate || '…' }}
+                              <span class="dr-label">Sejak</span> {{ job.sinceDate || '—' }}<br>
+                              <span class="dr-label">Sampai</span> {{ job.untilDate || '—' }}
                             </span>
                           } @else {
-                            <span class="date-range-none">Semua waktu</span>
+                            <span class="date-range-none">— Semua waktu —</span>
                           }
                         </td>
+
+                        <!-- Status pill -->
                         <td>
                           <span class="status-pill" [class]="'pill-' + job.status">
                             {{ getStatusIcon(job.status) }} {{ job.status }}
                           </span>
                         </td>
+
+                        <!-- Progress bar -->
                         <td class="progress-cell">
                           <div class="mini-progress-track">
                             <div class="mini-progress-fill" [style.width]="job.progress + '%'"></div>
                           </div>
                           <span class="mini-pct">{{ job.progress }}%</span>
                         </td>
-                        <td>{{ job.collectedCount }} / {{ job.targetCount }}</td>
-                        <td class="date-cell">{{ formatDate(job.createdAt) }}</td>
+
+                        <!-- Collected -->
+                        <td class="collected-cell">
+                          <strong>{{ job.collectedCount }}</strong><span class="of-sep">/</span>{{ job.targetCount }}
+                        </td>
+
+                        <!-- Timestamps -->
+                        <td class="time-cell">
+                          <span class="time-label">Dibuat</span>
+                          <span class="time-val">{{ formatDate(job.createdAt) }}</span>
+                          @if (job.completedAt) {
+                            <span class="time-label">Selesai</span>
+                            <span class="time-val">{{ formatDate(job.completedAt) }}</span>
+                            @if (jobDuration(job)) {
+                              <span class="time-duration">⏱ {{ jobDuration(job) }}</span>
+                            }
+                          } @else if (job.status === 'processing') {
+                            <span class="time-duration running">⏳ Berjalan…</span>
+                          }
+                        </td>
+
+                        <!-- Actions -->
                         <td class="actions-cell">
                           @if (job.status === 'processing' || job.status === 'queued') {
                             <button class="btn-icon btn-danger" (click)="cancelJob(job.jobId)" title="Batalkan">⛔</button>
@@ -421,7 +472,7 @@
                             <button
                               class="btn-icon btn-warning"
                               (click)="resumeJob(job.jobId)"
-                              [title]="(job.sinceDate || job.untilDate) ? ('Ulangi crawl: ' + (job.sinceDate || '…') + ' → ' + (job.untilDate || '…')) : 'Ulangi crawl (tanpa filter tanggal)'">
+                              [title]="(job.sinceDate || job.untilDate) ? ('Ulangi: ' + (job.sinceDate || '—') + ' → ' + (job.untilDate || '—')) : 'Ulangi crawl'">
                               🔄
                             </button>
                           }
@@ -431,6 +482,18 @@
                   </tbody>
                 </table>
               </div>
+
+              <!-- Pagination -->
+              @if (jobsTotalPages > 1) {
+                <div class="jobs-pagination">
+                  <button class="pag-btn" [disabled]="jobsPage === 1" (click)="jobsPage = jobsPage - 1">‹ Prev</button>
+                  <span class="pag-info">
+                    Halaman {{ jobsPage }} / {{ jobsTotalPages }}
+                    <span class="pag-total">({{ filteredJobs.length }} job)</span>
+                  </span>
+                  <button class="pag-btn" [disabled]="jobsPage === jobsTotalPages" (click)="jobsPage = jobsPage + 1">Next ›</button>
+                </div>
+              }
             }
           </div>
         }
@@ -645,4 +708,23 @@
     }
 
   </div>
+
+  <!-- Confirm Modal -->
+  @if (confirmModal.visible) {
+    <div class="confirm-overlay" (click)="onConfirmCancel()">
+      <div class="confirm-modal" (click)="$event.stopPropagation()">
+        <div class="confirm-header">
+          <h3>{{ confirmModal.title }}</h3>
+        </div>
+        <div class="confirm-body">
+          <p>{{ confirmModal.message }}</p>
+        </div>
+        <div class="confirm-footer">
+          <button class="btn-confirm-cancel" (click)="onConfirmCancel()">Batal</button>
+          <button class="btn-confirm-ok" (click)="onConfirmOk()">Lanjutkan</button>
+        </div>
+      </div>
+    </div>
+  }
+
 </div>

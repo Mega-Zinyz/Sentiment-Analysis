@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { submitCrawlJob, cancelCrawlJob, getJobStatus, getUserJobs } = require('../utils/job-queue');
 const { getDb } = require('../config/mysql-database');
+const XLSX = require('xlsx');
 
 const parseCrawlerConfig = (config) => {
   if (!config) return {};
@@ -71,6 +72,19 @@ router.post('/start', async (req, res) => {
       console.warn('Could not load X.com cookies from DB:', credErr.message);
     }
 
+    // Auto-create a collection if none provided
+    let resolvedCollectionId = collectionId || null;
+    if (!resolvedCollectionId) {
+      const db = getDb();
+      const { v4: uuidv4 } = require('uuid');
+      resolvedCollectionId = uuidv4();
+      await db.execute(
+        `INSERT INTO crawler_collections (user_id, collection_id, name, keywords, status)
+         VALUES (?, ?, ?, ?, 'active')`,
+        [userId, resolvedCollectionId, `${keyword} — ${new Date().toLocaleDateString('id-ID')}`, keyword]
+      );
+    }
+
     const queueConfig = {
       headless: true,
       rateLimit: 3500,
@@ -82,7 +96,7 @@ router.post('/start', async (req, res) => {
       sinceDate: sinceDate || null,
       untilDate: untilDate || null,
       xCookies,
-      collectionId: collectionId || null,
+      collectionId: resolvedCollectionId,
     };
 
     const result = await submitCrawlJob(userId, keyword, targetCount, queueConfig);
@@ -163,12 +177,13 @@ router.get('/status/:jobId', async (req, res) => {
 router.get('/jobs', async (req, res) => {
   try {
     const userId = req.user.userId;
-    const { limit = 20 } = req.query;
-    
-    const jobs = await getUserJobs(userId, parseInt(limit));
+    const { limit = 20, collectionId } = req.query;
+
+    const jobs = await getUserJobs(userId, parseInt(limit), collectionId || null);
     
     const formattedJobs = jobs.map(job => {
       const cfg = parseCrawlerConfig(job.config);
+      const isDone = ['completed','failed','cancelled','suspended'].includes(job.status);
       return {
         jobId: job.job_id,
         keyword: job.keyword,
@@ -176,11 +191,13 @@ router.get('/jobs', async (req, res) => {
         targetCount: job.target_count,
         collectedCount: job.collected_count || 0,
         progress: Math.round(((job.collected_count || 0) / job.target_count) * 100),
-        statusMessage: job.status_message,
+        statusMessage: job.status_message || null,
         sinceDate: cfg.sinceDate || null,
         untilDate: cfg.untilDate || null,
         loginEnabled: !!(cfg.xCookies && cfg.xCookies.length > 0),
-        createdAt: job.created_at
+        createdAt: job.created_at,
+        updatedAt: job.updated_at || null,
+        completedAt: isDone ? (job.updated_at || null) : null
       };
     });
     
@@ -370,6 +387,110 @@ router.post('/resume/:jobId', async (req, res) => {
   } catch (error) {
     console.error('Error resuming job:', error);
     res.status(500).json({ error: 'Failed to resume job', details: error.message });
+  }
+});
+
+/**
+ * Export job tweets as Excel
+ * GET /api/crawler/jobs/:jobId/export/excel
+ * Works for both paths: crawler_tweets (with collection) and raw_twitter_data (fallback)
+ */
+router.get('/jobs/:jobId/export/excel', async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { jobId } = req.params;
+    const db = getDb();
+
+    // Verify job ownership and get config
+    const [jobs] = await db.execute(
+      'SELECT job_id, keyword, config FROM crawler_jobs WHERE job_id = ? AND user_id = ?',
+      [jobId, userId]
+    );
+    if (jobs.length === 0) {
+      return res.status(404).json({ error: 'Job not found' });
+    }
+
+    const job = jobs[0];
+    const config = typeof job.config === 'string' ? JSON.parse(job.config) : (job.config || {});
+    const collectionId = config.collectionId || null;
+
+    let rows = [];
+
+    if (collectionId) {
+      // Path 1: tweets stored in crawler_tweets via collection
+      const [collections] = await db.execute(
+        'SELECT id FROM crawler_collections WHERE collection_id = ? AND user_id = ?',
+        [collectionId, userId]
+      );
+      if (collections.length > 0) {
+        const collectionPk = collections[0].id;
+        const [tweets] = await db.execute(
+          `SELECT tweet_id, text, username, created_at_tweet, url, likes, retweets, replies,
+                  sentiment_label, manual_label, notes, imported_at
+           FROM crawler_tweets WHERE user_id = ? AND collection_id = ? ORDER BY imported_at ASC`,
+          [userId, collectionPk]
+        );
+        rows = tweets.map((t, i) => ({
+          No: i + 1,
+          tweet_id: t.tweet_id || '',
+          text: t.text || '',
+          username: t.username || '',
+          created_at: t.created_at_tweet ? new Date(t.created_at_tweet).toISOString() : '',
+          url: t.url || '',
+          likes: t.likes || 0,
+          retweets: t.retweets || 0,
+          replies: t.replies || 0,
+          sentiment_label: t.sentiment_label || '',
+          notes: t.notes || ''
+        }));
+      }
+    }
+
+    // Path 2 (fallback): tweets stored in raw_twitter_data
+    if (rows.length === 0) {
+      const sessionId = `crawler_${jobId}`;
+      const [items] = await db.execute(
+        `SELECT raw_data, clean_text, username_extracted, timestamp_extracted
+         FROM raw_twitter_data WHERE user_id = ? AND session_id = ? ORDER BY id ASC`,
+        [userId, sessionId]
+      );
+      rows = items.map((item, i) => {
+        let parsedRaw = {};
+        try { parsedRaw = JSON.parse(item.raw_data); } catch {}
+        return {
+          No: i + 1,
+          tweet_id: parsedRaw.id || parsedRaw.tweetId || '',
+          text: item.clean_text || parsedRaw.text || '',
+          username: item.username_extracted || parsedRaw.username || '',
+          created_at: item.timestamp_extracted ? new Date(item.timestamp_extracted).toISOString() : '',
+          url: parsedRaw.url || '',
+          likes: parsedRaw.likes || parsedRaw.likeCount || 0,
+          retweets: parsedRaw.retweets || parsedRaw.retweetCount || 0,
+          replies: parsedRaw.replies || parsedRaw.replyCount || 0,
+          sentiment_label: '',
+          notes: ''
+        };
+      });
+    }
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Tidak ada tweet untuk job ini' });
+    }
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Tweets');
+
+    const safeKeyword = job.keyword.replace(/[^a-z0-9_\-]/gi, '_');
+    const filename = `crawler_${safeKeyword}_${jobId.substring(0, 8)}.xlsx`;
+    const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.send(buf);
+  } catch (error) {
+    console.error('Error exporting job to Excel:', error);
+    res.status(500).json({ error: 'Failed to export job data' });
   }
 });
 

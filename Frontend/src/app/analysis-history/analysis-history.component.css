@@ -529,6 +529,31 @@
   font-size: 12px;
 }
 
+.btn-export-excel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #1d6f42 0%, #2e9e5e 100%);
+  color: #fff;
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.btn-export-excel:hover:not(:disabled) {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.btn-export-excel:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .page-info {
   color: #6c757d;
   font-size: 14px;
@@ -1636,3 +1661,310 @@
     flex-direction: column;
   }
 }
+
+/* ── Training Metrics Section ── */
+.metrics-section {
+  margin: 0 0 20px;
+  background: #f8faff;
+  border: 1px solid #dbe8ff;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.metrics-header {
+  padding: 12px 18px;
+  background: linear-gradient(135deg, #4a90e2 0%, #6c5ce7 100%);
+  color: #fff;
+}
+
+.metrics-header h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.metrics-source-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.25);
+  letter-spacing: .3px;
+}
+
+.metrics-source-badge.test-badge {
+  background: #22c55e;
+  color: #fff;
+}
+
+.split-info-badge {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.18);
+  letter-spacing: .3px;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 1px;
+  background: #dbe8ff;
+  border-bottom: 1px solid #dbe8ff;
+}
+
+.metric-card {
+  background: #fff;
+  padding: 14px 16px;
+  text-align: center;
+}
+
+.metric-card.accent-blue   { border-top: 3px solid #4a90e2; }
+.metric-card.accent-purple { border-top: 3px solid #6c5ce7; }
+.metric-card.accent-teal   { border-top: 3px solid #00b894; }
+.metric-card.accent-orange { border-top: 3px solid #e17055; }
+
+.metric-label {
+  font-size: 11px;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-bottom: 4px;
+}
+
+.metric-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #2c3e50;
+  line-height: 1.2;
+}
+
+.metric-sub {
+  font-size: 11px;
+  color: #868e96;
+  margin-top: 2px;
+}
+
+.metrics-table-wrap {
+  padding: 12px 16px 16px;
+  overflow-x: auto;
+}
+
+.metrics-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.metrics-table th {
+  background: #edf2ff;
+  color: #495057;
+  font-weight: 600;
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 2px solid #c5d3f0;
+}
+
+.metrics-table td {
+  padding: 7px 12px;
+  border-bottom: 1px solid #e9ecef;
+  color: #495057;
+}
+
+.metrics-table tr:last-child td { border-bottom: none; }
+
+.metrics-table tr.row-avg {
+  background: #f8f9fa;
+  font-weight: 600;
+}
+
+.class-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.class-badge.positive { background: #d4edda; color: #155724; }
+.class-badge.negative { background: #f8d7da; color: #721c24; }
+.class-badge.neutral  { background: #e2e3e5; color: #383d41; }
+
+/* ─── Analysis Parameter Bar (history modal) ──────────────────── */
+.hist-params-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  margin-bottom: 16px;
+  font-size: 0.8rem;
+}
+.hist-param-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.hist-param-label {
+  color: #64748b;
+  font-weight: 500;
+}
+.hist-param-value {
+  font-weight: 700;
+  color: #1e293b;
+  background: #e2e8f0;
+  padding: 1px 7px;
+  border-radius: 4px;
+}
+.hist-param-sep {
+  color: #cbd5e1;
+}
+
+/* ─── ComplementNB + Comparison Panels ─────────────────────────── */
+.hist-metrics-panel,
+.hist-comparison-panel {
+  background: #f8f9fc;
+  border: 1px solid #e0e4f0;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+.hist-metrics-panel { border-left: 4px solid #7c3aed; }
+.hist-comparison-panel { border-left: 4px solid #0891b2; }
+
+.hist-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.hist-panel-header h4 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e1b4b;
+}
+.hist-comparison-panel h4 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #164e63;
+}
+.hist-mode-badge {
+  background: #ede9fe;
+  color: #5b21b6;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: 20px;
+}
+.hist-panel-sub {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 0 0 14px;
+}
+
+.hist-metrics-cards {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.hist-metric-card {
+  flex: 1;
+  min-width: 120px;
+  background: #fff;
+  border: 1px solid #ddd6fe;
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+.hist-metric-label { font-size: 11px; color: #6b7280; margin-bottom: 4px; }
+.hist-metric-value { font-size: 18px; font-weight: 700; color: #4c1d95; }
+.hist-metric-value small { font-size: 12px; font-weight: 400; color: #7c3aed; }
+
+.hist-metrics-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+.hist-metrics-table th {
+  background: #ede9fe;
+  color: #4c1d95;
+  padding: 7px 10px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.hist-comparison-panel .hist-metrics-table th {
+  background: #e0f2fe;
+  color: #075985;
+}
+.hist-metrics-table td {
+  padding: 7px 10px;
+  text-align: center;
+  border-bottom: 1px solid #f0eaff;
+}
+.hist-avg-row td { font-weight: 700; background: #faf5ff; }
+.hist-th-group { background: #e2e8f0 !important; color: #334155 !important; }
+.hist-th-group.primary-group { background: #bfdbfe !important; color: #1e40af !important; }
+.primary-col { background: #f0f9ff; }
+.primary-col.highlight-improvement { background: #d1fae5; font-weight: 700; color: #065f46; }
+
+.positive-text { color: #15803d; font-weight: 600; }
+.negative-text { color: #b91c1c; font-weight: 600; }
+.neutral-text  { color: #6b7280; font-weight: 600; }
+
+.hist-cm-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #4c1d95;
+  margin: 14px 0 8px;
+  text-align: center;
+}
+.hist-cm-table {
+  width: auto;
+  margin: 0 auto 6px;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.hist-cm-table th, .hist-cm-table td {
+  padding: 6px 14px;
+  border: 1px solid #ddd6fe;
+  text-align: center;
+}
+.hist-cm-table th { background: #ede9fe; color: #4c1d95; font-weight: 700; }
+.hist-cm-row-label { font-weight: 600; background: #f5f3ff !important; color: #5b21b6; }
+.hist-cm-correct { background: #d1fae5 !important; font-weight: 700; color: #065f46; }
+
+.hist-comparison-acc {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.hist-acc-card {
+  text-align: center;
+  padding: 12px 24px;
+  border-radius: 10px;
+  min-width: 140px;
+}
+.hist-acc-card.baseline { background: #fef3c7; border: 1px solid #fcd34d; }
+.hist-acc-card.primary  { background: #d1fae5; border: 1px solid #6ee7b7; }
+.hist-acc-label { font-size: 11px; color: #374151; margin-bottom: 4px; }
+.hist-acc-value { font-size: 22px; font-weight: 800; color: #111827; }
+.hist-acc-arrow { font-size: 22px; color: #6b7280; }
+.class-badge.avg      { background: #cce5ff; color: #004085; }

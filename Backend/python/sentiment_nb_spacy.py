@@ -26,19 +26,39 @@ except OSError:
 factory = StemmerFactory()
 stemmer = factory.create_stemmer()
 
-# Enhanced Indonesian stopwords
-INDONESIAN_STOPWORDS = set([
-    'yang', 'dan', 'di', 'ke', 'dari', 'ini', 'itu', 'untuk', 'dengan', 'pada', 
-    'adalah', 'atau', 'juga', 'tidak', 'sudah', 'karena', 'jadi', 'oleh', 'sebagai', 
-    'akan', 'dalam', 'bagi', 'lebih', 'lagi', 'agar', 'supaya', 'sehingga', 
-    'sebelum', 'sesudah', 'setelah', 'tanpa', 'selama', 'seluruh', 'semua', 'saja', 
-    'masih', 'telah', 'bahwa', 'atas', 'antara', 'mereka', 'kami', 'kita', 'anda', 
-    'saya', 'aku', 'dia', 'ia', 'kau', 'mu', 'ku', 'nya', 'pun', 'lah', 'punya', 
-    'apa', 'siapa', 'bagaimana', 'mengapa', 'dimana', 'kapan', 'berapa', 'dapat', 
-    'bisa', 'harus', 'boleh', 'mau', 'ingin', 'perlu', 'ada', 'buat', 'guna', 
-    'terhadap', 'kepada', 'tentang', 'seperti', 'hingga', 'sebab', 'dg', 'dgn', 
-    'rt', 'via', 'amp', 'co', 'id', 'com', 'www', 'http', 'https'
+# Base Indonesian stopwords (Sastrawi-compatible)
+_BASE_STOPWORDS = set([
+    'yang', 'dan', 'di', 'ke', 'dari', 'ini', 'itu', 'untuk', 'dengan', 'pada',
+    'adalah', 'atau', 'juga', 'tidak', 'sudah', 'karena', 'jadi', 'oleh', 'sebagai',
+    'akan', 'dalam', 'bagi', 'lebih', 'lagi', 'agar', 'supaya', 'sehingga',
+    'sebelum', 'sesudah', 'setelah', 'tanpa', 'selama', 'seluruh', 'semua', 'saja',
+    'masih', 'telah', 'bahwa', 'atas', 'antara', 'mereka', 'kami', 'kita', 'anda',
+    'saya', 'aku', 'dia', 'ia', 'kau', 'mu', 'ku', 'nya', 'pun', 'lah', 'punya',
+    'apa', 'siapa', 'bagaimana', 'mengapa', 'dimana', 'kapan', 'berapa', 'dapat',
+    'bisa', 'harus', 'boleh', 'mau', 'ingin', 'perlu', 'ada', 'buat', 'guna',
+    'terhadap', 'kepada', 'tentang', 'seperti', 'hingga', 'sebab', 'dg', 'dgn',
+    'rt', 'via', 'amp', 'co', 'id', 'com', 'www', 'http', 'https',
 ])
+
+# Extra stopwords — URL fragments, abbreviations, and informal slang
+_EXTRA_STOPWORDS = set([
+    # URL & tracker fragments
+    'com', 'http', 'https', 'www', 'dlvr', 'utm', 'bit', 'ly', 'goo', 'gl',
+    'tco', 'pic', 'net', 'org', 'io',
+    # Social-media noise
+    'rt', 'amp', 'via',
+    # Common informal abbreviations
+    'yg', 'ga', 'gak', 'ngga', 'nggak', 'nya', 'dgn', 'dr', 'utk',
+    'tdk', 'jd', 'aja', 'dpt', 'krn', 'spy', 'udh', 'udah', 'blm',
+    'sm', 'jgn', 'klo', 'kl', 'tp', 'tpi', 'ttg', 'org',
+    # Filler / interjections
+    'sih', 'nih', 'deh', 'dong', 'kah', 'lho', 'loh', 'wah', 'nah',
+    'hmm', 'hah', 'yah', 'ya', 'iya', 'oke',
+    # Domain-specific noise (adjust per dataset)
+    'ika', 'undip',
+])
+
+INDONESIAN_STOPWORDS = _BASE_STOPWORDS | _EXTRA_STOPWORDS
 
 class IndonesianTextProcessor:
     def clean_text(self, text):

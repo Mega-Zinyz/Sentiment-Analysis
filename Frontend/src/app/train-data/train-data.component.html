@@ -7,6 +7,218 @@
   <div *ngIf="errorMsg" class="error">{{ errorMsg }}</div>
   <div *ngIf="successMsg" class="success">{{ successMsg }}</div>
 
+  <!-- Model Evaluation Metrics Card -->
+  <div class="metrics-section">
+    <div class="metrics-section-header">
+      <div class="metrics-title-group">
+        <i class="fas fa-chart-bar"></i>
+        <h3>Kualitas Training Data</h3>
+        <span class="metrics-source-badge library" *ngIf="metricsSource === 'library'">
+          <i class="fas fa-database"></i> Dari library ini
+        </span>
+        <span class="metrics-source-badge analysis" *ngIf="metricsSource === 'analysis'">
+          <i class="fas fa-history"></i> Dari analisis terakhir
+        </span>
+      </div>
+      <div class="metrics-header-actions">
+        <button class="btn-recompute"
+                *ngIf="selectedLibraryId && !metricsLoading"
+                (click)="computeLibraryMetrics()"
+                title="Hitung ulang dari sampel library ini">
+          <i class="fas fa-sync-alt"></i> Hitung Ulang
+        </button>
+        <div class="metrics-loading-indicator" *ngIf="metricsLoading">
+          <div class="metrics-spinner"></div>
+          <span class="metrics-loading-text">Menghitung...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reason / not enough data -->
+    <div class="metrics-reason" *ngIf="!metricsLoading && metricsReason && !latestMetrics">
+      <i class="fas fa-info-circle"></i> {{ metricsReason }}
+    </div>
+
+    <!-- No metrics yet (no library selected, no analysis history) -->
+    <div class="metrics-empty" *ngIf="!metricsLoading && !latestMetrics && !metricsReason">
+      <i class="fas fa-flask"></i>
+      <p>Pilih training data library atau jalankan analisis sentimen untuk melihat evaluasi model.</p>
+    </div>
+
+    <!-- Metrics available -->
+    <div *ngIf="!metricsLoading && latestMetrics">
+
+      <!-- Context info: library source -->
+      <div class="metrics-context" *ngIf="metricsSource === 'library' && metricsDistribution">
+        <i class="fas fa-database"></i>
+        Dihitung dari sampel library &middot;
+        <span class="ctx-pill pos">+{{ metricsDistribution.positive }}</span>
+        <span class="ctx-pill neg">-{{ metricsDistribution.negative }}</span>
+        <span class="ctx-pill neu">~{{ metricsDistribution.neutral }}</span>
+        &middot; {{ (metricsDistribution.positive + metricsDistribution.negative + metricsDistribution.neutral) }} total
+      </div>
+
+      <!-- Context info: analysis source -->
+      <div class="metrics-context" *ngIf="metricsSource === 'analysis' && latestMetricsAnalysis">
+        <i class="fas fa-history"></i>
+        Berdasarkan: <strong>{{ latestMetricsAnalysis.session_name }}</strong>
+        &nbsp;&middot;&nbsp;
+        {{ latestMetricsAnalysis.training_samples }} sampel
+        &nbsp;&middot;&nbsp;
+        {{ latestMetricsAnalysis.created_at | date:'dd MMM yyyy, HH:mm' }}
+      </div>
+
+      <!-- Summary stat cards -->
+      <div class="metrics-summary-row">
+        <div class="mstat-card" [class]="'quality-' + getAccuracyLevel()">
+          <div class="mstat-value">{{ getAccuracy().toFixed(1) }}%</div>
+          <div class="mstat-label">{{ latestMetrics.source === 'test_set' ? 'Akurasi Test' : 'Akurasi' }}</div>
+          <div class="mstat-badge" [class]="'badge-' + getAccuracyLevel()">
+            <i class="fas" [class.fa-check-circle]="getAccuracyLevel()==='good'" [class.fa-exclamation-circle]="getAccuracyLevel()==='medium'" [class.fa-times-circle]="getAccuracyLevel()==='poor'"></i>
+            {{ getAccuracyLevel() === 'good' ? 'Baik' : getAccuracyLevel() === 'medium' ? 'Cukup' : 'Perlu Ditingkatkan' }}
+          </div>
+        </div>
+
+        <div class="mstat-card" *ngIf="latestMetrics.cross_validation_mean">
+          <div class="mstat-value purple">{{ fmt4(latestMetrics.cross_validation_mean) }}</div>
+          <div class="mstat-label">Cross-Validation</div>
+          <div class="mstat-hint" *ngIf="latestMetrics.cross_validation_std">
+            ± {{ (latestMetrics.cross_validation_std * 100).toFixed(1) }}%
+          </div>
+        </div>
+
+        <!-- Old format: weighted avg from classification_report -->
+        <div class="mstat-card" *ngIf="latestMetrics.classification_report?.['weighted avg'] as wa">
+          <div class="mstat-value teal">{{ fmt6(wa['f1-score']) }}</div>
+          <div class="mstat-label">F1 Weighted</div>
+        </div>
+        <!-- New format: macro avg from ComplementNB output -->
+        <div class="mstat-card" *ngIf="!latestMetrics.classification_report && latestMetrics.macro_avg as ma">
+          <div class="mstat-value teal">{{ fmt6(ma.f1) }}</div>
+          <div class="mstat-label">F1 Macro</div>
+        </div>
+
+        <div class="mstat-card" *ngIf="latestMetrics.train_samples">
+          <div class="mstat-value gray">{{ latestMetrics.train_samples }}<span class="mstat-sep">/</span>{{ latestMetrics.test_samples }}</div>
+          <div class="mstat-label">Train / Test</div>
+          <div class="mstat-hint" *ngIf="latestMetrics.testSplit">
+            Split {{ ((1 - latestMetrics.testSplit) * 100).toFixed(0) }}/{{ (latestMetrics.testSplit * 100).toFixed(0) }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Per-class table — old format (classification_report) -->
+      <div class="metrics-table-wrap" *ngIf="latestMetrics.classification_report">
+        <table class="metrics-table">
+          <thead>
+            <tr>
+              <th>Kelas</th>
+              <th>Precision</th>
+              <th>Recall</th>
+              <th>F1-Score</th>
+              <th>Support</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="latestMetrics.classification_report.positive as c">
+              <td><span class="cls-pill pos"><i class="fas fa-smile"></i> Positive</span></td>
+              <td><span class="metric-val">{{ fmt6(c.precision) }}</span></td>
+              <td><span class="metric-val">{{ fmt6(c.recall) }}</span></td>
+              <td><span class="metric-val f1">{{ fmt6(c['f1-score']) }}</span></td>
+              <td><span class="support-val">{{ c.support }}</span></td>
+            </tr>
+            <tr *ngIf="latestMetrics.classification_report.negative as c">
+              <td><span class="cls-pill neg"><i class="fas fa-frown"></i> Negative</span></td>
+              <td><span class="metric-val">{{ fmt6(c.precision) }}</span></td>
+              <td><span class="metric-val">{{ fmt6(c.recall) }}</span></td>
+              <td><span class="metric-val f1">{{ fmt6(c['f1-score']) }}</span></td>
+              <td><span class="support-val">{{ c.support }}</span></td>
+            </tr>
+            <tr *ngIf="latestMetrics.classification_report.neutral as c">
+              <td><span class="cls-pill neu"><i class="fas fa-meh"></i> Neutral</span></td>
+              <td><span class="metric-val">{{ fmt6(c.precision) }}</span></td>
+              <td><span class="metric-val">{{ fmt6(c.recall) }}</span></td>
+              <td><span class="metric-val f1">{{ fmt6(c['f1-score']) }}</span></td>
+              <td><span class="support-val">{{ c.support }}</span></td>
+            </tr>
+            <tr class="avg-row" *ngIf="latestMetrics.classification_report['weighted avg'] as wa">
+              <td><span class="cls-pill avg">Weighted Avg</span></td>
+              <td><span class="metric-val bold">{{ fmt6(wa.precision) }}</span></td>
+              <td><span class="metric-val bold">{{ fmt6(wa.recall) }}</span></td>
+              <td><span class="metric-val f1 bold">{{ fmt6(wa['f1-score']) }}</span></td>
+              <td><span class="support-val bold">{{ wa.support }}</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Per-class table — new ComplementNB format (per_class) -->
+      <div class="metrics-table-wrap" *ngIf="!latestMetrics.classification_report && latestMetrics.per_class">
+        <table class="metrics-table">
+          <thead>
+            <tr>
+              <th>Kelas</th>
+              <th>Precision</th>
+              <th>Recall</th>
+              <th>F1-Score</th>
+              <th>Support</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngIf="getPerClass('Positive') as c">
+              <tr>
+                <td><span class="cls-pill pos"><i class="fas fa-smile"></i> Positive</span></td>
+                <td><span class="metric-val">{{ fmt6(c.precision) }}</span></td>
+                <td><span class="metric-val">{{ fmt6(c.recall) }}</span></td>
+                <td><span class="metric-val f1">{{ fmt6(c.f1) }}</span></td>
+                <td><span class="support-val">{{ c.support }}</span></td>
+              </tr>
+            </ng-container>
+            <ng-container *ngIf="getPerClass('Negative') as c">
+              <tr>
+                <td><span class="cls-pill neg"><i class="fas fa-frown"></i> Negative</span></td>
+                <td><span class="metric-val">{{ fmt6(c.precision) }}</span></td>
+                <td><span class="metric-val">{{ fmt6(c.recall) }}</span></td>
+                <td><span class="metric-val f1">{{ fmt6(c.f1) }}</span></td>
+                <td><span class="support-val">{{ c.support }}</span></td>
+              </tr>
+            </ng-container>
+            <ng-container *ngIf="getPerClass('Neutral') as c">
+              <tr>
+                <td><span class="cls-pill neu"><i class="fas fa-meh"></i> Neutral</span></td>
+                <td><span class="metric-val">{{ fmt6(c.precision) }}</span></td>
+                <td><span class="metric-val">{{ fmt6(c.recall) }}</span></td>
+                <td><span class="metric-val f1">{{ fmt6(c.f1) }}</span></td>
+                <td><span class="support-val">{{ c.support }}</span></td>
+              </tr>
+            </ng-container>
+            <tr class="avg-row" *ngIf="latestMetrics.macro_avg as ma">
+              <td><span class="cls-pill avg">Macro Avg</span></td>
+              <td><span class="metric-val bold">{{ fmt6(ma.precision) }}</span></td>
+              <td><span class="metric-val bold">{{ fmt6(ma.recall) }}</span></td>
+              <td><span class="metric-val f1 bold">{{ fmt6(ma.f1) }}</span></td>
+              <td><span class="support-val bold">—</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Interpretation tip -->
+      <div class="metrics-tip" [class]="'tip-' + getAccuracyLevel()">
+        <i class="fas fa-lightbulb"></i>
+        <span *ngIf="getAccuracyLevel() === 'poor'">
+          Akurasi di bawah 50% — tambah lebih banyak data training, idealnya minimal 100 sampel per kelas.
+        </span>
+        <span *ngIf="getAccuracyLevel() === 'medium'">
+          Akurasi cukup — pertimbangkan menambah variasi data training untuk meningkatkan performa model.
+        </span>
+        <span *ngIf="getAccuracyLevel() === 'good'">
+          Model sudah cukup baik. Pastikan data training tetap representatif untuk menjaga akurasi.
+        </span>
+      </div>
+    </div>
+  </div>
+
   <!-- Library Selection -->
   <div class="library-selector">
     <div class="selector-group">
@@ -79,6 +291,30 @@
       </button>
     </div>
 
+    <!-- Sentiment Filter Tabs -->
+    <div class="sample-filter-tabs">
+      <button (click)="setSampleFilter('all')"
+              [class.active]="sampleSentimentFilter === 'all'"
+              class="filter-tab all">
+        Semua <span class="filter-count">{{ allSamples.length }}</span>
+      </button>
+      <button (click)="setSampleFilter('positive')"
+              [class.active]="sampleSentimentFilter === 'positive'"
+              class="filter-tab positive">
+        😊 Positive <span class="filter-count">{{ samples.positive.length }}</span>
+      </button>
+      <button (click)="setSampleFilter('negative')"
+              [class.active]="sampleSentimentFilter === 'negative'"
+              class="filter-tab negative">
+        😠 Negative <span class="filter-count">{{ samples.negative.length }}</span>
+      </button>
+      <button (click)="setSampleFilter('neutral')"
+              [class.active]="sampleSentimentFilter === 'neutral'"
+              class="filter-tab neutral">
+        😐 Neutral <span class="filter-count">{{ samples.neutral.length }}</span>
+      </button>
+    </div>
+
     <!-- Samples Table -->
     <div class="samples-table-container">
       <table class="samples-table">
@@ -148,8 +384,11 @@
               </td>
             </tr>
           </ng-container>
-          <tr *ngIf="allSamples.length === 0">
-            <td colspan="5" class="empty-table">No sample tweets yet. Add some above or import from CSV.</td>
+          <tr *ngIf="filteredSamples.length === 0">
+            <td colspan="5" class="empty-table">
+              <ng-container *ngIf="allSamples.length === 0">No sample tweets yet. Add some above or import from CSV.</ng-container>
+              <ng-container *ngIf="allSamples.length > 0">Tidak ada sampel dengan sentimen ini.</ng-container>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -158,15 +397,37 @@
     <!-- Samples Pagination -->
     <div *ngIf="samplesTotalPages > 1" class="pagination">
       <button (click)="previousSamplesPage()" [disabled]="samplesCurrentPage === 1" class="btn-pagination">
-        ← Previous
+        ← Prev
       </button>
-      <span class="pagination-info">
-        Page {{ samplesCurrentPage }} of {{ samplesTotalPages }} 
-        ({{ allSamples.length }} total samples)
-      </span>
+
+      <div class="pagination-pages">
+        <ng-container *ngFor="let page of samplesVisiblePageNumbers">
+          <span *ngIf="page === null" class="pagination-ellipsis">…</span>
+          <button *ngIf="page !== null"
+                  (click)="goToSamplesPage(page)"
+                  [class.active]="page === samplesCurrentPage"
+                  class="btn-page">{{ page }}</button>
+        </ng-container>
+      </div>
+
       <button (click)="nextSamplesPage()" [disabled]="samplesCurrentPage === samplesTotalPages" class="btn-pagination">
         Next →
       </button>
+
+      <div class="pagination-goto">
+        <span>Hal.</span>
+        <input type="number" [(ngModel)]="samplesGoToPage"
+               (keydown.enter)="goToSamplesPageFromInput()"
+               min="1" [max]="samplesTotalPages"
+               class="goto-input">
+        <button (click)="goToSamplesPageFromInput()" class="btn-pagination-sm">Go</button>
+      </div>
+    </div>
+
+    <div class="pagination-summary" *ngIf="filteredSamples.length > 0">
+      Halaman {{ samplesCurrentPage }} dari {{ samplesTotalPages }} &middot;
+      {{ filteredSamples.length }} sampel
+      <span *ngIf="sampleSentimentFilter !== 'all'"> (difilter dari {{ allSamples.length }})</span>
     </div>
 
     <!-- Summary Stats -->

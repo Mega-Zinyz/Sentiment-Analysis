@@ -3,6 +3,7 @@ scikit-learn>=1.4.0
 numpy>=1.26.0
 spacy>=3.7.2
 PySastrawi>=1.0.0
+click>=8.0.0
 
 # Setelah install, jalankan perintah berikut untuk mengunduh model spaCy multilingual:
 # python -m spacy download xx_ent_wiki_sm

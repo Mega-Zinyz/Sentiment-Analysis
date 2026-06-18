@@ -132,6 +132,7 @@ const TABLE_DEFINITIONS = [
     is_training_sample    BOOLEAN DEFAULT FALSE,
     predicted_sentiment   ENUM('Positive','Negative','Neutral') DEFAULT NULL,
     prediction_confidence DECIMAL(5,4) DEFAULT NULL,
+    inset_score           DECIMAL(8,4) DEFAULT NULL,
     created_at            TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at            TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -154,7 +155,7 @@ const TABLE_DEFINITIONS = [
     valid_items     INT DEFAULT 0,
     invalid_items   INT DEFAULT 0,
     training_samples INT DEFAULT 0,
-    analysis_type   ENUM('manual','library') DEFAULT NULL,
+    analysis_type   ENUM('manual','library','inset') DEFAULT NULL,
     error_message   TEXT,
     started_at      TIMESTAMP NULL,
     completed_at    TIMESTAMP NULL,
@@ -214,6 +215,7 @@ const TABLE_DEFINITIONS = [
     name        VARCHAR(100) NOT NULL,
     description TEXT,
     is_default  BOOLEAN DEFAULT FALSE,
+    is_system   BOOLEAN NOT NULL DEFAULT FALSE,
     created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -339,6 +341,29 @@ const TABLE_DEFINITIONS = [
     INDEX idx_collection_id (collection_id),
     INDEX idx_is_labeled    (is_labeled)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`,
+
+  // 18. analysis_validation  (external validation — manual re-labeling of classified tweets)
+  `CREATE TABLE IF NOT EXISTS analysis_validation (
+    id                    INT AUTO_INCREMENT PRIMARY KEY,
+    analysis_id           INT NOT NULL,
+    user_id               INT NOT NULL,
+    raw_data_id           INT NOT NULL,
+    clean_text            TEXT NOT NULL,
+    raw_data              TEXT,
+    username_extracted    VARCHAR(100),
+    timestamp_extracted   DATETIME,
+    predicted_sentiment   ENUM('Positive','Negative','Neutral') NOT NULL,
+    prediction_confidence DECIMAL(5,4),
+    manual_label          ENUM('Positive','Negative','Neutral') DEFAULT NULL,
+    labeled_at            TIMESTAMP NULL,
+    created_at            TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (analysis_id) REFERENCES analysis_history(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id)     REFERENCES users(id)            ON DELETE CASCADE,
+    INDEX idx_analysis_id  (analysis_id),
+    INDEX idx_user_id      (user_id),
+    INDEX idx_manual_label (manual_label),
+    INDEX idx_predicted    (predicted_sentiment)
+  ) ENGINE=InnoDB`,
 ];
 
 // ---------------------------------------------------------------------------
@@ -346,6 +371,7 @@ const TABLE_DEFINITIONS = [
 // Used by reset-database.js
 // ---------------------------------------------------------------------------
 const ALL_TABLES_DROP_ORDER = [
+  'analysis_validation',
   'crawler_tweets',
   'crawler_job_progress',
   'crawler_collections',
@@ -386,7 +412,24 @@ const ensureSchema = async (db) => {
   }
 
   await seedDefaultData(db);
+  await seedInsetIfNeeded(db);
   console.log('✅ Schema up to date');
+};
+
+// Seed InSet lexicon only when the library doesn't exist yet (fresh DB)
+const seedInsetIfNeeded = async (db) => {
+  try {
+    const [rows] = await db.execute(
+      "SELECT id FROM word_libraries WHERE name = 'InSet Lexicon' AND is_system = TRUE LIMIT 1"
+    );
+    if (rows.length > 0) return; // Already seeded
+
+    console.log('🔤 InSet Lexicon not found — seeding from TSV files...');
+    const { seedInset } = require('./seed-inset');
+    await seedInset(db);
+  } catch (err) {
+    console.warn('⚠️  InSet seeding failed (non-fatal):', err.message);
+  }
 };
 
 // ---------------------------------------------------------------------------

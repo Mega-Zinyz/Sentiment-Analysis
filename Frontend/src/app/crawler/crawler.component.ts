@@ -29,6 +29,17 @@ interface CrawlerStats {
   avgTweetsPerJob: number;
 }
 
+interface CrawlerCollection {
+  collectionId: string;
+  name: string;
+  description: string;
+  keywords: string[];
+  status: string;
+  tweetCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 @Component({
   selector: 'app-crawler',
   standalone: true,
@@ -38,13 +49,16 @@ interface CrawlerStats {
 })
 export class CrawlerComponent implements OnInit, OnDestroy {
   // UI State
-  currentView: 'dashboard' | 'start' | 'history' | 'monitor' = 'dashboard';
-  
+  currentView: 'dashboard' | 'start' | 'history' | 'monitor' | 'collections' = 'dashboard';
+  exportingJobId: string | null = null;
+
   // Crawler data
   stats: CrawlerStats | null = null;
   jobs: CrawlJob[] = [];
   currentJob: CrawlJob | null = null;
   selectedJob: CrawlJob | null = null;
+  collections: CrawlerCollection[] = [];
+  exportingCollectionId: string | null = null;
   
   // Form data
   keyword: string = '';
@@ -80,6 +94,7 @@ export class CrawlerComponent implements OnInit, OnDestroy {
     this.initializeWebSocket();
     this.loadStats();
     this.loadJobs();
+    this.loadCollections();
     
     if (this.autoRefresh) {
       this.startAutoRefresh();
@@ -169,6 +184,65 @@ export class CrawlerComponent implements OnInit, OnDestroy {
       }
     } catch (error) {
       console.error('Error loading jobs:', error);
+    }
+  }
+
+  async loadCollections() {
+    try {
+      const response = await this.http.get<any>(`${environment.apiUrl}/crawler/collections`).toPromise();
+      if (response && response.success) {
+        this.collections = response.collections || [];
+      }
+    } catch (error) {
+      console.error('Error loading collections:', error);
+    }
+  }
+
+  async exportJobExcel(job: CrawlJob) {
+    this.exportingJobId = job.jobId;
+    try {
+      const response = await this.http.get(
+        `${environment.apiUrl}/crawler/jobs/${job.jobId}/export/excel`,
+        { responseType: 'blob' }
+      ).toPromise();
+
+      if (response) {
+        const url = window.URL.createObjectURL(response as Blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `crawler_${job.keyword}_${job.jobId.substring(0, 8)}.xlsx`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        this.setSuccess(`Export berhasil: ${job.keyword} (${job.collectedCount} tweets)`);
+      }
+    } catch (error: any) {
+      this.setError(error?.error?.error || 'Gagal export ke Excel');
+    } finally {
+      this.exportingJobId = null;
+    }
+  }
+
+  async exportCollectionExcel(collectionId: string, collectionName: string) {
+    this.exportingCollectionId = collectionId;
+    try {
+      const response = await this.http.get(
+        `${environment.apiUrl}/crawler/collections/${collectionId}/export/excel`,
+        { responseType: 'blob' }
+      ).toPromise();
+
+      if (response) {
+        const url = window.URL.createObjectURL(response as Blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `crawler_${collectionName}_${Date.now()}.xlsx`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        this.setSuccess(`File Excel berhasil didownload: ${collectionName}`);
+      }
+    } catch (error) {
+      this.setError('Gagal mengexport ke Excel');
+    } finally {
+      this.exportingCollectionId = null;
     }
   }
 

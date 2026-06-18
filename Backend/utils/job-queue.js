@@ -304,7 +304,7 @@ async function getJobStatus(jobId, userId) {
 /**
  * Get all jobs for user
  */
-async function getUserJobs(userId, limit = 20) {
+async function getUserJobs(userId, limit = 20, collectionId = null) {
   // 1. Validate parameters *before* the query to prevent SQL errors.
   const numericUserId = Number(userId);
   let numericLimit = Number(limit);
@@ -321,7 +321,16 @@ async function getUserJobs(userId, limit = 20) {
 
   try {
     const db = getDb();
-    
+
+    // Build WHERE clause — optionally filter by collection stored in config JSON
+    const conditions = ['j.user_id = ?'];
+    const params = [numericUserId];
+
+    if (collectionId) {
+      conditions.push(`JSON_UNQUOTE(JSON_EXTRACT(j.config, '$.collectionId')) = ?`);
+      params.push(collectionId);
+    }
+
     // LIMIT inlined (not ?-param): mysql2 prepared statements reject JS numbers
     // for LIMIT/OFFSET with HY000 "Incorrect arguments to mysqld_stmt_execute".
     const query = `
@@ -332,13 +341,13 @@ async function getUserJobs(userId, limit = 20) {
         p.last_error
       FROM crawler_jobs j
       LEFT JOIN crawler_job_progress p ON j.job_id = p.job_id
-      WHERE j.user_id = ?
+      WHERE ${conditions.join(' AND ')}
       ORDER BY j.created_at DESC
       LIMIT ${numericLimit}
     `;
 
-    const [jobs] = await db.execute(query, [numericUserId]);
-    
+    const [jobs] = await db.execute(query, params);
+
     return jobs || [];
 
   } catch (error) {

@@ -13,6 +13,47 @@ interface WordLibrary {
   sample_count: number;
 }
 
+interface ClassMetric {
+  precision: number;
+  recall: number;
+  'f1-score': number;
+  support: number;
+}
+
+interface ModelMetrics {
+  source: 'test_set' | 'training_set';
+  // New ComplementNB format
+  accuracy?: number;
+  per_class?: { [cls: string]: { precision: number; recall: number; f1: number; support: number } };
+  macro_avg?: { precision: number; recall: number; f1: number };
+  // Old format
+  test_accuracy?: number;
+  training_accuracy?: number;
+  cross_validation_mean?: number;
+  cross_validation_std?: number;
+  train_samples?: number;
+  test_samples?: number;
+  testSplit?: number;
+  classification_report?: {
+    positive?: ClassMetric;
+    negative?: ClassMetric;
+    neutral?: ClassMetric;
+    'weighted avg'?: ClassMetric;
+  };
+}
+
+interface LatestMetricsResponse {
+  success: boolean;
+  metrics: ModelMetrics | null;
+  analysis: {
+    id: number;
+    session_name: string;
+    analysis_type: string;
+    training_samples: number;
+    created_at: string;
+  } | null;
+}
+
 interface Word {
   word: string;
   sentiment: 'positive' | 'negative' | 'neutral';
@@ -90,11 +131,23 @@ export class TrainDataComponent implements OnInit {
   // Bulk selection for samples
   selectedSamples: Set<number> = new Set();
   selectAllSamples = false;
-  
+
+  // Sentiment filter & go-to-page for samples
+  sampleSentimentFilter: 'all' | 'positive' | 'negative' | 'neutral' = 'all';
+  samplesGoToPage = 1;
+
   // UI state
   loading = false;
   successMsg = '';
   errorMsg = '';
+
+  // Model metrics
+  latestMetrics: ModelMetrics | null = null;
+  latestMetricsAnalysis: LatestMetricsResponse['analysis'] = null;
+  metricsLoading = false;
+  metricsSource: 'library' | 'analysis' | null = null;
+  metricsReason: string | null = null; // reason if metrics unavailable
+  metricsDistribution: { positive: number; negative: number; neutral: number } | null = null;
 
   // Computed property for all words combined
   get allWords(): Word[] {
@@ -122,7 +175,7 @@ export class TrainDataComponent implements OnInit {
     return Array.from({ length: this.wordsTotalPages }, (_, i) => i + 1);
   }
 
-  // Computed property for all samples combined
+  // Computed property for all samples combined (unfiltered)
   get allSamples(): Sample[] {
     return [
       ...this.samples.positive,
@@ -131,21 +184,37 @@ export class TrainDataComponent implements OnInit {
     ];
   }
 
-  // Paginated samples
+  // Filtered samples based on sampleSentimentFilter
+  get filteredSamples(): Sample[] {
+    if (this.sampleSentimentFilter === 'all') return this.allSamples;
+    return this.allSamples.filter(s => s.sentiment === this.sampleSentimentFilter);
+  }
+
+  // Paginated samples (from filtered)
   get paginatedSamples(): Sample[] {
     const startIndex = (this.samplesCurrentPage - 1) * this.samplesItemsPerPage;
     const endIndex = startIndex + this.samplesItemsPerPage;
-    return this.allSamples.slice(startIndex, endIndex);
+    return this.filteredSamples.slice(startIndex, endIndex);
   }
 
-  // Total pages for samples
+  // Total pages for samples (based on filtered)
   get samplesTotalPages(): number {
-    return Math.ceil(this.allSamples.length / this.samplesItemsPerPage);
+    return Math.ceil(this.filteredSamples.length / this.samplesItemsPerPage);
   }
 
-  // Samples page numbers array
-  get samplesPageNumbers(): number[] {
-    return Array.from({ length: this.samplesTotalPages }, (_, i) => i + 1);
+  // Smart page numbers: first, last, and up to 2 around current; null = ellipsis
+  get samplesVisiblePageNumbers(): (number | null)[] {
+    const total = this.samplesTotalPages;
+    const current = this.samplesCurrentPage;
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+    const pages: (number | null)[] = [1];
+    if (current > 3) pages.push(null);
+    const start = Math.max(2, current - 1);
+    const end = Math.min(total - 1, current + 1);
+    for (let p = start; p <= end; p++) pages.push(p);
+    if (current < total - 2) pages.push(null);
+    pages.push(total);
+    return pages;
   }
 
   // Pagination methods for words
@@ -174,13 +243,15 @@ export class TrainDataComponent implements OnInit {
   goToSamplesPage(page: number) {
     if (page >= 1 && page <= this.samplesTotalPages) {
       this.samplesCurrentPage = page;
-      this.editingSampleId = null; // Cancel any editing when changing pages
+      this.samplesGoToPage = page;
+      this.editingSampleId = null;
     }
   }
 
   previousSamplesPage() {
     if (this.samplesCurrentPage > 1) {
       this.samplesCurrentPage--;
+      this.samplesGoToPage = this.samplesCurrentPage;
       this.editingSampleId = null;
     }
   }
@@ -188,8 +259,21 @@ export class TrainDataComponent implements OnInit {
   nextSamplesPage() {
     if (this.samplesCurrentPage < this.samplesTotalPages) {
       this.samplesCurrentPage++;
+      this.samplesGoToPage = this.samplesCurrentPage;
       this.editingSampleId = null;
     }
+  }
+
+  goToSamplesPageFromInput() {
+    const page = Math.round(this.samplesGoToPage);
+    this.goToSamplesPage(page);
+  }
+
+  setSampleFilter(filter: 'all' | 'positive' | 'negative' | 'neutral') {
+    this.sampleSentimentFilter = filter;
+    this.samplesCurrentPage = 1;
+    this.samplesGoToPage = 1;
+    this.editingSampleId = null;
   }
 
   // Bulk selection methods for words
@@ -332,7 +416,74 @@ export class TrainDataComponent implements OnInit {
 
   ngOnInit() {
     this.loadLibraries();
+    this.loadLatestMetrics();
   }
+
+  async loadLatestMetrics() {
+    this.metricsLoading = true;
+    try {
+      const response = await this.http.get<LatestMetricsResponse>(
+        `${this.apiUrl}/analysis-history/latest-metrics`,
+        { headers: this.getHeaders() }
+      ).toPromise();
+      if (response?.success) {
+        this.latestMetrics = response.metrics;
+        this.latestMetricsAnalysis = response.analysis;
+        this.metricsSource = response.metrics ? 'analysis' : null;
+      }
+    } catch (error) {
+      console.error('Failed to load latest metrics:', error);
+    }
+    this.metricsLoading = false;
+  }
+
+  async computeLibraryMetrics() {
+    if (!this.selectedLibraryId) return;
+    this.metricsLoading = true;
+    this.metricsReason = null;
+    try {
+      const response = await this.http.post<any>(
+        `${this.apiUrl}/word-libraries/${this.selectedLibraryId}/compute-metrics`,
+        {},
+        { headers: this.getHeaders() }
+      ).toPromise();
+      if (response?.success) {
+        if (response.metrics) {
+          this.latestMetrics = response.metrics;
+          this.latestMetricsAnalysis = null;
+          this.metricsSource = 'library';
+          this.metricsDistribution = response.distribution;
+        } else {
+          this.metricsReason = response.reason || 'Tidak cukup data untuk evaluasi.';
+        }
+      }
+    } catch (error) {
+      console.error('Failed to compute library metrics:', error);
+      this.metricsReason = 'Gagal menghitung metrik. Coba lagi nanti.';
+    }
+    this.metricsLoading = false;
+  }
+
+  getAccuracy(): number {
+    if (!this.latestMetrics) return 0;
+    // Support both new format (accuracy) and old format (test_accuracy / training_accuracy)
+    return (this.latestMetrics.test_accuracy ?? this.latestMetrics.accuracy ?? this.latestMetrics.training_accuracy ?? 0) * 100;
+  }
+
+  /** Safe accessor for per-class data (avoids ?.[dynamic] in templates) */
+  getPerClass(cls: string): { precision: number; recall: number; f1: number; support: number } | null {
+    return this.latestMetrics?.per_class?.[cls] ?? null;
+  }
+
+  getAccuracyLevel(): 'good' | 'medium' | 'poor' {
+    const acc = this.getAccuracy();
+    if (acc >= 70) return 'good';
+    if (acc >= 50) return 'medium';
+    return 'poor';
+  }
+
+  fmt4(v: number | undefined): string { return v != null ? (v * 100).toFixed(1) + '%' : 'N/A'; }
+  fmt6(v: number | undefined): string { return v != null ? v.toFixed(4) : 'N/A'; }
 
   private getHeaders(): HttpHeaders {
     const token = localStorage.getItem('token');
@@ -363,19 +514,42 @@ export class TrainDataComponent implements OnInit {
   async loadLibraryDetails() {
     if (!this.selectedLibraryId) {
       this.selectedLibrary = null;
+      this.words = { positive: [], negative: [], neutral: [] };
+      this.samples = { positive: [], negative: [], neutral: [] };
+      // Revert to last-analysis metrics when library is deselected
+      this.latestMetrics = null;
+      this.metricsSource = null;
+      this.metricsDistribution = null;
+      this.metricsReason = null;
+      this.loadLatestMetrics();
       return;
     }
 
+    // Clear library-specific metrics while loading so stale data isn't shown
+    this.latestMetrics = null;
+    this.metricsSource = null;
+    this.metricsDistribution = null;
+    this.metricsReason = null;
+
     this.loading = true;
     try {
-      const response = await this.http.get<any>(`${this.apiUrl}/word-libraries/${this.selectedLibraryId}`, { 
-        headers: this.getHeaders() 
+      const response = await this.http.get<any>(`${this.apiUrl}/word-libraries/${this.selectedLibraryId}`, {
+        headers: this.getHeaders()
       }).toPromise();
-      
+
       if (response.success) {
         this.selectedLibrary = response.library;
         this.words = response.words;
         this.samples = response.samples;
+
+        // Auto-compute metrics if library has enough samples (>=15 = 5 per class)
+        const totalSamples = this.allSamples.length;
+        if (totalSamples >= 15) {
+          this.computeLibraryMetrics();
+        } else {
+          // Don't fall back to analysis metrics — show a clear reason instead
+          this.metricsReason = `Butuh minimal 15 sampel berlabel (5 per kelas) untuk evaluasi otomatis. Saat ini: ${totalSamples}.`;
+        }
       }
     } catch (error) {
       console.error('Failed to load library details:', error);
@@ -688,12 +862,12 @@ export class TrainDataComponent implements OnInit {
 
   // Helper function to extract unique words from tweet text
   private extractWordsFromTweet(tweetText: string, sentiment: 'positive' | 'negative' | 'neutral'): string[] {
-    // Extract words (alphanumeric and common punctuation)
     const words = tweetText
       .toLowerCase()
       .split(/\s+/)
       .map(w => w.replace(/[^\w]/g, ''))
-      .filter(w => w.length > 0);
+      // Must start with a letter, min 3 chars — mirrors Python token_pattern
+      .filter(w => /^[a-z][a-z0-9]{2,}$/.test(w));
 
     // Get existing words for this sentiment
     const existingWords = this.words[sentiment].map(w => w.word.toLowerCase());

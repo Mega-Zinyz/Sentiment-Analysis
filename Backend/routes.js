@@ -28,13 +28,24 @@ const {
   getAnalysisDetailsHandler,
   deleteAnalysisHandler,
   clearAnalysisHistoryHandler,
-  getAnalysisStatsHandler
+  getAnalysisStatsHandler,
+  exportAnalysisExcelHandler,
+  getLatestModelMetricsHandler
 } = require('./routes/analysisHistory');
 
 // Analysis insights management
 const {
   getAnalysisInsightsHandler
 } = require('./routes/analysisInsights');
+
+// External validation management
+const {
+  createValidationSampleHandler,
+  getValidationHandler,
+  submitValidationLabelHandler,
+  getValidationMetricsHandler,
+  resetValidationHandler
+} = require('./routes/analysisValidation');
 
 // Word libraries management
 const wordLibrariesRouter = require('./routes/wordLibraries');
@@ -107,8 +118,15 @@ router.delete('/admin/users/:userId', authenticateToken, requireAdmin, deleteUse
 // Analysis history endpoints (require authentication)
 router.get('/analysis-history', authenticateToken, getAnalysisHistoryHandler);
 router.get('/analysis-history/stats', authenticateToken, getAnalysisStatsHandler);
+router.get('/analysis-history/latest-metrics', authenticateToken, getLatestModelMetricsHandler);
 router.get('/analysis-history/:analysisId/details', authenticateToken, getAnalysisDetailsHandler);
+router.get('/analysis-history/:analysisId/export/excel', authenticateToken, exportAnalysisExcelHandler);
 router.get('/analysis-history/:analysisId/insights', authenticateToken, getAnalysisInsightsHandler);
+router.post('/analysis-history/:analysisId/validation/sample', authenticateToken, createValidationSampleHandler);
+router.get('/analysis-history/:analysisId/validation', authenticateToken, getValidationHandler);
+router.post('/analysis-history/:analysisId/validation/label', authenticateToken, submitValidationLabelHandler);
+router.get('/analysis-history/:analysisId/validation/metrics', authenticateToken, getValidationMetricsHandler);
+router.delete('/analysis-history/:analysisId/validation', authenticateToken, resetValidationHandler);
 router.delete('/analysis-history/:analysisId', authenticateToken, deleteAnalysisHandler);
 
 // Profile management endpoints (require authentication)
@@ -133,12 +151,14 @@ router.get('/admin/sessions/stats', authenticateToken, requireAdmin, getSessionS
 router.post('/admin/sessions/cleanup', authenticateToken, requireAdmin, cleanupSessionsHandler);
 
 // Raw data processing endpoints (require authentication)
-const { 
+const {
   uploadRawDataHandler,
   uploadCsvFileHandler,
   upload: uploadCsv,
-  getSessionsHandler, 
-  getSessionDataHandler, 
+  uploadExcelFileHandler,
+  uploadExcel,
+  getSessionsHandler,
+  getSessionDataHandler,
   getUploadProgressHandler,
   deleteSessionHandler,
   viewSessionDataHandler,
@@ -155,9 +175,9 @@ const {
   resetLabelsHandler 
 } = require('./routes/manualLabeling');
 
-const { 
-  analyzeSentimentHandler, 
-  getAnalysisResultsHandler: getRawDataAnalysisResultsHandler, 
+const {
+  analyzeSentimentHandler,
+  getAnalysisResultsHandler: getRawDataAnalysisResultsHandler,
   getSentimentProgressHandler,
   exportResultsHandler,
   analyzeWithLibraryHandler,
@@ -165,9 +185,16 @@ const {
   cancelLibraryAnalysisHandler
 } = require('./routes/sentimentAnalysis');
 
+const {
+  autoLabelHandler,
+  relabelHandler,
+  getLabelDistributionHandler
+} = require('./routes/insetLabeling');
+
 // Raw data upload and management
 router.post('/raw-data/upload', authenticateToken, uploadRawDataHandler);
 router.post('/raw-data/upload-csv', authenticateToken, uploadCsv.single('csvFile'), uploadCsvFileHandler);
+router.post('/raw-data/upload-excel', authenticateToken, uploadExcel.single('excelFile'), uploadExcelFileHandler);
 router.get('/raw-data/sessions', authenticateToken, getSessionsHandler);
 router.get('/raw-data/session/:sessionId', authenticateToken, getSessionDataHandler);
 router.get('/raw-data/view/:sessionId', authenticateToken, viewSessionDataHandler);
@@ -185,8 +212,14 @@ router.post('/raw-data/labeling/:sessionId/reset', authenticateToken, resetLabel
 router.get('/raw-data/training-summary/:sessionId', authenticateToken, getTrainingSummaryHandler);
 router.delete('/raw-data/labeling/:sessionId/:itemId', authenticateToken, removeLabelHandler);
 
+// InSet auto-labeling
+router.post('/raw-data/auto-label/:sessionId', authenticateToken, autoLabelHandler);
+router.post('/raw-data/relabel/:sessionId', authenticateToken, relabelHandler);
+router.get('/raw-data/label-distribution/:sessionId', authenticateToken, getLabelDistributionHandler);
+
 // Sentiment analysis
 router.post('/raw-data/analyze/:sessionId', authenticateToken, analyzeSentimentHandler);
+router.get('/raw-data/analyze/:sessionId/progress', authenticateToken, getSentimentProgressHandler);
 router.post('/raw-data/analyze-with-library', authenticateToken, analyzeWithLibraryHandler);
 router.get('/raw-data/library-progress/:progressKey', authenticateToken, getLibraryAnalysisProgressHandler);
 router.post('/raw-data/cancel-library-analysis/:progressKey', authenticateToken, cancelLibraryAnalysisHandler);
