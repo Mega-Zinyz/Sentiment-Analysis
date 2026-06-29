@@ -1,14 +1,14 @@
 <div class="app-component" data-component="header">
 <nav class="main-nav">
   <div class="nav-brand">
-    <h1>📊 Sentiment Analysis</h1>
+    <h1>📊 Analisis Sentimen</h1>
   </div>
   
   <!-- Navigation Links (shown when authenticated) -->
   <div class="nav-links" *ngIf="isAuthenticated">
     <a routerLink="/analysis" routerLinkActive="active" class="nav-link">
       <span class="nav-icon">🤖</span>
-      <span class="nav-text">Analysis</span>
+      <span class="nav-text">Analisis</span>
     </a>
     <a routerLink="/crawler" routerLinkActive="active" class="nav-link">
       <span class="nav-icon">🕷️</span>
@@ -16,15 +16,15 @@
     </a>
     <a routerLink="/train-data" routerLinkActive="active" class="nav-link">
       <span class="nav-icon">📝</span>
-      <span class="nav-text">Training Data</span>
+      <span class="nav-text">Data Latih</span>
     </a>
     <a routerLink="/analysis-history" routerLinkActive="active" class="nav-link">
       <span class="nav-icon">📈</span>
-      <span class="nav-text">History</span>
+      <span class="nav-text">Riwayat</span>
     </a>
     <a routerLink="/admin" routerLinkActive="active" class="nav-link admin-nav" *ngIf="isAdmin">
       <span class="nav-icon">🛡️</span>
-      <span class="nav-text">Admin Panel</span>
+      <span class="nav-text">Panel Admin</span>
     </a>
   </div>
 
@@ -46,12 +46,12 @@
       <div class="dropdown-divider"></div>
       <a routerLink="/profile" class="dropdown-item profile-link" (click)="toggleMenu()">
         <span class="profile-icon">⚙️</span>
-        Profile Settings
+        Pengaturan Profil
       </a>
       <div class="dropdown-divider"></div>
       <button class="dropdown-item logout-btn" (click)="logout()">
         <span class="logout-icon">🚪</span>
-        Logout
+        Keluar
       </button>
     </div>
   </div>
@@ -60,11 +60,11 @@
   <div class="auth-links" *ngIf="!isAuthenticated">
     <a routerLink="/login" class="auth-link login-link">
       <span class="auth-icon">🔐</span>
-      Login
+      Masuk
     </a>
     <a routerLink="/register" class="auth-link register-link">
       <span class="auth-icon">📝</span>
-      Register
+      Daftar
     </a>
   </div>
 </nav>

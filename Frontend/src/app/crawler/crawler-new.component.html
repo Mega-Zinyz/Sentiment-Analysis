@@ -148,7 +148,7 @@
             </div>
             <div class="counter-box">
               <span class="counter-num">{{ jobs.length }}</span>
-              <span class="counter-lbl">Total Jobs</span>
+              <span class="counter-lbl">Total Job</span>
             </div>
           </div>
         </div>
@@ -486,12 +486,12 @@
               <!-- Pagination -->
               @if (jobsTotalPages > 1) {
                 <div class="jobs-pagination">
-                  <button class="pag-btn" [disabled]="jobsPage === 1" (click)="jobsPage = jobsPage - 1">‹ Prev</button>
+                  <button class="pag-btn" [disabled]="jobsPage === 1" (click)="jobsPage = jobsPage - 1">‹ Sebelumnya</button>
                   <span class="pag-info">
                     Halaman {{ jobsPage }} / {{ jobsTotalPages }}
                     <span class="pag-total">({{ filteredJobs.length }} job)</span>
                   </span>
-                  <button class="pag-btn" [disabled]="jobsPage === jobsTotalPages" (click)="jobsPage = jobsPage + 1">Next ›</button>
+                  <button class="pag-btn" [disabled]="jobsPage === jobsTotalPages" (click)="jobsPage = jobsPage + 1">Berikutnya ›</button>
                 </div>
               }
             }

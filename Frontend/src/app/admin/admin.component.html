@@ -1,7 +1,7 @@
 <div class="app-component" data-component="admin">
 <div class="admin-container">
   <div class="admin-header">
-    <h1>🛡️ Admin Dashboard</h1>
+    <h1>🛡️ Dasbor Admin</h1>
     <button (click)="refresh()" class="refresh-btn">🔄 Refresh</button>
   </div>
 
@@ -11,23 +11,23 @@
       <div class="stat-icon">👥</div>
       <div class="stat-content">
         <div class="stat-number">{{ systemStats.totalUsers }}</div>
-        <div class="stat-label">Total Users</div>
+        <div class="stat-label">Total Pengguna</div>
       </div>
     </div>
-    
+
     <div class="stat-card">
       <div class="stat-icon">📊</div>
       <div class="stat-content">
         <div class="stat-number">{{ systemStats.totalAnalyses }}</div>
-        <div class="stat-label">Total Analyses</div>
+        <div class="stat-label">Total Analisis</div>
       </div>
     </div>
-    
+
     <div class="stat-card">
       <div class="stat-icon">📁</div>
       <div class="stat-content">
         <div class="stat-number">{{ systemStats.totalWordLibraries || 0 }}</div>
-        <div class="stat-label">Training Data</div>
+        <div class="stat-label">Data Latih</div>
       </div>
     </div>
   </div>
@@ -39,23 +39,23 @@
   <!-- User Management -->
   <div class="user-management">
     <div class="section-header">
-      <h2>👥 User Management</h2>
+      <h2>👥 Kelola Pengguna</h2>
     </div>
 
     <!-- Filters -->
     <div class="filters">
       <div class="search-box">
-        <input 
-          type="text" 
-          [(ngModel)]="searchTerm" 
-          placeholder="Search users..." 
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          placeholder="Cari pengguna..."
           class="search-input">
       </div>
-      
+
       <div class="role-filter">
         <select [(ngModel)]="selectedRole" class="role-select">
-          <option value="">All Roles</option>
-          <option value="user">User</option>
+          <option value="">Semua Peran</option>
+          <option value="user">Pengguna</option>
           <option value="admin">Admin</option>
         </select>
       </div>
@@ -66,11 +66,11 @@
       <table class="users-table">
         <thead>
           <tr>
-            <th>User</th>
-            <th>Role</th>
+            <th>Pengguna</th>
+            <th>Peran</th>
             <th>Status</th>
-            <th>Created</th>
-            <th>Actions</th>
+            <th>Dibuat</th>
+            <th>Aksi</th>
           </tr>
         </thead>
         <tbody>
@@ -81,40 +81,40 @@
                 <small>{{ user.email }}</small>
               </div>
             </td>
-            
+
             <td class="role-cell">
-              <select 
-                [value]="user.role" 
+              <select
+                [value]="user.role"
                 (change)="onRoleChange($event, user.id)"
                 class="role-select-inline">
-                <option value="user">User</option>
+                <option value="user">Pengguna</option>
                 <option value="admin">Admin</option>
               </select>
             </td>
-            
+
             <td class="status-cell">
               <span class="status-badge" [class.active]="user.is_active" [class.inactive]="!user.is_active">
-                {{ user.is_active ? 'Active' : 'Inactive' }}
+                {{ user.is_active ? 'Aktif' : 'Nonaktif' }}
               </span>
             </td>
-            
+
             <td class="date-cell">
               {{ formatDate(user.created_at) }}
             </td>
-            
+
             <td class="actions-cell">
-              <button 
+              <button
                 (click)="toggleUserStatus(user.id, user.is_active)"
                 class="action-btn"
                 [class.activate]="!user.is_active"
                 [class.deactivate]="user.is_active">
-                {{ user.is_active ? '🚫 Deactivate' : '✅ Activate' }}
+                {{ user.is_active ? '🚫 Nonaktifkan' : '✅ Aktifkan' }}
               </button>
-              
-              <button 
+
+              <button
                 (click)="deleteUser(user.id, user.username)"
                 class="action-btn delete">
-                🗑️ Delete
+                🗑️ Hapus
               </button>
             </td>
           </tr>
@@ -123,22 +123,22 @@
 
       <!-- Pagination -->
       <div class="pagination" *ngIf="totalPages > 1">
-        <button 
-          (click)="changePage(currentPage - 1)" 
+        <button
+          (click)="changePage(currentPage - 1)"
           [disabled]="currentPage === 1"
           class="page-btn">
-          ← Previous
+          ← Sebelumnya
         </button>
-        
+
         <span class="page-info">
-          Page {{ currentPage }} of {{ totalPages }}
+          Halaman {{ currentPage }} dari {{ totalPages }}
         </span>
-        
-        <button 
-          (click)="changePage(currentPage + 1)" 
+
+        <button
+          (click)="changePage(currentPage + 1)"
           [disabled]="currentPage === totalPages"
           class="page-btn">
-          Next →
+          Berikutnya →
         </button>
       </div>
     </div>
@@ -146,20 +146,20 @@
     <!-- Loading State -->
     <div *ngIf="loading" class="loading-state">
       <div class="loading-spinner">⏳</div>
-      <p>Loading users...</p>
+      <p>Memuat pengguna...</p>
     </div>
 
     <!-- Empty State -->
     <div *ngIf="!loading && filteredUsers.length === 0" class="empty-state">
       <div class="empty-icon">👤</div>
-      <p>No users found</p>
+      <p>Tidak ada pengguna ditemukan</p>
     </div>
-  
+
     <!-- Admin utilities -->
     <div class="admin-utilities">
-      <h3>Admin Utilities</h3>
+      <h3>Utilitas Admin</h3>
       <div class="utilities-list">
-        <a routerLink="/debug/logs" class="utility-link">📋 View Failed Tweets Log</a>
+        <a routerLink="/debug/logs" class="utility-link">📋 Lihat Log Tweet Gagal</a>
       </div>
     </div>
   </div>

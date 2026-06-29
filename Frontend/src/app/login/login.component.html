@@ -3,31 +3,31 @@
   <div class="login-card">
     <div class="login-header">
       <h1>🔐 Login</h1>
-      <p>Sign in to your sentiment analysis account</p>
+      <p>Masuk ke akun analisis sentimen Anda</p>
     </div>
 
     <form (ngSubmit)="onSubmit()" class="login-form">
       <div class="form-group">
-        <label for="username">Username</label>
+        <label for="username">Nama Pengguna</label>
         <input
           type="text"
           id="username"
           name="username"
           [(ngModel)]="username"
-          placeholder="Enter your username"
+          placeholder="Masukkan nama pengguna"
           class="form-input"
           required
           [disabled]="loading">
       </div>
 
       <div class="form-group">
-        <label for="password">Password</label>
+        <label for="password">Kata Sandi</label>
         <input
           type="password"
           id="password"
           name="password"
           [(ngModel)]="password"
-          placeholder="Enter your password"
+          placeholder="Masukkan kata sandi"
           class="form-input"
           required
           [disabled]="loading">
@@ -41,15 +41,15 @@
         type="submit"
         class="login-button"
         [disabled]="loading || !username || !password">
-        <span *ngIf="loading">⏳ Signing in...</span>
-        <span *ngIf="!loading">🚀 Sign In</span>
+        <span *ngIf="loading">⏳ Memproses...</span>
+        <span *ngIf="!loading">🚀 Masuk</span>
       </button>
     </form>
 
     <div class="login-footer">
-      <p>Don't have an account?</p>
+      <p>Belum punya akun?</p>
       <button type="button" (click)="goToRegister()" class="register-link" [disabled]="loading">
-        📝 Create Account
+        📝 Buat Akun
       </button>
     </div>
   </div>

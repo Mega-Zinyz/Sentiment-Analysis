@@ -4,7 +4,7 @@
 
   <!-- Header -->
   <div class="analysis-header">
-    <h1>📊 Sentiment Analysis</h1>
+    <h1>📊 Analisis Sentimen</h1>
     <p class="header-subtitle">Upload data, pilih metode analisis, dan dapatkan hasil evaluasi lengkap</p>
   </div>
 
@@ -84,7 +84,7 @@
           </div>
           <div class="session-stats">
             <span class="stat">📊 {{ session.total_items }} data</span>
-            <span class="stat" *ngIf="session.labeled_items > 0">🏷️ {{ session.labeled_items }} labeled</span>
+            <span class="stat" *ngIf="session.labeled_items > 0">🏷️ {{ session.labeled_items }} dilabeli</span>
             <span class="stat library-info" *ngIf="session.library_name">📁 {{ session.library_name }}</span>
             <span class="stat" *ngIf="session.analysis_type === 'inset'">📚 InSet</span>
           </div>

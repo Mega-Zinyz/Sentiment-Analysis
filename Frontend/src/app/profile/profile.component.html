@@ -1,8 +1,8 @@
 <div class="app-component" data-component="profile">
 <div class="profile-container">
   <div class="profile-header">
-    <h1>👤 User Profile</h1>
-    <p>Manage your account settings and crawler integration</p>
+    <h1>👤 Profil Pengguna</h1>
+    <p>Kelola pengaturan akun dan integrasi crawler</p>
   </div>
 
   <!-- Alert Messages -->
@@ -27,14 +27,14 @@
         <div class="stat-icon">📊</div>
         <div class="stat-content">
           <div class="stat-number">{{ profileData.statistics.totalAnalyses }}</div>
-          <div class="stat-label">Total Analyses</div>
+          <div class="stat-label">Total Analisis</div>
         </div>
       </div>
       <div class="stat-card">
         <div class="stat-icon">📚</div>
         <div class="stat-content">
           <div class="stat-number">{{ profileData.statistics.totalWordLibraries || 0 }}</div>
-          <div class="stat-label">Training Data</div>
+          <div class="stat-label">Data Latih</div>
         </div>
       </div>
       <div class="stat-card">
@@ -43,7 +43,7 @@
           <div class="stat-status" [style.color]="getCredentialStatusColor()">
             {{ getCredentialStatus() }}
           </div>
-          <div class="stat-label">Crawler Status</div>
+          <div class="stat-label">Status Crawler</div>
         </div>
       </div>
     </div>
@@ -55,25 +55,25 @@
       class="tab-button"
       [class.active]="activeTab === 'profile'"
       (click)="setActiveTab('profile')">
-      👤 Profile Info
+      👤 Info Profil
     </button>
     <button
       class="tab-button"
       [class.active]="activeTab === 'password'"
       (click)="setActiveTab('password')">
-      🔒 Change Password
+      🔒 Ubah Kata Sandi
     </button>
     <button
       class="tab-button"
       [class.active]="activeTab === 'crawler-access'"
       (click)="setActiveTab('crawler-access')">
-      🧩 Crawler Access
+      🧩 Akses Crawler
     </button>
     <button
       class="tab-button"
       [class.active]="activeTab === 'sessions'"
       (click)="setActiveTab('sessions')">
-      🖥️ Active Sessions
+      🖥️ Sesi Aktif
     </button>
   </div>
 
@@ -81,10 +81,10 @@
   @if (activeTab === 'profile') {
     <div class="tab-content">
       <div class="form-card">
-        <h3>Profile Information</h3>
+        <h3>Informasi Profil</h3>
         <form (ngSubmit)="updateProfile()" #profileFormRef="ngForm">
           <div class="form-group">
-            <label for="username">Username</label>
+            <label for="username">Nama Pengguna</label>
             <input
               type="text"
               id="username"
@@ -95,7 +95,7 @@
           </div>
 
           <div class="form-group">
-            <label for="email">Email Address</label>
+            <label for="email">Alamat Email</label>
             <input
               type="email"
               id="email"
@@ -107,9 +107,9 @@
 
           @if (profileData) {
             <div class="form-info">
-              <p><strong>Role:</strong> {{ profileData.user.role }}</p>
-              <p><strong>Member since:</strong> {{ formatDate(profileData.user.created_at) }}</p>
-              <p><strong>Last updated:</strong> {{ formatDate(profileData.user.updated_at) }}</p>
+              <p><strong>Peran:</strong> {{ profileData.user.role }}</p>
+              <p><strong>Bergabung sejak:</strong> {{ formatDate(profileData.user.created_at) }}</p>
+              <p><strong>Terakhir diperbarui:</strong> {{ formatDate(profileData.user.updated_at) }}</p>
             </div>
           }
 
@@ -118,9 +118,9 @@
             class="btn btn-primary"
             [disabled]="loading || !profileFormRef.valid">
             @if (loading) {
-              <span>⏳ Updating...</span>
+              <span>⏳ Memperbarui...</span>
             } @else {
-              <span>💾 Update Profile</span>
+              <span>💾 Perbarui Profil</span>
             }
           </button>
         </form>
@@ -132,10 +132,10 @@
   @if (activeTab === 'password') {
     <div class="tab-content">
       <div class="form-card">
-        <h3>Change Password</h3>
+        <h3>Ubah Kata Sandi</h3>
         <form (ngSubmit)="changePassword()" #passwordFormRef="ngForm">
           <div class="form-group">
-            <label for="currentPassword">Current Password</label>
+            <label for="currentPassword">Kata Sandi Saat Ini</label>
             <input
               type="password"
               id="currentPassword"
@@ -146,7 +146,7 @@
           </div>
 
           <div class="form-group">
-            <label for="newPassword">New Password</label>
+            <label for="newPassword">Kata Sandi Baru</label>
             <input
               type="password"
               id="newPassword"
@@ -155,11 +155,11 @@
               required
               minlength="6"
               class="form-control">
-            <small class="form-text">Password must be at least 6 characters long</small>
+            <small class="form-text">Kata sandi minimal 6 karakter</small>
           </div>
 
           <div class="form-group">
-            <label for="confirmPassword">Confirm New Password</label>
+            <label for="confirmPassword">Konfirmasi Kata Sandi Baru</label>
             <input
               type="password"
               id="confirmPassword"
@@ -174,9 +174,9 @@
             class="btn btn-primary"
             [disabled]="loading || !passwordFormRef.valid">
             @if (loading) {
-              <span>⏳ Changing...</span>
+              <span>⏳ Mengubah...</span>
             } @else {
-              <span>🔒 Change Password</span>
+              <span>🔒 Ubah Kata Sandi</span>
             }
           </button>
         </form>
@@ -188,7 +188,7 @@
   @if (activeTab === 'crawler-access') {
     <div class="tab-content">
       <div class="form-card">
-        <h3>🍪 Crawler Access — Session X.com</h3>
+        <h3>🍪 Akses Crawler — Session X.com</h3>
         <p>Crawler menggunakan session cookies X.com untuk login otomatis dan mengumpulkan tweet.</p>
 
         <!-- Status Card -->
@@ -260,25 +260,25 @@
   @if (activeTab === 'sessions') {
     <div class="tab-content">
       <div class="form-card">
-        <h3>🖥️ Active Sessions</h3>
-        <p>Manage your active login sessions for security</p>
+        <h3>🖥️ Sesi Aktif</h3>
+        <p>Kelola sesi login aktif Anda untuk keamanan akun</p>
 
         @if (sessionsLoading) {
           <div class="loading-state">
             <div class="spinner"></div>
-            <span>Loading sessions...</span>
+            <span>Memuat sesi...</span>
           </div>
         } @else if (userSessions.length === 0) {
           <div class="empty-state">
             <div class="empty-icon">🔐</div>
-            <h4>No Active Sessions</h4>
-            <p>You currently have no active sessions</p>
+            <h4>Tidak Ada Sesi Aktif</h4>
+            <p>Anda tidak memiliki sesi aktif saat ini</p>
           </div>
         } @else {
           <div class="sessions-list">
             <div class="sessions-header">
               <div class="sessions-info">
-                <span class="sessions-count">{{ userSessions.length }} active session(s)</span>
+                <span class="sessions-count">{{ userSessions.length }} sesi aktif</span>
                 <button
                   type="button"
                   class="btn btn-outline btn-sm"
@@ -292,7 +292,7 @@
                 class="btn btn-warning btn-sm"
                 (click)="revokeOtherSessions()"
                 [disabled]="sessionsLoading || userSessions.length <= 1">
-                🚪 End Other Sessions
+                🚪 Akhiri Sesi Lain
               </button>
             </div>
 
@@ -305,10 +305,10 @@
                   </div>
                   <div class="session-details">
                     <div class="session-created">
-                      <strong>Created:</strong> {{ formatDate(session.created_at) }}
+                      <strong>Dibuat:</strong> {{ formatDate(session.created_at) }}
                     </div>
                     <div class="session-expires">
-                      <strong>Expires:</strong> {{ formatDate(session.expires_at) }}
+                      <strong>Berakhir:</strong> {{ formatDate(session.expires_at) }}
                     </div>
                   </div>
                 </div>
@@ -318,7 +318,7 @@
                     class="btn btn-danger btn-sm"
                     (click)="revokeSession(session.id)"
                     [disabled]="sessionsLoading">
-                    🗑️ Revoke
+                    🗑️ Cabut
                   </button>
                 </div>
               </div>
