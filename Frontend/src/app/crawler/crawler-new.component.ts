@@ -91,7 +91,11 @@ export class CrawlerNewComponent implements OnInit, OnDestroy {
 
   // Live monitor (WebSocket)
   liveJob: CrawlJob | null = null;
-  liveLog: LiveLog[] = [];
+
+  // Per-job log history: jobId → log entries. 'system' key = connection-level messages.
+  jobLogs: { [jobId: string]: LiveLog[] } = {};
+  // Which job's log is currently shown in the panel (null = follow liveJob)
+  viewingJobId: string | null = null;
 
   // Collection tweets
   collectionTweets: any[] = [];
@@ -181,15 +185,20 @@ export class CrawlerNewComponent implements OnInit, OnDestroy {
     });
 
     this.socket.on('connect', () => {
-      this.addLog('Terhubung ke server monitoring', 'info');
+      // Authenticate socket so backend knows which user room to emit to
+      const token = localStorage.getItem('token');
+      if (token) this.socket!.emit('authenticate', { token });
+      this.addLog('Terhubung ke server monitoring', 'system');
     });
 
     this.socket.on('disconnect', () => {
-      this.addLog('Koneksi monitoring terputus', 'error');
+      this.addLog('Koneksi monitoring terputus', 'system');
     });
 
     this.socket.on('crawler:job_started', (data: any) => {
-      this.addLog(`Job dimulai: "${data.keyword}" (target: ${data.targetCount} tweets)`, 'info');
+      // Auto-switch log panel to this new job
+      this.viewingJobId = data.jobId;
+      this.addLog(`Job dimulai: "${data.keyword}" (target: ${data.targetCount} tweets)`, 'info', data.jobId);
       this.loadCollections();
     });
 
@@ -205,7 +214,8 @@ export class CrawlerNewComponent implements OnInit, OnDestroy {
       }
       this.addLog(
         data.statusMessage || `${data.collected}/${data.total} tweets terkumpul (${data.progress}%)`,
-        'progress'
+        'progress',
+        data.jobId
       );
     });
 
@@ -213,7 +223,7 @@ export class CrawlerNewComponent implements OnInit, OnDestroy {
       if (this.liveJob && this.liveJob.jobId === data.jobId) {
         this.liveJob = { ...this.liveJob, status: 'completed', progress: 100, collectedCount: data.collectedCount };
       }
-      this.addLog(`Selesai! ${data.collectedCount} tweets berhasil dikumpulkan.`, 'success');
+      this.addLog(`Selesai! ${data.collectedCount} tweets berhasil dikumpulkan.`, 'success', data.jobId);
       this.loadCollections();
       if (this.selectedCollection) {
         this.loadCollectionTweets(this.selectedCollection.collectionId, 1);
@@ -225,20 +235,46 @@ export class CrawlerNewComponent implements OnInit, OnDestroy {
       if (this.liveJob && this.liveJob.jobId === data.jobId) {
         this.liveJob = { ...this.liveJob, status: 'failed' };
       }
-      this.addLog(`Job gagal: ${data.error || 'Unknown error'}`, 'error');
+      this.addLog(`Job gagal: ${data.error || 'Unknown error'}`, 'error', data.jobId);
       this.loadCollections();
+    });
+
+    this.socket.on('crawler:job_cancelled', (data: any) => {
+      if (this.liveJob && this.liveJob.jobId === data.jobId) {
+        this.liveJob = { ...this.liveJob, status: 'cancelled' };
+      }
+      this.addLog(`Job dibatalkan (${data.collectedCount} tweet tersimpan)`, 'error', data.jobId);
+      this.loadCollectionJobs();
     });
   }
 
-  private addLog(message: string, type: LiveLog['type']) {
+  // jobId = undefined → 'system' bucket (connect/disconnect messages)
+  private addLog(message: string, type: LiveLog['type'] | 'system', jobId?: string) {
+    const key = jobId || 'system';
+    const logType: LiveLog['type'] = (type === 'system') ? 'info' : type;
     const time = new Date().toLocaleTimeString('id-ID', {
       hour: '2-digit', minute: '2-digit', second: '2-digit'
     });
-    this.liveLog = [{ time, message, type }, ...this.liveLog].slice(0, 100);
+    const entry: LiveLog = { time, message, type: logType };
+    const existing = this.jobLogs[key] || [];
+    this.jobLogs = { ...this.jobLogs, [key]: [entry, ...existing].slice(0, 200) };
+  }
+
+  // Logs shown in the panel: follow viewingJobId, or liveJob, or system messages
+  get activeLogs(): LiveLog[] {
+    const key = this.viewingJobId || this.liveJob?.jobId || 'system';
+    return this.jobLogs[key] || [];
+  }
+
+  // Called from the jobs history table to view a specific job's log
+  viewJobLog(jobId: string) {
+    this.viewingJobId = jobId;
   }
 
   clearLog() {
-    this.liveLog = [];
+    const key = this.viewingJobId || this.liveJob?.jobId || 'system';
+    const { [key]: _removed, ...rest } = this.jobLogs;
+    this.jobLogs = rest;
   }
 
   // ============ COLLECTIONS ============
@@ -371,8 +407,8 @@ export class CrawlerNewComponent implements OnInit, OnDestroy {
     this.showCrawlForm = false;
     this.collectionTweets = [];
     this.collectionPage = 1;
-    this.liveLog = [];
     this.liveJob = null;
+    this.viewingJobId = null;
 
     this.addLog(`Membuka: ${collection.name}`, 'info');
 
@@ -431,18 +467,12 @@ export class CrawlerNewComponent implements OnInit, OnDestroy {
         this.http.get<any>(`${environment.apiUrl}/crawler/jobs?limit=50&collectionId=${cid}`)
       );
       if (response?.success) {
-        this.jobs = response.jobs.map((j: any) => {
-          let sinceDate: string | undefined;
-          let untilDate: string | undefined;
-          if (j.config) {
-            try {
-              const cfg = typeof j.config === 'string' ? JSON.parse(j.config) : j.config;
-              sinceDate = cfg.sinceDate || undefined;
-              untilDate = cfg.untilDate || undefined;
-            } catch {}
-          }
-          return { ...j, sinceDate, untilDate };
-        });
+        this.jobs = response.jobs.map((j: any) => ({
+          ...j,
+          // sinceDate/untilDate now come directly from dedicated DB columns via the API
+          sinceDate: j.sinceDate || undefined,
+          untilDate: j.untilDate || undefined,
+        }));
         if (!this.liveJob) {
           const running = this.jobs.find(j => j.status === 'processing' || j.status === 'queued');
           if (running) {
@@ -461,13 +491,14 @@ export class CrawlerNewComponent implements OnInit, OnDestroy {
     this.selectedCollection = null;
     this.showCrawlForm = false;
     this.liveJob = null;
-    this.liveLog = [];
+    this.viewingJobId = null;
     this.loadCollections();
   }
 
   trackJob(job: CrawlJob) {
     this.liveJob = job;
-    this.addLog(`Memantau job: "${job.keyword}"`, 'info');
+    this.viewingJobId = job.jobId;
+    this.addLog(`Memantau job: "${job.keyword}"`, 'info', job.jobId);
   }
 
   // ============ DATE CHUNK HELPERS ============
@@ -621,7 +652,8 @@ export class CrawlerNewComponent implements OnInit, OnDestroy {
             progress: 0,
             createdAt: new Date().toISOString()
           };
-          this.addLog(`Job dikirim: "${query}" (target: ${this.targetCount})`, 'info');
+          this.viewingJobId = response.jobId;
+          this.addLog(`Job dikirim: "${query}" (target: ${this.targetCount})`, 'info', response.jobId);
           this.setSuccess('Crawling dimulai! Pantau progress di panel monitor.');
         } else {
           this.setError(response?.message || 'Gagal memulai crawling');
@@ -660,6 +692,32 @@ export class CrawlerNewComponent implements OnInit, OnDestroy {
       }
     } catch {
       this.setError('Gagal membatalkan job');
+    }
+  }
+
+  get hasActiveJobs(): boolean {
+    return this.jobs.some(j => j.status === 'queued' || j.status === 'processing');
+  }
+
+  async stopAllJobs() {
+    const activeCount = this.jobs.filter(j => j.status === 'queued' || j.status === 'processing').length;
+    if (!await this.showConfirm(
+      'Hentikan Semua Job',
+      `Ini akan membatalkan ${activeCount} job (queued & processing) dan membersihkan zombie worker. Lanjutkan?`
+    )) return;
+
+    try {
+      const response = await lastValueFrom(
+        this.http.post<any>(`${environment.apiUrl}/crawler/stop-all`, {})
+      );
+      if (response?.success) {
+        this.liveJob = null;
+        this.addLog(`Semua job dihentikan paksa (${response.cancelled} dibatalkan, ${response.staleCleared} zombie dibersihkan)`, 'error', 'system');
+        this.setSuccess(`Queue dibersihkan — ${response.cancelled} job dibatalkan`);
+        this.loadCollectionJobs();
+      }
+    } catch {
+      this.setError('Gagal menghentikan semua job');
     }
   }
 
@@ -883,5 +941,20 @@ export class CrawlerNewComponent implements OnInit, OnDestroy {
     return new Date(dateStr).toLocaleDateString('id-ID', {
       year: 'numeric', month: 'short', day: 'numeric'
     });
+  }
+
+  // Returns e.g. "Jan 2020", "Jan 2020 – Des 2020", or null (no filter)
+  formatDateRange(since: string | null | undefined, until: string | null | undefined): string | null {
+    if (!since && !until) return null;
+    const fmt = (d: string) => new Date(d + 'T00:00:00').toLocaleDateString('id-ID', {
+      month: 'short', year: 'numeric'
+    });
+    if (since && until) {
+      const s = fmt(since);
+      const u = fmt(until);
+      return s === u ? s : `${s} – ${u}`;
+    }
+    if (since) return `Sejak ${fmt(since)}`;
+    return `Sampai ${fmt(until!)}`;
   }
 }

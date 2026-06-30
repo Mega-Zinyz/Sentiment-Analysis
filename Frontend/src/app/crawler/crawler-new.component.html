@@ -214,13 +214,19 @@
           <!-- Log Terminal -->
           <div class="log-terminal">
             <div class="log-term-header">
-              <span>📟 Log Aktivitas</span>
-              @if (liveLog.length > 0) {
+              <span>
+                📟 Log Aktivitas
+                @if (viewingJobId) {
+                  <span class="log-job-badge">Job {{ shortJobId(viewingJobId) }}</span>
+                  <button class="btn-clear" style="margin-left:4px" (click)="viewingJobId = null" title="Kembali ke log sistem">✕</button>
+                }
+              </span>
+              @if (activeLogs.length > 0) {
                 <button class="btn-clear" (click)="clearLog()">Hapus</button>
               }
             </div>
             <div class="log-term-body">
-              @for (log of liveLog; track log.time + log.message) {
+              @for (log of activeLogs; track log.time + log.message) {
                 <div class="log-entry" [class]="'log-' + log.type">
                   <span class="log-time">{{ log.time }}</span>
                   <span class="log-msg">{{ log.message }}</span>
@@ -373,12 +379,19 @@
           <div class="section-card">
             <div class="section-header">
               <h3>📈 History Jobs <span class="count-chip">{{ jobs.length }}</span></h3>
-              <input
-                class="job-search-input"
-                type="text"
-                [(ngModel)]="jobSearchQuery"
-                (ngModelChange)="onJobSearchChange()"
-                placeholder="🔍 Cari keyword, ID, status..." />
+              <div class="section-header-actions">
+                <input
+                  class="job-search-input"
+                  type="text"
+                  [(ngModel)]="jobSearchQuery"
+                  (ngModelChange)="onJobSearchChange()"
+                  placeholder="🔍 Cari keyword, ID, status..." />
+                @if (hasActiveJobs) {
+                  <button class="btn-stop-all" (click)="stopAllJobs()" title="Hentikan paksa semua job yang sedang berjalan atau dalam antrian">
+                    ⛔ Hentikan Semua
+                  </button>
+                }
+              </div>
             </div>
 
             @if (filteredJobs.length === 0) {
@@ -417,11 +430,8 @@
 
                         <!-- Date range -->
                         <td class="date-range-cell">
-                          @if (job.sinceDate || job.untilDate) {
-                            <span class="date-range-text">
-                              <span class="dr-label">Sejak</span> {{ job.sinceDate || '—' }}<br>
-                              <span class="dr-label">Sampai</span> {{ job.untilDate || '—' }}
-                            </span>
+                          @if (formatDateRange(job.sinceDate, job.untilDate); as range) {
+                            <span class="date-range-badge">{{ range }}</span>
                           } @else {
                             <span class="date-range-none">— Semua waktu —</span>
                           }
@@ -464,6 +474,13 @@
 
                         <!-- Actions -->
                         <td class="actions-cell">
+                          <!-- View log button for every job that has log entries -->
+                          @if (jobLogs[job.jobId]?.length) {
+                            <button class="btn-icon btn-info"
+                              [class.active]="viewingJobId === job.jobId"
+                              (click)="viewJobLog(job.jobId)"
+                              title="Lihat log job ini">📋</button>
+                          }
                           @if (job.status === 'processing' || job.status === 'queued') {
                             <button class="btn-icon btn-danger" (click)="cancelJob(job.jobId)" title="Batalkan">⛔</button>
                             <button class="btn-icon btn-info" (click)="trackJob(job)" title="Pantau di monitor">👁️</button>
@@ -472,7 +489,7 @@
                             <button
                               class="btn-icon btn-warning"
                               (click)="resumeJob(job.jobId)"
-                              [title]="(job.sinceDate || job.untilDate) ? ('Ulangi: ' + (job.sinceDate || '—') + ' → ' + (job.untilDate || '—')) : 'Ulangi crawl'">
+                              [title]="formatDateRange(job.sinceDate, job.untilDate) ? ('Ulangi: ' + formatDateRange(job.sinceDate, job.untilDate)) : 'Ulangi crawl'">
                               🔄
                             </button>
                           }

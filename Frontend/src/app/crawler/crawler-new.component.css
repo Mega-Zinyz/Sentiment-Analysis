@@ -450,6 +450,26 @@
   border-bottom: 1px solid #f1f5f9;
 }
 
+.section-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-stop-all {
+  padding: 7px 14px;
+  border: none;
+  border-radius: 8px;
+  background: #fee2e2;
+  color: #dc2626;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+.btn-stop-all:hover { background: #fecaca; }
+
 .section-header h3 {
   margin: 0;
   color: #1e293b;
@@ -630,6 +650,23 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.log-job-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 7px;
+  background: #2563eb;
+  color: #fff;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-family: monospace;
+  vertical-align: middle;
+}
+
+.btn-icon.active {
+  background: #2563eb22;
+  border-color: #2563eb;
 }
 
 .log-term-body {
@@ -1271,6 +1308,19 @@
   padding: 2px 8px;
   white-space: nowrap;
   font-family: 'Cascadia Code', 'Fira Mono', monospace;
+}
+
+/* New compact badge replacing the two-line Sejak/Sampai display */
+.date-range-badge {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #4f46e5;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+  border-radius: 999px;
+  padding: 2px 10px;
+  white-space: nowrap;
 }
 
 .date-range-none {

@@ -54,6 +54,72 @@ async function cancelCrawlJob(jobId) {
 }
 
 /**
+ * Force-stop ALL active and queued jobs for a user.
+ * - Signals the active Playwright crawler to stop immediately
+ * - Removes all waiting Bull jobs from the queue
+ * - Marks all queued/processing DB rows as 'cancelled'
+ * - Resets any rows stuck in 'processing' longer than staleMinutes as 'failed'
+ */
+async function stopAllJobs(userId, staleMinutes = 30) {
+  const db = getDb();
+  const queue = createJobQueue();
+
+  // 1. Find all active/queued jobs for this user in DB
+  const [rows] = await db.execute(
+    `SELECT job_id FROM crawler_jobs WHERE user_id = ? AND status IN ('queued','processing')`,
+    [userId]
+  );
+
+  let cancelled = 0;
+  for (const { job_id } of rows) {
+    cancelledJobs.add(job_id);
+    try {
+      const bullJob = await queue.getJob(job_id);
+      if (bullJob) {
+        const state = await bullJob.getState();
+        if (['waiting', 'delayed', 'paused', 'active'].includes(state)) {
+          await bullJob.remove().catch(() => {});
+        }
+      }
+    } catch (e) {
+      logger.warn(`stopAllJobs: could not remove Bull job ${job_id}: ${e.message}`);
+    }
+    cancelled++;
+  }
+
+  // 2. Force-close the active Playwright browser if it belongs to this user
+  if (_activeCrawler) {
+    await _activeCrawler.close().catch(e => logger.warn(`stopAllJobs: error closing crawler: ${e.message}`));
+    _setActiveCrawler(null);
+  }
+
+  // 3. Bulk-update DB: queued → cancelled, processing → failed (zombie)
+  await db.execute(
+    `UPDATE crawler_jobs SET status = 'cancelled', updated_at = NOW()
+     WHERE user_id = ? AND status = 'queued'`,
+    [userId]
+  );
+  await db.execute(
+    `UPDATE crawler_jobs SET status = 'failed', updated_at = NOW()
+     WHERE user_id = ? AND status = 'processing'`,
+    [userId]
+  );
+
+  // 4. Also clean up any globally stuck 'processing' jobs older than staleMinutes
+  //    (zombie workers from previous server restarts)
+  const [stale] = await db.execute(
+    `UPDATE crawler_jobs
+     SET status = 'failed', updated_at = NOW()
+     WHERE status = 'processing'
+       AND updated_at < DATE_SUB(NOW(), INTERVAL ? MINUTE)`,
+    [staleMinutes]
+  );
+
+  logger.info(`🛑 stopAllJobs: cancelled ${cancelled} jobs for user ${userId}; cleared ${stale.affectedRows} stale jobs`);
+  return { cancelled, staleCleared: stale.affectedRows };
+}
+
+/**
  * Set socket.io instance for real-time updates
  */
 function setIO(socketIO) {
@@ -90,9 +156,9 @@ function initializeQueueProcessor(queue) {
 
     logger.info(`🚀 Processing job ${jobId} for user ${userId}`);
 
-    // Emit job started event
+    // Emit job started event — only to this user's socket room
     if (io) {
-      io.emit('crawler:job_started', {
+      io.to(`user:${userId}`).emit('crawler:job_started', {
         jobId,
         userId,
         keyword,
@@ -107,12 +173,14 @@ function initializeQueueProcessor(queue) {
       return { success: false, cancelled: true, jobId };
     }
 
+    let crawler = null;
+    let result = null;
     try {
       // Update job status in database
       await updateJobStatus(jobId, userId, 'processing');
 
       // Initialize crawler
-      const crawler = new PlaywrightCrawler(config || {});
+      crawler = new PlaywrightCrawler(config || {});
       _setActiveCrawler(crawler);
 
       // Inject live cancellation check — not serialised through Redis,
@@ -137,10 +205,10 @@ function initializeQueueProcessor(queue) {
           await saveTweetsToDB(jobId, userId, keyword, tweets, collectionId);
         }
         await updateJobStatus(jobId, userId, 'cancelled', tweets.length, 'Dibatalkan oleh pengguna');
-        if (io) io.emit('crawler:job_cancelled', { jobId, userId, collectedCount: tweets.length });
+        if (io) io.to(`user:${userId}`).emit('crawler:job_cancelled', { jobId, userId, collectedCount: tweets.length });
         logger.info(`🛑 Job ${jobId} cancelled mid-crawl. Saved ${tweets.length} tweets.`);
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        return { success: false, cancelled: true, collected: tweets.length, jobId };
+        result = { success: false, cancelled: true, collected: tweets.length, jobId };
+        return result;
       }
 
       // Save tweets to database (linked to collection if provided)
@@ -153,29 +221,19 @@ function initializeQueueProcessor(queue) {
         const reason = 'Tidak ada tweet terkumpul — kemungkinan X.com menampilkan login wall atau rate limit. Coba lagi setelah beberapa menit, atau periksa cookies di halaman Profil.';
         await updateJobStatus(jobId, userId, 'failed', 0, reason);
         if (io) {
-          io.emit('crawler:job_failed', { jobId, userId, error: reason });
+          io.to(`user:${userId}`).emit('crawler:job_failed', { jobId, userId, error: reason });
         }
         logger.warn(`⚠️  Job ${jobId} — 0 tweets collected, marked as failed`);
       } else {
         await updateJobStatus(jobId, userId, 'completed', tweets.length);
         if (io) {
-          io.emit('crawler:job_completed', { jobId, userId, collectedCount: tweets.length, targetCount });
+          io.to(`user:${userId}`).emit('crawler:job_completed', { jobId, userId, collectedCount: tweets.length, targetCount });
         }
         logger.info(`✅ Job ${jobId} completed. Collected ${tweets.length} tweets`);
       }
 
-      // Inter-job cooldown: prevents X.com from detecting consecutive bot requests.
-      // Sleep INSIDE the processor so the next queued job doesn't start until after the wait.
-      _setActiveCrawler(null);
-      const cooldown = INTER_JOB_COOLDOWN_MS + Math.random() * 15000;
-      logger.info(`⏱️  Inter-job cooldown: ${Math.round(cooldown / 1000)}s before next job...`);
-      await new Promise(resolve => setTimeout(resolve, cooldown));
-
-      return {
-        success: tweets.length > 0,
-        collected: tweets.length,
-        jobId
-      };
+      result = { success: tweets.length > 0, collected: tweets.length, jobId };
+      return result;
 
     } catch (error) {
       logger.error(`❌ Job ${jobId} failed:`, error);
@@ -183,13 +241,26 @@ function initializeQueueProcessor(queue) {
       await updateJobStatus(jobId, userId, 'failed', 0, error.message);
 
       if (io) {
-        io.emit('crawler:job_failed', { jobId, userId, error: error.message });
+        io.to(`user:${userId}`).emit('crawler:job_failed', { jobId, userId, error: error.message });
       }
 
-      // Still cool down on error to avoid hammering X.com
-      await new Promise(resolve => setTimeout(resolve, 15000));
-
       throw error;
+
+    } finally {
+      // Always close the browser and clear the active crawler ref — prevents zombie Chromium processes
+      if (crawler) {
+        await crawler.close().catch(e => logger.warn(`⚠️  Error closing crawler for job ${jobId}: ${e.message}`));
+      }
+      _setActiveCrawler(null);
+
+      // Inter-job cooldown after any outcome (complete, cancel, or error)
+      const cooldown = result && result.cancelled
+        ? 5000
+        : result
+          ? INTER_JOB_COOLDOWN_MS + Math.random() * 15000
+          : 15000; // error path
+      logger.info(`⏱️  Post-job cooldown: ${Math.round(cooldown / 1000)}s...`);
+      await new Promise(resolve => setTimeout(resolve, cooldown));
     }
   });
   
@@ -223,15 +294,15 @@ async function submitCrawlJob(userId, keyword, targetCount = 100, config = {}, p
 
     // Create job in database first
     const db = getDb();
-    const notes = parentJobId ? `Resumed from job ${parentJobId}` : null;
-    
-    // The `notes` variable is not used in the current schema for crawler_jobs.
-    // It was likely intended for a field that no longer exists.
-    // We will proceed without inserting it into `crawler_jobs`.
+
+    // Extract dates from config so they live in dedicated, queryable columns
+    const sinceDate = configForDatabase.sinceDate || null;
+    const untilDate = configForDatabase.untilDate || null;
+
     await db.execute(`
-      INSERT INTO crawler_jobs (job_id, user_id, keyword, target_count, status, config)
-      VALUES (?, ?, ?, ?, 'queued', ?)
-    `, [jobId, userId, keyword, targetCount, JSON.stringify(configForDatabase)]);
+      INSERT INTO crawler_jobs (job_id, user_id, keyword, target_count, status, config, since_date, until_date)
+      VALUES (?, ?, ?, ?, 'queued', ?, ?, ?)
+    `, [jobId, userId, keyword, targetCount, JSON.stringify(configForDatabase), sinceDate, untilDate]);
     
     // Create progress record
     await db.execute(`
@@ -338,6 +409,8 @@ async function getUserJobs(userId, limit = 20, collectionId = null) {
     const query = `
       SELECT
         j.*,
+        j.since_date,
+        j.until_date,
         p.total_collected,
         p.status_message,
         p.last_error
@@ -423,9 +496,9 @@ async function updateJobProgress(jobId, userId, collected, total) {
       userId
     ]);
 
-    // Emit real-time progress to all connected clients
+    // Emit real-time progress only to the job owner's room
     if (io) {
-      io.emit('crawler:job_progress', {
+      io.to(`user:${userId}`).emit('crawler:job_progress', {
         jobId,
         userId,
         collected,
@@ -538,6 +611,7 @@ module.exports = {
   initializeQueueProcessor,
   submitCrawlJob,
   cancelCrawlJob,
+  stopAllJobs,
   getJobStatus,
   getUserJobs,
   redisClient,

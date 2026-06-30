@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { submitCrawlJob, cancelCrawlJob, getJobStatus, getUserJobs } = require('../utils/job-queue');
+const { submitCrawlJob, cancelCrawlJob, stopAllJobs, getJobStatus, getUserJobs } = require('../utils/job-queue');
 const { getDb } = require('../config/mysql-database');
 const XLSX = require('xlsx');
 
@@ -101,14 +101,16 @@ router.post('/start', async (req, res) => {
 
     const result = await submitCrawlJob(userId, keyword, targetCount, queueConfig);
     
-    // Emit socket event
+    // Emit only to this user's socket room
     const io = req.app.locals.io;
     if (io) {
-      io.emit('crawler:job_started', {
+      io.to(`user:${userId}`).emit('crawler:job_started', {
         jobId: result.jobId,
         userId,
         keyword,
         targetCount,
+        sinceDate: queueConfig.sinceDate || null,
+        untilDate: queueConfig.untilDate || null,
         status: 'queued'
       });
     }
@@ -184,6 +186,13 @@ router.get('/jobs', async (req, res) => {
     const formattedJobs = jobs.map(job => {
       const cfg = parseCrawlerConfig(job.config);
       const isDone = ['completed','failed','cancelled','suspended'].includes(job.status);
+      // Prefer dedicated columns; fall back to config JSON for legacy rows
+      const sinceDate = job.since_date
+        ? new Date(job.since_date).toISOString().slice(0, 10)
+        : (cfg.sinceDate || null);
+      const untilDate = job.until_date
+        ? new Date(job.until_date).toISOString().slice(0, 10)
+        : (cfg.untilDate || null);
       return {
         jobId: job.job_id,
         keyword: job.keyword,
@@ -192,12 +201,12 @@ router.get('/jobs', async (req, res) => {
         collectedCount: job.collected_count || 0,
         progress: Math.round(((job.collected_count || 0) / job.target_count) * 100),
         statusMessage: job.status_message || null,
-        sinceDate: cfg.sinceDate || null,
-        untilDate: cfg.untilDate || null,
+        sinceDate,
+        untilDate,
         loginEnabled: !!(cfg.xCookies && cfg.xCookies.length > 0),
         createdAt: job.created_at,
         updatedAt: job.updated_at || null,
-        completedAt: isDone ? (job.updated_at || null) : null
+        completedAt: isDone ? (job.completed_at || job.updated_at || null) : null
       };
     });
     
@@ -297,9 +306,8 @@ router.post('/cancel/:jobId', async (req, res) => {
     // Signal the running processor to stop (non-blocking)
     cancelCrawlJob(jobId);
 
-    // Emit real-time event so frontend UI updates immediately
     const io = req.app.locals.io;
-    if (io) io.emit('crawler:job_cancelled', { jobId, userId });
+    if (io) io.to(`user:${userId}`).emit('crawler:job_cancelled', { jobId, userId });
 
     res.json({
       success: true,
@@ -309,6 +317,26 @@ router.post('/cancel/:jobId', async (req, res) => {
   } catch (error) {
     console.error('Error cancelling job:', error);
     res.status(500).json({ error: 'Failed to cancel job', details: error.message });
+  }
+});
+
+/**
+ * Force-stop ALL queued and active jobs for the current user.
+ * Also cleans up globally stale 'processing' rows (zombie workers).
+ * POST /api/crawler/stop-all
+ */
+router.post('/stop-all', async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const { cancelled, staleCleared } = await stopAllJobs(userId);
+
+    const io = req.app.locals.io;
+    if (io) io.to(`user:${userId}`).emit('crawler:queue_stopped', { userId, cancelled, staleCleared });
+
+    res.json({ success: true, cancelled, staleCleared });
+  } catch (error) {
+    console.error('Error stopping all jobs:', error);
+    res.status(500).json({ error: 'Failed to stop all jobs', details: error.message });
   }
 });
 
@@ -376,7 +404,7 @@ router.post('/resume/:jobId', async (req, res) => {
     const result = await submitCrawlJob(userId, job.keyword, job.target_count, newConfig);
 
     const io = req.app.locals.io;
-    if (io) io.emit('crawler:job_started', { jobId: result.jobId, userId, keyword: job.keyword, targetCount: job.target_count, status: 'queued' });
+    if (io) io.to(`user:${userId}`).emit('crawler:job_started', { jobId: result.jobId, userId, keyword: job.keyword, targetCount: job.target_count, sinceDate: originalConfig.sinceDate || null, untilDate: originalConfig.untilDate || null, status: 'queued' });
 
     res.json({
       success: true,
