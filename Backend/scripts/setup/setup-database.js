@@ -427,6 +427,20 @@ const ensureSchema = async (db) => {
   await db.execute(`DROP TABLE IF EXISTS user_datasets`);
   console.log('  ✔ Removed unused table: user_datasets');
 
+  // Ensure sentiment_user exists with correct privileges (idempotent)
+  // Needed when mysql_data volume existed before MYSQL_USER env was set
+  if (process.env.DB_USER && process.env.DB_PASSWORD) {
+    await db.execute(
+      `CREATE USER IF NOT EXISTS ?@'%' IDENTIFIED BY ?`,
+      [process.env.DB_USER, process.env.DB_PASSWORD]
+    ).catch(() => {});
+    await db.execute(
+      `GRANT ALL PRIVILEGES ON \`${process.env.DB_NAME || 'sentiment_analysis'}\`.* TO ?@'%'`,
+      [process.env.DB_USER]
+    ).catch(() => {});
+    await db.execute(`FLUSH PRIVILEGES`).catch(() => {});
+  }
+
   await seedDefaultData(db);
   await seedInsetIfNeeded(db);
   console.log('✅ Schema up to date');
