@@ -1,0 +1,64 @@
+# fail2ban-jail.local
+# Copy this file to /etc/fail2ban/jail.local on the VPS, then:
+#   sudo systemctl restart fail2ban
+#
+# To install Fail2Ban:
+#   sudo apt install fail2ban -y
+
+[DEFAULT]
+# Ban duration: 1 hour
+bantime  = 3600
+# Look-back window: 10 minutes
+findtime = 600
+# Max failures before ban
+maxretry = 5
+# Backend for log watching
+backend  = systemd
+
+# Send ban notifications to syslog (optional)
+# destemail = admin@example.com
+# sender    = fail2ban@sentimen-analisis.duckdns.org
+# mta       = sendmail
+# action    = %(action_mwl)s
+
+# ──────────────────────────────────────────────
+# SSH — protect against brute-force login attempts
+# ──────────────────────────────────────────────
+[sshd]
+enabled  = true
+port     = ssh
+filter   = sshd
+logpath  = /var/log/auth.log
+maxretry = 5
+bantime  = 3600
+
+# ──────────────────────────────────────────────
+# Nginx — block scanners probing unknown paths
+# (WordPress, PHP shells, etc.)
+# ──────────────────────────────────────────────
+[nginx-http-auth]
+enabled  = true
+port     = http,https
+filter   = nginx-http-auth
+logpath  = /var/log/nginx/error.log
+maxretry = 5
+
+[nginx-botsearch]
+enabled  = true
+port     = http,https
+filter   = nginx-botsearch
+logpath  = /var/log/nginx/access.log
+maxretry = 2
+bantime  = 86400
+
+# ──────────────────────────────────────────────
+# Nginx rate-limit 429 — clients hitting our
+# nginx limit_req zones too aggressively
+# ──────────────────────────────────────────────
+[nginx-limit-req]
+enabled  = true
+port     = http,https
+filter   = nginx-limit-req
+logpath  = /var/log/nginx/error.log
+maxretry = 10
+bantime  = 1800

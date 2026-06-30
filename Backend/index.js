@@ -7,6 +7,7 @@ const cors = require('cors');
 const path = require('path');
 const http = require('http');
 const socketIO = require('socket.io');
+const rateLimit = require('express-rate-limit');
 const { initDatabase } = require('./config/mysql-database');
 const SessionManager = require('./utils/sessionManager');
 const logger = require('./utils/logger');
@@ -89,6 +90,26 @@ app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
 // Handle preflight requests
 app.options('*', cors(corsOptions));
+
+// Rate limiting — applied after CORS so preflight is unaffected
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 300,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too Many Requests', message: 'Too many requests, please try again later.' }
+});
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too Many Requests', message: 'Too many login attempts, please try again later.' }
+});
+
+app.use('/api', generalLimiter);
+app.use('/api/auth', authLimiter);
 
 // Initialize database
 const initializeApp = async () => {

@@ -728,10 +728,17 @@ class PlaywrightCrawler {
   }
 
   async close() {
+    // Capture refs and null them out first — prevents double-close if called twice
+    const ctx = this.context;
+    const br = this.browser;
+    this.page = null;
+    this.context = null;
+    this.browser = null;
+
     try {
-      if (this.context) await this.context.close();
-      if (this.browser) {
-        await this.browser.close();
+      if (ctx) await ctx.close().catch(e => logger.warn('⚠️  Context close error:', e.message));
+      if (br) {
+        await br.close().catch(e => logger.warn('⚠️  Browser close error:', e.message));
         logger.info('🔌 Browser closed');
       }
     } catch (error) {

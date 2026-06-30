@@ -113,6 +113,7 @@ function initializeQueueProcessor(queue) {
 
       // Initialize crawler
       const crawler = new PlaywrightCrawler(config || {});
+      _setActiveCrawler(crawler);
 
       // Inject live cancellation check — not serialised through Redis,
       // set directly on the constructed object after Bull deserialises config.
@@ -165,6 +166,7 @@ function initializeQueueProcessor(queue) {
 
       // Inter-job cooldown: prevents X.com from detecting consecutive bot requests.
       // Sleep INSIDE the processor so the next queued job doesn't start until after the wait.
+      _setActiveCrawler(null);
       const cooldown = INTER_JOB_COOLDOWN_MS + Math.random() * 15000;
       logger.info(`⏱️  Inter-job cooldown: ${Math.round(cooldown / 1000)}s before next job...`);
       await new Promise(resolve => setTimeout(resolve, cooldown));
@@ -506,6 +508,30 @@ async function saveTweetsToDB(jobId, userId, keyword, tweets, collectionId = nul
     throw error;
   }
 }
+
+// Graceful shutdown: close Bull queue and Redis on SIGTERM/SIGINT so
+// the Docker stop (which sends SIGTERM) doesn't leave orphan Chromium processes.
+let _activeCrawler = null;
+
+function _setActiveCrawler(c) { _activeCrawler = c; }
+
+async function _gracefulShutdown(signal) {
+  logger.info(`🛑 ${signal} received — shutting down job queue`);
+  try {
+    if (_activeCrawler) {
+      await _activeCrawler.close().catch(() => {});
+      _activeCrawler = null;
+    }
+    if (_queue) await _queue.close().catch(() => {});
+    await redisClient.quit().catch(() => {});
+  } catch (e) {
+    logger.error('Error during graceful shutdown:', e.message);
+  }
+  process.exit(0);
+}
+
+process.once('SIGTERM', () => _gracefulShutdown('SIGTERM'));
+process.once('SIGINT',  () => _gracefulShutdown('SIGINT'));
 
 module.exports = {
   createJobQueue,

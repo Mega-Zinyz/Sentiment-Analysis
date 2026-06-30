@@ -1,15 +1,15 @@
 services:
-  # MySQL Database
+  # MySQL Database — port NOT exposed to host; only reachable inside sentiment-network
   mysql:
     image: mysql:8.0
     container_name: sentiment-mysql
+    command: --default-authentication-plugin=caching_sha2_password
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-sentiment_analysis_rootismtm}
       MYSQL_DATABASE: ${DB_NAME:-sentiment_analysis}
       MYSQL_USER: ${DB_USER:-sentiment_user}
       MYSQL_PASSWORD: ${DB_PASSWORD:-sentiment_passtoriation}
-    ports:
-      - "3306:3306"
+    # No host port binding — MySQL is only accessible within the Docker network
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
@@ -20,12 +20,11 @@ services:
       timeout: 5s
       retries: 5
 
-  # Redis - For Bull job queue
+  # Redis - For Bull job queue — port NOT exposed to host
   redis:
     image: redis:7-alpine
     container_name: sentiment-redis
-    ports:
-      - "6379:6379"
+    # No host port binding — Redis is only accessible within the Docker network
     volumes:
       - redis_data:/data
     networks:
