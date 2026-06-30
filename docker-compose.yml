@@ -1,5 +1,6 @@
 services:
-  # MySQL Database — port NOT exposed to host; only reachable inside sentiment-network
+  # MySQL Database — bound only to 127.0.0.1 on the VPS host (NOT public internet).
+  # Access via Navicat: use SSH Tunnel → host 127.0.0.1, port 3306.
   mysql:
     image: mysql:8.0
     container_name: sentiment-mysql
@@ -9,7 +10,8 @@ services:
       MYSQL_DATABASE: ${DB_NAME:-sentiment_analysis}
       MYSQL_USER: ${DB_USER:-sentiment_user}
       MYSQL_PASSWORD: ${DB_PASSWORD:-sentiment_passtoriation}
-    # No host port binding — MySQL is only accessible within the Docker network
+    # No host port binding — MySQL only accessible inside Docker network.
+    # For Navicat: add "127.0.0.1:3306:3306" in a VPS-specific override, or use docker-compose.local.yml (port 3307).
     volumes:
       - mysql_data:/var/lib/mysql
     networks:

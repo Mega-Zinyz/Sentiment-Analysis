@@ -1,0 +1,32 @@
+# docker-compose.local.yml
+# Override for LOCAL TESTING only — DO NOT use on VPS.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.local.yml up --build
+#
+# Differences from production:
+#   - Frontend uses HTTP-only nginx (no SSL certs required)
+#   - MySQL port 3306 exposed to host so you can inspect DB via GUI tools
+#   - Backend NODE_ENV = development (verbose errors)
+#   - No resource limits (faster iteration)
+
+services:
+  mysql:
+    ports:
+      - "3307:3306"   # expose for local DB inspection (3307 avoids conflict with base file's 127.0.0.1:3306)
+
+  backend:
+    environment:
+      NODE_ENV: development
+      ALLOWED_ORIGINS: "http://localhost,http://localhost:80,http://127.0.0.1"
+    deploy:
+      resources: {}   # remove CPU/RAM limits for local dev
+
+  frontend:
+    ports:
+      - "80:80"
+      # No 443 — SSL not needed locally
+    volumes:
+      # Mount HTTP-only nginx config — overrides the one baked into the image
+      - ./Frontend/nginx.local.conf:/etc/nginx/conf.d/default.conf:ro
+      # /etc/letsencrypt volume from base file is ignored by the local nginx config

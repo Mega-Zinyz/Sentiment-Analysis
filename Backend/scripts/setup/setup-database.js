@@ -68,21 +68,7 @@ const TABLE_DEFINITIONS = [
     INDEX idx_expires (expires_at)
   ) ENGINE=InnoDB`,
 
-  // 4. user_datasets  (JSON training datasets per user)
-  `CREATE TABLE IF NOT EXISTS user_datasets (
-    id          INT AUTO_INCREMENT PRIMARY KEY,
-    user_id     INT NOT NULL,
-    name        VARCHAR(100) NOT NULL,
-    description TEXT,
-    data        LONGTEXT NOT NULL,
-    is_default  BOOLEAN DEFAULT FALSE,
-    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    INDEX idx_user_id (user_id),
-    INDEX idx_default (is_default),
-    INDEX idx_name    (name)
-  ) ENGINE=InnoDB`,
+  // 4. (removed — user_datasets was never used in any route or utility)
 
   // 5. training_data_original  (raw uploaded CSV/file rows)
   `CREATE TABLE IF NOT EXISTS training_data_original (
@@ -385,7 +371,6 @@ const ALL_TABLES_DROP_ORDER = [
   'raw_twitter_data',
   'training_data_processed',
   'training_data_original',
-  'user_datasets',
   'user_sessions',
   'user_api_credentials',
   'users',
@@ -401,15 +386,46 @@ const ensureSchema = async (db) => {
     await db.execute(sql);
   }
 
-  // Idempotent column migrations
-  const migrations = [
-    `ALTER TABLE user_api_credentials ADD COLUMN IF NOT EXISTS x_cookies LONGTEXT`,
-    `ALTER TABLE user_api_credentials DROP COLUMN IF EXISTS x_username`,
-    `ALTER TABLE user_api_credentials DROP COLUMN IF EXISTS x_password`,
-  ];
-  for (const sql of migrations) {
-    await db.execute(sql).catch(() => {});
-  }
+  // Idempotent column migrations — MySQL 8.0 does NOT support ADD COLUMN IF NOT EXISTS
+  // (that is MariaDB syntax), so we check information_schema manually.
+  const addCol = async (table, column, definition) => {
+    const [rows] = await db.execute(
+      `SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS
+       WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?`,
+      [table, column]
+    );
+    if (rows[0].cnt === 0) {
+      await db.execute(`ALTER TABLE \`${table}\` ADD COLUMN \`${column}\` ${definition}`);
+      console.log(`  ✔ Added column ${table}.${column}`);
+    }
+  };
+
+  const dropCol = async (table, column) => {
+    const [rows] = await db.execute(
+      `SELECT COUNT(*) AS cnt FROM information_schema.COLUMNS
+       WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?`,
+      [table, column]
+    );
+    if (rows[0].cnt > 0) {
+      await db.execute(`ALTER TABLE \`${table}\` DROP COLUMN \`${column}\``);
+      console.log(`  ✔ Dropped column ${table}.${column}`);
+    }
+  };
+
+  await addCol('user_api_credentials', 'x_cookies', 'LONGTEXT');
+  await dropCol('user_api_credentials', 'x_username');
+  await dropCol('user_api_credentials', 'x_password');
+  await addCol('crawler_jobs', 'since_date', 'DATE NULL');
+  await addCol('crawler_jobs', 'until_date', 'DATE NULL');
+  // MODIFY COLUMN is safe to run repeatedly (enum extension only)
+  await db.execute(
+    `ALTER TABLE crawler_jobs MODIFY COLUMN status
+     ENUM('queued','processing','completed','failed','paused','suspended','cancelled')
+     DEFAULT 'queued'`
+  ).catch(() => {});
+  // Drop unused table — DROP TABLE IF EXISTS is standard MySQL, safe to run repeatedly
+  await db.execute(`DROP TABLE IF EXISTS user_datasets`);
+  console.log('  ✔ Removed unused table: user_datasets');
 
   await seedDefaultData(db);
   await seedInsetIfNeeded(db);
