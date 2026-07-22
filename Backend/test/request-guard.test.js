@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { createKeyedMutex, withRetry } = require('../utils/requestGuard');
+const { createKeyedMutex, createUserSubmissionGuard, withRetry } = require('../utils/requestGuard');
 
 test('createKeyedMutex serializes concurrent work for the same key', async () => {
   const mutex = createKeyedMutex();
@@ -39,4 +39,19 @@ test('withRetry retries transient failures and eventually succeeds', async () =>
 
   assert.equal(result, 'ok');
   assert.equal(attempts, 3);
+});
+
+test('createUserSubmissionGuard blocks duplicate queued or active submissions for the same user', () => {
+  const guard = createUserSubmissionGuard();
+
+  assert.equal(guard.tryQueue('user-1'), true);
+  assert.equal(guard.tryQueue('user-1'), false);
+  assert.equal(guard.isBusy('user-1'), true);
+  assert.equal(guard.tryActivate('user-1'), true);
+  assert.equal(guard.tryQueue('user-1'), false);
+
+  guard.release('user-1');
+
+  assert.equal(guard.tryQueue('user-1'), true);
+  assert.equal(guard.getState('user-1'), 'queued');
 });

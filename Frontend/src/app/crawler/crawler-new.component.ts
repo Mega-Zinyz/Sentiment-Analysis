@@ -118,6 +118,7 @@ export class CrawlerNewComponent implements OnInit, OnDestroy {
 
   socket: Socket | null = null;
   successMessage = '';
+  private submitCooldownUntil = 0;
   errorMessage = '';
 
   // Send to analysis
@@ -579,6 +580,14 @@ export class CrawlerNewComponent implements OnInit, OnDestroy {
   }
 
   async submitCrawlJob() {
+    const now = Date.now();
+    if (this.isSubmitting || now < this.submitCooldownUntil) {
+      if (now < this.submitCooldownUntil) {
+        this.setError('Silakan tunggu beberapa detik sebelum mengirim crawl lain');
+      }
+      return;
+    }
+
     if (this.crawlKeywords.length === 0) {
       this.setError('Minimal satu keyword harus ditambahkan');
       return;
@@ -602,6 +611,7 @@ export class CrawlerNewComponent implements OnInit, OnDestroy {
 
     try {
       this.isSubmitting = true;
+      this.submitCooldownUntil = Date.now() + 3000;
 
       if (isMulti) {
         let firstSet = false;

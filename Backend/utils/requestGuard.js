@@ -54,7 +54,38 @@ async function withRetry(operation, options = {}) {
   throw lastError;
 }
 
+function createUserSubmissionGuard() {
+  const userStates = new Map();
+
+  return {
+    tryQueue(userId) {
+      if (userStates.has(userId)) {
+        return false;
+      }
+      userStates.set(userId, 'queued');
+      return true;
+    },
+    tryActivate(userId) {
+      if (userStates.get(userId) !== 'queued') {
+        return false;
+      }
+      userStates.set(userId, 'active');
+      return true;
+    },
+    release(userId) {
+      userStates.delete(userId);
+    },
+    isBusy(userId) {
+      return userStates.has(userId);
+    },
+    getState(userId) {
+      return userStates.get(userId) || null;
+    }
+  };
+}
+
 module.exports = {
   createKeyedMutex,
+  createUserSubmissionGuard,
   withRetry
 };

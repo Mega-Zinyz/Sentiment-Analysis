@@ -4,6 +4,7 @@ const PlaywrightCrawler = require('../crawlers/playwright-crawler');
 const { getDb } = require('../config/mysql-database');
 const { v4: uuidv4 } = require('uuid');
 const winston = require('winston');
+const { createUserSubmissionGuard } = require('./requestGuard');
 
 // Configure logger
 const logger = winston.createLogger({
@@ -29,7 +30,7 @@ let io = null;
 let _queue = null;
 
 // Prevent the same user from submitting overlapping crawl jobs.
-const userActiveJobs = new Map();
+const userSubmissionGuard = createUserSubmissionGuard();
 
 // In-memory cancellation registry. cancelCrawlJob() adds a jobId here;
 // the processor injects a cancelCheck into the crawler that reads from this set.
@@ -179,13 +180,11 @@ function initializeQueueProcessor(queue) {
     let crawler = null;
     let result = null;
     try {
-      if (userActiveJobs.has(userId)) {
-        logger.warn(`⚠️  User ${userId} already has an active crawl job (${userActiveJobs.get(userId)}); skipping duplicate job ${jobId}`);
-        await updateJobStatus(jobId, userId, 'failed', 0, 'Job serupa sedang berjalan untuk pengguna ini');
+      if (!userSubmissionGuard.tryActivate(userId)) {
+        logger.warn(`⚠️  User ${userId} already has a queued or active crawl job; skipping duplicate job ${jobId}`);
+        await updateJobStatus(jobId, userId, 'failed', 0, 'Job serupa sedang berjalan atau menunggu untuk pengguna ini');
         return { success: false, skipped: true, jobId };
       }
-
-      userActiveJobs.set(userId, jobId);
 
       // Update job status in database
       await updateJobStatus(jobId, userId, 'processing');
@@ -263,7 +262,7 @@ function initializeQueueProcessor(queue) {
         await crawler.close().catch(e => logger.warn(`⚠️  Error closing crawler for job ${jobId}: ${e.message}`));
       }
       _setActiveCrawler(null);
-      userActiveJobs.delete(userId);
+      userSubmissionGuard.release(userId);
 
       // Inter-job cooldown after any outcome (complete, cancel, or error)
       const cooldown = result && result.cancelled
@@ -297,8 +296,8 @@ function initializeQueueProcessor(queue) {
  */
 async function submitCrawlJob(userId, keyword, targetCount = 100, config = {}, parentJobId = null) {
   try {
-    if (userActiveJobs.has(userId)) {
-      throw new Error('Job crawl sedang berjalan untuk pengguna ini. Tunggu sampai selesai sebelum mengirim ulang.');
+    if (!userSubmissionGuard.tryQueue(userId)) {
+      throw new Error('Job crawl sedang berjalan atau menunggu untuk pengguna ini. Tunggu sampai selesai sebelum mengirim ulang.');
     }
 
     const queue = createJobQueue();
@@ -360,6 +359,7 @@ async function submitCrawlJob(userId, keyword, targetCount = 100, config = {}, p
     };
     
   } catch (error) {
+    userSubmissionGuard.release(userId);
     logger.error('Error submitting job:', error);
     throw error;
   }
