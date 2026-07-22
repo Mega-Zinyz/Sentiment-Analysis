@@ -1,5 +1,6 @@
 const { chromium } = require('playwright');
 const winston = require('winston');
+const { withRetry, createKeyedMutex } = require('../utils/requestGuard');
 
 const logger = winston.createLogger({
   level: 'info',
@@ -33,6 +34,9 @@ class PlaywrightCrawler {
     this.page = null;
     this.tweetsCollected = [];
     this.lastRequestTime = 0;
+    this._closed = false;
+    this._cleanupPromise = null;
+    this._mutex = createKeyedMutex();
   }
 
   getRandomUserAgent() {
@@ -51,6 +55,10 @@ class PlaywrightCrawler {
    * Initialize browser with anti-detection measures at context level
    */
   async initialize() {
+    if (this._closed) {
+      throw new Error('Crawler has already been closed');
+    }
+
     try {
       logger.info('🌐 Initializing Playwright browser...');
 
@@ -73,6 +81,8 @@ class PlaywrightCrawler {
           '--disable-default-apps',
           '--no-first-run',
           '--blink-settings=imagesEnabled=false',
+          '--disable-features=AcceptCHFrame,AudioServiceOutOfProcess',
+          '--disable-ipc-flooding-protection',
         ]
       };
 
@@ -102,6 +112,12 @@ class PlaywrightCrawler {
       }
 
       this.context = await this.browser.newContext(contextOptions);
+      this.context.on('page', async (page) => {
+        page.on('dialog', async dialog => {
+          logger.warn(`⚠️  Browser dialog blocked: ${dialog.type()} - ${dialog.message()}`);
+          await dialog.dismiss().catch(() => {});
+        });
+      });
 
       // Inject anti-detection scripts into every page in this context
       await this.context.addInitScript(() => {
@@ -171,10 +187,17 @@ class PlaywrightCrawler {
 
           logger.info(`📄 Navigating to search (attempt ${retries + 1}/${this.config.maxRetries})...`);
 
-          // Use 'domcontentloaded' — X.com never reaches 'networkidle' as a SPA
-          await this.page.goto(searchUrl, {
-            waitUntil: 'domcontentloaded',
-            timeout: this.config.timeout
+          await withRetry(async () => {
+            await this.page.goto(searchUrl, {
+              waitUntil: 'domcontentloaded',
+              timeout: Math.min(this.config.timeout, 20000)
+            });
+          }, {
+            retries: 1,
+            baseDelayMs: 1500,
+            shouldRetry: (error) => /429|rate limit|timeout|net::ERR|ECONNRESET/i.test(error.message || ''),
+            logger,
+            operationName: 'search navigation'
           });
 
           // Give React time to render — historical date-filtered searches can be slower
@@ -309,11 +332,11 @@ class PlaywrightCrawler {
           retries++;
           logger.error(`❌ Crawl error (attempt ${retries}/${this.config.maxRetries}):`, error.message);
 
-          if (error.message.includes('429') || error.message.includes('rate limit')) {
+          if (/429|rate limit/i.test(error.message || '')) {
             logger.warn('⚠️  Rate limit hit, backing off...');
-            await this.randomDelay(this.config.rateLimit * 3, retries);
+            await this.randomDelay(Math.max(this.config.rateLimit * 3, 10000), retries);
           } else if (retries < this.config.maxRetries) {
-            await this.randomDelay(this.config.rateLimit, retries);
+            await this.randomDelay(Math.max(this.config.rateLimit, 5000), retries);
           }
         }
       }
@@ -358,6 +381,8 @@ class PlaywrightCrawler {
       logger.info('ℹ️  No credentials provided, proceeding without login');
       return;
     }
+
+    return this._mutex('x-login', async () => {
 
     // Cookie-based login (preferred — bypasses bot detection entirely)
     if (this.config.xCookies) {
@@ -636,6 +661,7 @@ class PlaywrightCrawler {
     } catch (error) {
       logger.warn('⚠️  X.com login failed: ' + (error.message || String(error)));
     }
+    });
   }
 
   async isLoggedIn() {
@@ -728,21 +754,34 @@ class PlaywrightCrawler {
   }
 
   async close() {
-    // Capture refs and null them out first — prevents double-close if called twice
-    const ctx = this.context;
-    const br = this.browser;
-    this.page = null;
-    this.context = null;
-    this.browser = null;
+    if (this._cleanupPromise) {
+      return this._cleanupPromise;
+    }
+
+    this._cleanupPromise = (async () => {
+      // Capture refs and null them out first — prevents double-close if called twice
+      const ctx = this.context;
+      const br = this.browser;
+      this.page = null;
+      this.context = null;
+      this.browser = null;
+      this._closed = true;
+
+      try {
+        if (ctx) await ctx.close().catch(e => logger.warn('⚠️  Context close error:', e.message));
+        if (br) {
+          await br.close().catch(e => logger.warn('⚠️  Browser close error:', e.message));
+          logger.info('🔌 Browser closed');
+        }
+      } catch (error) {
+        logger.error('❌ Error closing browser:', error);
+      }
+    })();
 
     try {
-      if (ctx) await ctx.close().catch(e => logger.warn('⚠️  Context close error:', e.message));
-      if (br) {
-        await br.close().catch(e => logger.warn('⚠️  Browser close error:', e.message));
-        logger.info('🔌 Browser closed');
-      }
-    } catch (error) {
-      logger.error('❌ Error closing browser:', error);
+      await this._cleanupPromise;
+    } finally {
+      this._cleanupPromise = null;
     }
   }
 }

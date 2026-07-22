@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const { v4: uuidv4 } = require('uuid');
 const { getDb } = require('../config/mysql-database');
 const AuditLogger = require('../utils/auditLogger');
+const { withRetry } = require('../utils/requestGuard');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
 const JWT_EXPIRES_IN = '7d';
@@ -73,10 +74,18 @@ const loginHandler = async (req, res) => {
     const db = getDb();
     console.log('Database connection obtained.');
     
-    const [users] = await db.execute(
-      'SELECT * FROM users WHERE username = ? AND is_active = TRUE',
-      [username]
-    );
+    const [users] = await withRetry(async () => {
+      return db.execute(
+        'SELECT * FROM users WHERE username = ? AND is_active = TRUE',
+        [username]
+      );
+    }, {
+      retries: 2,
+      baseDelayMs: 400,
+      shouldRetry: (error) => /ECONNRESET|ETIMEDOUT|deadlock|timeout|temporar/i.test(error.message || ''),
+      logger: console,
+      operationName: 'auth lookup'
+    });
 
     console.log('User query executed. Found:', users.length);
 
@@ -89,7 +98,13 @@ const loginHandler = async (req, res) => {
     console.log('User found:', user.username);
 
     console.log('Comparing password...');
-    const isValidPassword = await bcrypt.compare(password, user.password_hash);
+    const isValidPassword = await withRetry(async () => bcrypt.compare(password, user.password_hash), {
+      retries: 1,
+      baseDelayMs: 300,
+      shouldRetry: (error) => /ECONNRESET|ETIMEDOUT|temporar/i.test(error.message || ''),
+      logger: console,
+      operationName: 'password validation'
+    });
     console.log('Password comparison result:', isValidPassword);
 
     if (!isValidPassword) {
@@ -110,10 +125,18 @@ const loginHandler = async (req, res) => {
     const sessionId = uuidv4();
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-    await db.execute(
-      'INSERT INTO user_sessions (id, user_id, token, expires_at, created_at) VALUES (?, ?, ?, ?, NOW())',
-      [sessionId, user.id, token, expiresAt]
-    );
+    await withRetry(async () => {
+      return db.execute(
+        'INSERT INTO user_sessions (id, user_id, token, expires_at, created_at) VALUES (?, ?, ?, ?, NOW())',
+        [sessionId, user.id, token, expiresAt]
+      );
+    }, {
+      retries: 2,
+      baseDelayMs: 400,
+      shouldRetry: (error) => /ECONNRESET|ETIMEDOUT|deadlock|timeout|temporar/i.test(error.message || ''),
+      logger: console,
+      operationName: 'session insert'
+    });
     console.log('Session saved.');
 
     console.log('✅ User logged in successfully:', username);

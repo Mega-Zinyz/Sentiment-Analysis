@@ -28,6 +28,9 @@ let io = null;
 // Singleton queue — reused across all submitCrawlJob calls
 let _queue = null;
 
+// Prevent the same user from submitting overlapping crawl jobs.
+const userActiveJobs = new Map();
+
 // In-memory cancellation registry. cancelCrawlJob() adds a jobId here;
 // the processor injects a cancelCheck into the crawler that reads from this set.
 const cancelledJobs = new Set();
@@ -176,6 +179,14 @@ function initializeQueueProcessor(queue) {
     let crawler = null;
     let result = null;
     try {
+      if (userActiveJobs.has(userId)) {
+        logger.warn(`⚠️  User ${userId} already has an active crawl job (${userActiveJobs.get(userId)}); skipping duplicate job ${jobId}`);
+        await updateJobStatus(jobId, userId, 'failed', 0, 'Job serupa sedang berjalan untuk pengguna ini');
+        return { success: false, skipped: true, jobId };
+      }
+
+      userActiveJobs.set(userId, jobId);
+
       // Update job status in database
       await updateJobStatus(jobId, userId, 'processing');
 
@@ -252,6 +263,7 @@ function initializeQueueProcessor(queue) {
         await crawler.close().catch(e => logger.warn(`⚠️  Error closing crawler for job ${jobId}: ${e.message}`));
       }
       _setActiveCrawler(null);
+      userActiveJobs.delete(userId);
 
       // Inter-job cooldown after any outcome (complete, cancel, or error)
       const cooldown = result && result.cancelled
@@ -285,6 +297,10 @@ function initializeQueueProcessor(queue) {
  */
 async function submitCrawlJob(userId, keyword, targetCount = 100, config = {}, parentJobId = null) {
   try {
+    if (userActiveJobs.has(userId)) {
+      throw new Error('Job crawl sedang berjalan untuk pengguna ini. Tunggu sampai selesai sebelum mengirim ulang.');
+    }
+
     const queue = createJobQueue();
     const jobId = uuidv4();
     

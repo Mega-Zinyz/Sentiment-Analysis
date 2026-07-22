@@ -8,9 +8,12 @@ const path = require('path');
 const http = require('http');
 const socketIO = require('socket.io');
 const rateLimit = require('express-rate-limit');
+const jwt = require('jsonwebtoken');
 const { initDatabase } = require('./config/mysql-database');
 const SessionManager = require('./utils/sessionManager');
 const logger = require('./utils/logger');
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
 
 const app = express();
 const server = http.createServer(app);
@@ -94,15 +97,15 @@ app.options('*', cors(corsOptions));
 // Rate limiting — applied after CORS so preflight is unaffected
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 300,
+  max: 120,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too Many Requests', message: 'Too many requests, please try again later.' }
 });
 
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20,
+  windowMs: 10 * 60 * 1000,
+  max: 8,
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Too Many Requests', message: 'Too many login attempts, please try again later.' }
@@ -182,7 +185,21 @@ initializeApp().then(() => {
   // Socket.io connection handling
   io.on('connection', (socket) => {
     logger.info(`📱 Client connected: ${socket.id}`);
-    
+
+    // Client must emit 'authenticate' with JWT so we can scope events to that user's room
+    socket.on('authenticate', ({ token } = {}) => {
+      try {
+        if (!token) throw new Error('No token');
+        const decoded = jwt.verify(token, JWT_SECRET);
+        const userId = String(decoded.userId);
+        socket.join(`user:${userId}`);
+        socket.emit('authenticated', { userId });
+        logger.info(`🔐 Socket ${socket.id} authenticated as user ${userId}`);
+      } catch (e) {
+        logger.warn(`⚠️  Socket auth failed (${socket.id}): ${e.message}`);
+      }
+    });
+
     socket.on('disconnect', () => {
       logger.info(`📱 Client disconnected: ${socket.id}`);
     });
