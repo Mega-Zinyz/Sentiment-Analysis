@@ -84,8 +84,43 @@ function createUserSubmissionGuard() {
   };
 }
 
+function createQueueAdmissionGuard({ maxActiveJobs = 1, maxQueuedJobs = 2 } = {}) {
+  let activeJobs = 0;
+  let queuedJobs = 0;
+
+  return {
+    tryEnter() {
+      if (activeJobs + queuedJobs >= maxActiveJobs + maxQueuedJobs) {
+        return false;
+      }
+      queuedJobs += 1;
+      return true;
+    },
+    start() {
+      if (queuedJobs > 0) {
+        queuedJobs -= 1;
+      }
+      activeJobs += 1;
+    },
+    finish() {
+      if (activeJobs > 0) {
+        activeJobs -= 1;
+      }
+    },
+    releaseQueued() {
+      if (queuedJobs > 0) {
+        queuedJobs -= 1;
+      }
+    },
+    getState() {
+      return { activeJobs, queuedJobs };
+    }
+  };
+}
+
 module.exports = {
   createKeyedMutex,
+  createQueueAdmissionGuard,
   createUserSubmissionGuard,
   withRetry
 };

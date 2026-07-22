@@ -4,7 +4,7 @@ const PlaywrightCrawler = require('../crawlers/playwright-crawler');
 const { getDb } = require('../config/mysql-database');
 const { v4: uuidv4 } = require('uuid');
 const winston = require('winston');
-const { createUserSubmissionGuard } = require('./requestGuard');
+const { createQueueAdmissionGuard, createUserSubmissionGuard, createKeyedMutex } = require('./requestGuard');
 
 // Configure logger
 const logger = winston.createLogger({
@@ -31,6 +31,11 @@ let _queue = null;
 
 // Prevent the same user from submitting overlapping crawl jobs.
 const userSubmissionGuard = createUserSubmissionGuard();
+const queueAdmissionGuard = createQueueAdmissionGuard({
+  maxActiveJobs: Number(process.env.MAX_CRAWL_ACTIVE_JOBS || 1),
+  maxQueuedJobs: Number(process.env.MAX_CRAWL_QUEUED_JOBS || 2)
+});
+const collectionWriteMutex = createKeyedMutex();
 
 // In-memory cancellation registry. cancelCrawlJob() adds a jobId here;
 // the processor injects a cancelCheck into the crawler that reads from this set.
@@ -186,6 +191,8 @@ function initializeQueueProcessor(queue) {
         return { success: false, skipped: true, jobId };
       }
 
+      queueAdmissionGuard.start();
+
       // Update job status in database
       await updateJobStatus(jobId, userId, 'processing');
 
@@ -263,6 +270,7 @@ function initializeQueueProcessor(queue) {
       }
       _setActiveCrawler(null);
       userSubmissionGuard.release(userId);
+      queueAdmissionGuard.finish();
 
       // Inter-job cooldown after any outcome (complete, cancel, or error)
       const cooldown = result && result.cancelled
@@ -298,6 +306,10 @@ async function submitCrawlJob(userId, keyword, targetCount = 100, config = {}, p
   try {
     if (!userSubmissionGuard.tryQueue(userId)) {
       throw new Error('Job crawl sedang berjalan atau menunggu untuk pengguna ini. Tunggu sampai selesai sebelum mengirim ulang.');
+    }
+
+    if (!queueAdmissionGuard.tryEnter()) {
+      throw new Error('Server sedang sibuk dengan crawl lain. Silakan tunggu beberapa saat lalu coba lagi.');
     }
 
     const queue = createJobQueue();
@@ -359,6 +371,7 @@ async function submitCrawlJob(userId, keyword, targetCount = 100, config = {}, p
     };
     
   } catch (error) {
+    queueAdmissionGuard.releaseQueued();
     userSubmissionGuard.release(userId);
     logger.error('Error submitting job:', error);
     throw error;
@@ -545,53 +558,57 @@ async function saveTweetsToDB(jobId, userId, keyword, tweets, collectionId = nul
       if (rows.length > 0) collectionPk = rows[0].id;
     }
 
-    let saved = 0;
-    for (const tweet of tweets) {
-      const tweetId = tweet.id || tweet.tweetId || null;
+    const lockKey = collectionPk ? `collection:${collectionPk}` : `job:${jobId}`;
 
-      if (collectionPk) {
-        // Save to crawler_tweets (linked to collection)
-        await db.execute(`
-          INSERT IGNORE INTO crawler_tweets
-            (tweet_id, collection_id, user_id, text, username, author_id,
-             created_at_tweet, url, likes, retweets, replies, source)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'crawler')
-        `, [
-          tweetId,
-          collectionPk,
-          userId,
-          tweet.text || '',
-          tweet.username || tweet.author || '',
-          tweet.authorId || tweet.userId || null,
-          tweet.created_at || tweet.createdAt || tweet.date || null,
-          tweet.url || null,
-          tweet.likes || tweet.likeCount || 0,
-          tweet.retweets || tweet.retweetCount || 0,
-          tweet.replies || tweet.replyCount || 0,
-        ]);
-        saved++;
-      } else {
-        // Fallback: save to raw_twitter_data without collection
-        await db.execute(`
-          INSERT INTO raw_twitter_data
-            (user_id, job_id, session_id, raw_data, clean_text, collected_via, created_at)
-          VALUES (?, ?, ?, ?, ?, 'crawler', NOW())
-        `, [userId, jobId, `crawler_${jobId}`, JSON.stringify(tweet), tweet.text]);
-        saved++;
+    await collectionWriteMutex(lockKey, async () => {
+      let saved = 0;
+      for (const tweet of tweets) {
+        const tweetId = tweet.id || tweet.tweetId || null;
+
+        if (collectionPk) {
+          // Save to crawler_tweets (linked to collection)
+          await db.execute(`
+            INSERT IGNORE INTO crawler_tweets
+              (tweet_id, collection_id, user_id, text, username, author_id,
+               created_at_tweet, url, likes, retweets, replies, source)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'crawler')
+          `, [
+            tweetId,
+            collectionPk,
+            userId,
+            tweet.text || '',
+            tweet.username || tweet.author || '',
+            tweet.authorId || tweet.userId || null,
+            tweet.created_at || tweet.createdAt || tweet.date || null,
+            tweet.url || null,
+            tweet.likes || tweet.likeCount || 0,
+            tweet.retweets || tweet.retweetCount || 0,
+            tweet.replies || tweet.replyCount || 0,
+          ]);
+          saved++;
+        } else {
+          // Fallback: save to raw_twitter_data without collection
+          await db.execute(`
+            INSERT INTO raw_twitter_data
+              (user_id, job_id, session_id, raw_data, clean_text, collected_via, created_at)
+            VALUES (?, ?, ?, ?, ?, 'crawler', NOW())
+          `, [userId, jobId, `crawler_${jobId}`, JSON.stringify(tweet), tweet.text]);
+          saved++;
+        }
       }
-    }
 
-    // Update tweet_count on the collection
-    if (collectionPk) {
-      await db.execute(`
-        UPDATE crawler_collections
-        SET tweet_count = (SELECT COUNT(*) FROM crawler_tweets WHERE collection_id = ?),
-            updated_at = CURRENT_TIMESTAMP
-        WHERE id = ?
-      `, [collectionPk, collectionPk]);
-    }
+      // Update tweet_count on the collection
+      if (collectionPk) {
+        await db.execute(`
+          UPDATE crawler_collections
+          SET tweet_count = (SELECT COUNT(*) FROM crawler_tweets WHERE collection_id = ?),
+              updated_at = CURRENT_TIMESTAMP
+          WHERE id = ?
+        `, [collectionPk, collectionPk]);
+      }
 
-    logger.info(`💾 Saved ${saved} tweets to database`);
+      logger.info(`💾 Saved ${saved} tweets to database`);
+    });
   } catch (error) {
     logger.error('Error saving tweets to DB:', error);
     throw error;
