@@ -118,7 +118,24 @@ function createQueueAdmissionGuard({ maxActiveJobs = 1, maxQueuedJobs = 2 } = {}
   };
 }
 
+function createGlobalCooldown({ cooldownMs = 30000 } = {}) {
+  let lastExecutionAt = 0;
+  let queuedSince = 0;
+
+  return async function waitForCooldown() {
+    const now = Date.now();
+    const elapsed = now - lastExecutionAt;
+    if (elapsed < cooldownMs) {
+      const waitTime = cooldownMs - elapsed;
+      queuedSince = now + waitTime;
+      await wait(waitTime);
+    }
+    lastExecutionAt = Date.now();
+  };
+}
+
 module.exports = {
+  createGlobalCooldown,
   createKeyedMutex,
   createQueueAdmissionGuard,
   createUserSubmissionGuard,

@@ -4,7 +4,7 @@ const PlaywrightCrawler = require('../crawlers/playwright-crawler');
 const { getDb } = require('../config/mysql-database');
 const { v4: uuidv4 } = require('uuid');
 const winston = require('winston');
-const { createQueueAdmissionGuard, createUserSubmissionGuard, createKeyedMutex } = require('./requestGuard');
+const { createGlobalCooldown, createQueueAdmissionGuard, createUserSubmissionGuard, createKeyedMutex } = require('./requestGuard');
 
 // Configure logger
 const logger = winston.createLogger({
@@ -34,6 +34,9 @@ const userSubmissionGuard = createUserSubmissionGuard();
 const queueAdmissionGuard = createQueueAdmissionGuard({
   maxActiveJobs: Number(process.env.MAX_CRAWL_ACTIVE_JOBS || 1),
   maxQueuedJobs: Number(process.env.MAX_CRAWL_QUEUED_JOBS || 2)
+});
+const globalCooldown = createGlobalCooldown({
+  cooldownMs: Number(process.env.CRAWL_GLOBAL_COOLDOWN_MS || 45000)
 });
 const collectionWriteMutex = createKeyedMutex();
 
@@ -191,6 +194,7 @@ function initializeQueueProcessor(queue) {
         return { success: false, skipped: true, jobId };
       }
 
+      await globalCooldown();
       queueAdmissionGuard.start();
 
       // Update job status in database
