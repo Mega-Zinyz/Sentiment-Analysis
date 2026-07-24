@@ -29,6 +29,11 @@ let io = null;
 // Singleton queue — reused across all submitCrawlJob calls
 let _queue = null;
 
+// Active crawler instance tracker
+let _activeCrawler = null;
+
+function _setActiveCrawler(c) { _activeCrawler = c; }
+
 // Prevent the same user from submitting overlapping crawl jobs.
 const userSubmissionGuard = createUserSubmissionGuard();
 const queueAdmissionGuard = createQueueAdmissionGuard({
@@ -67,10 +72,6 @@ async function cancelCrawlJob(jobId) {
 
 /**
  * Force-stop ALL active and queued jobs for a user.
- * - Signals the active Playwright crawler to stop immediately
- * - Removes all waiting Bull jobs from the queue
- * - Marks all queued/processing DB rows as 'cancelled'
- * - Resets any rows stuck in 'processing' longer than staleMinutes as 'failed'
  */
 async function stopAllJobs(userId, staleMinutes = 30) {
   const db = getDb();
@@ -118,7 +119,6 @@ async function stopAllJobs(userId, staleMinutes = 30) {
   );
 
   // 4. Also clean up any globally stuck 'processing' jobs older than staleMinutes
-  //    (zombie workers from previous server restarts)
   const [stale] = await db.execute(
     `UPDATE crawler_jobs
      SET status = 'failed', updated_at = NOW()
@@ -155,13 +155,9 @@ function createJobQueue() {
 /**
  * Initialize job queue processor
  */
-// Cooldown between sequential jobs to prevent X.com IP/session rate limiting.
-// After each job finishes (success or fail), the processor sleeps before returning,
-// which delays Bull from picking up the next queued job.
 const INTER_JOB_COOLDOWN_MS = 35000; // 35s base + 0-15s jitter
 
 function initializeQueueProcessor(queue) {
-  // Concurrency = 1: process one crawl job at a time to prevent hardware overload
   queue.process(1, async (job) => {
     const { userId, keyword, targetCount, config } = job.data;
     const jobId = job.id.toString();
@@ -178,7 +174,7 @@ function initializeQueueProcessor(queue) {
       });
     }
 
-    // If job was cancelled before the processor even started, handle cleanly
+    // If job was cancelled before the processor even started
     if (cancelledJobs.has(jobId)) {
       cancelledJobs.delete(jobId);
       await updateJobStatus(jobId, userId, 'cancelled', 0, 'Dibatalkan oleh pengguna');
@@ -204,8 +200,6 @@ function initializeQueueProcessor(queue) {
       crawler = new PlaywrightCrawler(config || {});
       _setActiveCrawler(crawler);
 
-      // Inject live cancellation check — not serialised through Redis,
-      // set directly on the constructed object after Bull deserialises config.
       crawler.config.cancelCheck = () => cancelledJobs.has(jobId);
 
       // Crawl tweets with progress callback
@@ -218,7 +212,7 @@ function initializeQueueProcessor(queue) {
         }
       );
 
-      // Check if job was cancelled mid-crawl (crawler exits scroll loop early)
+      // Check if job was cancelled mid-crawl
       if (cancelledJobs.has(jobId)) {
         cancelledJobs.delete(jobId);
         const collectionId = config && config.collectionId ? config.collectionId : null;
@@ -232,12 +226,10 @@ function initializeQueueProcessor(queue) {
         return result;
       }
 
-      // Save tweets to database (linked to collection if provided)
+      // Save tweets to database
       const collectionId = config && config.collectionId ? config.collectionId : null;
       await saveTweetsToDB(jobId, userId, keyword, tweets, collectionId);
 
-      // If 0 tweets collected, mark as failed so user knows there was a problem
-      // (likely X.com login wall / rate limit, not a genuine empty result)
       if (tweets.length === 0) {
         const reason = 'Tidak ada tweet terkumpul — kemungkinan X.com menampilkan login wall atau rate limit. Coba lagi setelah beberapa menit, atau periksa cookies di halaman Profil.';
         await updateJobStatus(jobId, userId, 'failed', 0, reason);
@@ -268,7 +260,6 @@ function initializeQueueProcessor(queue) {
       throw error;
 
     } finally {
-      // Always close the browser and clear the active crawler ref — prevents zombie Chromium processes
       if (crawler) {
         await crawler.close().catch(e => logger.warn(`⚠️  Error closing crawler for job ${jobId}: ${e.message}`));
       }
@@ -276,23 +267,21 @@ function initializeQueueProcessor(queue) {
       userSubmissionGuard.release(userId);
       queueAdmissionGuard.finish();
 
-      // Inter-job cooldown after any outcome (complete, cancel, or error)
+      // Inter-job cooldown
       const cooldown = result && result.cancelled
         ? 5000
         : result
           ? INTER_JOB_COOLDOWN_MS + Math.random() * 15000
-          : 15000; // error path
+          : 15000;
       logger.info(`⏱️  Post-job cooldown: ${Math.round(cooldown / 1000)}s...`);
       await new Promise(resolve => setTimeout(resolve, cooldown));
     }
   });
   
-  // Handle failed jobs
   queue.on('failed', (job, err) => {
     logger.error(`❌ Job ${job.id} failed permanently:`, err.message);
   });
   
-  // Handle completed jobs
   queue.on('completed', (job, result) => {
     logger.info(`✅ Job ${job.id} completed:`, result);
   });
@@ -300,11 +289,6 @@ function initializeQueueProcessor(queue) {
 
 /**
  * Submit new crawling job
- * @param {string} userId - User ID
- * @param {string} keyword - Search keyword
- * @param {number} targetCount - Target tweet count
- * @param {object} config - Crawler configuration
- * @param {string} parentJobId - Optional parent job ID if resuming
  */
 async function submitCrawlJob(userId, keyword, targetCount = 100, config = {}, parentJobId = null) {
   try {
@@ -320,13 +304,10 @@ async function submitCrawlJob(userId, keyword, targetCount = 100, config = {}, p
     const jobId = uuidv4();
     
     const configForDatabase = { ...config };
-    // Never persist cookies/credentials in DB config (only in user_api_credentials)
     delete configForDatabase.xCookies;
 
-    // Create job in database first
     const db = getDb();
 
-    // Extract dates from config so they live in dedicated, queryable columns
     const sinceDate = configForDatabase.sinceDate || null;
     const untilDate = configForDatabase.untilDate || null;
 
@@ -335,13 +316,11 @@ async function submitCrawlJob(userId, keyword, targetCount = 100, config = {}, p
       VALUES (?, ?, ?, ?, 'queued', ?, ?, ?)
     `, [jobId, userId, keyword, targetCount, JSON.stringify(configForDatabase), sinceDate, untilDate]);
     
-    // Create progress record
     await db.execute(`
       INSERT INTO crawler_job_progress (job_id, user_id, status_message)
       VALUES (?, ?, 'Queued for processing')
     `, [jobId, userId]);
     
-    // Add job to queue
     const job = await queue.add(
       {
         userId,
@@ -411,7 +390,6 @@ async function getJobStatus(jobId, userId) {
  * Get all jobs for user
  */
 async function getUserJobs(userId, limit = 20, collectionId = null) {
-  // 1. Validate parameters *before* the query to prevent SQL errors.
   const numericUserId = Number(userId);
   let numericLimit = Number(limit);
 
@@ -428,7 +406,6 @@ async function getUserJobs(userId, limit = 20, collectionId = null) {
   try {
     const db = getDb();
 
-    // Build WHERE clause — optionally filter by collection stored in config JSON
     const conditions = ['j.user_id = ?'];
     const params = [numericUserId];
 
@@ -437,8 +414,6 @@ async function getUserJobs(userId, limit = 20, collectionId = null) {
       params.push(collectionId);
     }
 
-    // LIMIT inlined (not ?-param): mysql2 prepared statements reject JS numbers
-    // for LIMIT/OFFSET with HY000 "Incorrect arguments to mysqld_stmt_execute".
     const query = `
       SELECT
         j.*,
@@ -480,7 +455,7 @@ async function updateJobStatus(jobId, userId, status, collectedCount = 0, errorM
 
     if (status === 'completed') {
       query += ', completed_at = NOW()';
-    } else if (status === 'processing' || status === 'failed') { // Also set started_at for failed jobs
+    } else if (status === 'processing' || status === 'failed') {
       query += ', started_at = NOW()';
     }
 
@@ -490,7 +465,6 @@ async function updateJobStatus(jobId, userId, status, collectedCount = 0, errorM
     await db.execute(query, params);
 
     if (status === 'failed' && errorMessage) {
-      // Truncate error message to fit into the database column (e.g., VARCHAR(255))
       const truncatedError = errorMessage.substring(0, 255);
       await db.execute(`
         UPDATE crawler_job_progress
@@ -529,7 +503,6 @@ async function updateJobProgress(jobId, userId, collected, total) {
       userId
     ]);
 
-    // Emit real-time progress only to the job owner's room
     if (io) {
       io.to(`user:${userId}`).emit('crawler:job_progress', {
         jobId,
@@ -552,7 +525,6 @@ async function saveTweetsToDB(jobId, userId, keyword, tweets, collectionId = nul
   try {
     const db = getDb();
 
-    // Resolve numeric collection PK from collection_id UUID (if provided)
     let collectionPk = null;
     if (collectionId) {
       const [rows] = await db.execute(
@@ -570,7 +542,6 @@ async function saveTweetsToDB(jobId, userId, keyword, tweets, collectionId = nul
         const tweetId = tweet.id || tweet.tweetId || null;
 
         if (collectionPk) {
-          // Save to crawler_tweets (linked to collection)
           await db.execute(`
             INSERT IGNORE INTO crawler_tweets
               (tweet_id, collection_id, user_id, text, username, author_id,
@@ -591,17 +562,15 @@ async function saveTweetsToDB(jobId, userId, keyword, tweets, collectionId = nul
           ]);
           saved++;
         } else {
-          // Fallback: save to raw_twitter_data without collection
           await db.execute(`
             INSERT INTO raw_twitter_data
               (user_id, job_id, session_id, raw_data, clean_text, collected_via, created_at)
-            VALUES (?, ?, ?, ?, ?, 'crawler', NOW())
+            VALUES (?, ?, ?, ?, 'crawler', NOW())
           `, [userId, jobId, `crawler_${jobId}`, JSON.stringify(tweet), tweet.text]);
           saved++;
         }
       }
 
-      // Update tweet_count on the collection
       if (collectionPk) {
         await db.execute(`
           UPDATE crawler_collections
@@ -619,14 +588,9 @@ async function saveTweetsToDB(jobId, userId, keyword, tweets, collectionId = nul
   }
 }
 
-// Graceful shutdown: close Bull queue and Redis on SIGTERM/SIGINT so
-// the Docker stop (which sends SIGTERM) doesn't leave orphan Chromium processes.
-let _activeCrawler = null;
-
-function _setActiveCrawler(c) { _activeCrawler = c; }
-
-async function _gracefulShutdown(signal) {
-  logger.info(`🛑 ${signal} received — shutting down job queue`);
+// Safely close resources without abruptly killing the process via process.exit
+async function cleanupResources() {
+  logger.info('🧹 Cleaning up queue resources...');
   try {
     if (_activeCrawler) {
       await _activeCrawler.close().catch(() => {});
@@ -635,13 +599,12 @@ async function _gracefulShutdown(signal) {
     if (_queue) await _queue.close().catch(() => {});
     await redisClient.quit().catch(() => {});
   } catch (e) {
-    logger.error('Error during graceful shutdown:', e.message);
+    logger.error('Error cleaning up resources:', e.message);
   }
-  process.exit(0);
 }
 
-process.once('SIGTERM', () => _gracefulShutdown('SIGTERM'));
-process.once('SIGINT',  () => _gracefulShutdown('SIGINT'));
+process.once('SIGTERM', cleanupResources);
+process.once('SIGINT', cleanupResources);
 
 module.exports = {
   createJobQueue,
