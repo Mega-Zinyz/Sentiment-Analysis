@@ -115,7 +115,7 @@ router.post('/start', async (req, res) => {
       });
     }
     
-    res.json({
+    return res.json({
       success: true,
       message: 'Crawling job started',
       jobId: result.jobId,
@@ -124,7 +124,30 @@ router.post('/start', async (req, res) => {
     
   } catch (error) {
     console.error('Error starting crawl job:', error);
-    res.status(500).json({ error: 'Failed to start crawling job', details: error.message });
+
+    // 1. Tangkap error guard pengguna (Job aktif/cooldown masih berjalan)
+    if (error.message && error.message.includes('sedang berjalan atau menunggu')) {
+      return res.status(409).json({
+        error: error.message,
+        code: 'JOB_ALREADY_RUNNING',
+        details: error.message
+      });
+    }
+
+    // 2. Tangkap error antrean server penuh
+    if (error.message && error.message.includes('Server sedang sibuk')) {
+      return res.status(429).json({
+        error: error.message,
+        code: 'SERVER_BUSY',
+        details: error.message
+      });
+    }
+
+    // 3. Fallback error server biasa
+    return res.status(500).json({ 
+      error: 'Failed to start crawling job', 
+      details: error.message 
+    });
   }
 });
 
@@ -414,6 +437,11 @@ router.post('/resume/:jobId', async (req, res) => {
     });
   } catch (error) {
     console.error('Error resuming job:', error);
+
+    if (error.message && error.message.includes('sedang berjalan atau menunggu')) {
+      return res.status(409).json({ error: error.message, code: 'JOB_ALREADY_RUNNING' });
+    }
+
     res.status(500).json({ error: 'Failed to resume job', details: error.message });
   }
 });
