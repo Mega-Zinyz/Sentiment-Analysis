@@ -33,27 +33,27 @@ router.post('/start', async (req, res) => {
     } = req.body;
 
     if (!keyword) {
-      return res.status(400).json({ error: 'Keyword is required' });
+      return res.status(400).json({ error: 'Keyword is required', message: 'Keyword is required' });
     }
 
     if (sinceDate && isNaN(Date.parse(sinceDate))) {
-      return res.status(400).json({ error: 'Invalid start date' });
+      return res.status(400).json({ error: 'Invalid start date', message: 'Invalid start date' });
     }
 
     if (untilDate && isNaN(Date.parse(untilDate))) {
-      return res.status(400).json({ error: 'Invalid end date' });
+      return res.status(400).json({ error: 'Invalid end date', message: 'Invalid end date' });
     }
 
     if (sinceDate && untilDate && new Date(sinceDate) > new Date(untilDate)) {
-      return res.status(400).json({ error: 'Start date must be before or equal to end date' });
+      return res.status(400).json({ error: 'Start date must be before or equal to end date', message: 'Start date must be before or equal to end date' });
     }
 
     if (keyword.length < 2) {
-      return res.status(400).json({ error: 'Keyword must be at least 2 characters' });
+      return res.status(400).json({ error: 'Keyword must be at least 2 characters', message: 'Keyword must be at least 2 characters' });
     }
     
     if (targetCount < 10 || targetCount > 10000) {
-      return res.status(400).json({ error: 'Target count must be between 10 and 10000' });
+      return res.status(400).json({ error: 'Target count must be between 10 and 10000', message: 'Target count must be between 10 and 10000' });
     }
 
     // Load X.com session cookies from database
@@ -125,28 +125,41 @@ router.post('/start', async (req, res) => {
   } catch (error) {
     console.error('Error starting crawl job:', error);
 
-    // 1. Tangkap error guard pengguna (Job aktif/cooldown masih berjalan)
-    if (error.message && error.message.includes('sedang berjalan atau menunggu')) {
+    const errMsg = error.message || '';
+
+    // 1. Tangkap error guard pengguna (Job aktif, pending, atau cooldown)
+    if (
+      errMsg.includes('sedang berjalan') || 
+      errMsg.includes('menunggu') || 
+      errMsg.includes('cooldown') ||
+      errMsg.includes('sudah ada')
+    ) {
       return res.status(409).json({
-        error: error.message,
+        success: false,
+        error: errMsg,
+        message: errMsg,
         code: 'JOB_ALREADY_RUNNING',
-        details: error.message
+        details: errMsg
       });
     }
 
     // 2. Tangkap error antrean server penuh
-    if (error.message && error.message.includes('Server sedang sibuk')) {
+    if (errMsg.includes('Server sedang sibuk') || errMsg.includes('penuh')) {
       return res.status(429).json({
-        error: error.message,
+        success: false,
+        error: errMsg,
+        message: errMsg,
         code: 'SERVER_BUSY',
-        details: error.message
+        details: errMsg
       });
     }
 
     // 3. Fallback error server biasa
     return res.status(500).json({ 
+      success: false,
       error: 'Failed to start crawling job', 
-      details: error.message 
+      message: 'Failed to start crawling job: ' + errMsg,
+      details: errMsg 
     });
   }
 });
@@ -163,7 +176,7 @@ router.get('/status/:jobId', async (req, res) => {
     const job = await getJobStatus(jobId, userId);
     
     if (!job) {
-      return res.status(404).json({ error: 'Job not found' });
+      return res.status(404).json({ error: 'Job not found', message: 'Job not found' });
     }
     
     const jobConfig = parseCrawlerConfig(job.config);
@@ -209,7 +222,6 @@ router.get('/jobs', async (req, res) => {
     const formattedJobs = jobs.map(job => {
       const cfg = parseCrawlerConfig(job.config);
       const isDone = ['completed','failed','cancelled','suspended'].includes(job.status);
-      // Prefer dedicated columns; fall back to config JSON for legacy rows
       const sinceDate = job.since_date
         ? new Date(job.since_date).toISOString().slice(0, 10)
         : (cfg.sinceDate || null);
@@ -316,7 +328,7 @@ router.post('/cancel/:jobId', async (req, res) => {
     `, [jobId, userId]);
     
     if (job.length === 0) {
-      return res.status(404).json({ error: 'Job not found' });
+      return res.status(404).json({ error: 'Job not found', message: 'Job not found' });
     }
     
     // Update job status in DB
@@ -345,7 +357,6 @@ router.post('/cancel/:jobId', async (req, res) => {
 
 /**
  * Force-stop ALL queued and active jobs for the current user.
- * Also cleans up globally stale 'processing' rows (zombie workers).
  * POST /api/crawler/stop-all
  */
 router.post('/stop-all', async (req, res) => {
@@ -366,7 +377,6 @@ router.post('/stop-all', async (req, res) => {
 /**
  * Restart a failed/suspended crawling job
  * POST /api/crawler/resume/:jobId
- * Creates a fresh job with the same keyword+config, marks the original as cancelled.
  */
 router.post('/resume/:jobId', async (req, res) => {
   try {
@@ -379,22 +389,21 @@ router.post('/resume/:jobId', async (req, res) => {
       'SELECT job_id, status, keyword, target_count, config FROM crawler_jobs WHERE job_id = ? AND user_id = ?',
       [jobId, userId]
     );
-    if (jobs.length === 0) return res.status(404).json({ error: 'Job not found' });
+    if (jobs.length === 0) return res.status(404).json({ error: 'Job not found', message: 'Job not found' });
 
     const job = jobs[0];
     const canRestart = ['failed', 'suspended', 'error', 'cancelled'].includes(job.status);
     if (!canRestart) {
       return res.status(400).json({
-        error: `Tidak bisa restart job dengan status '${job.status}'`
+        error: `Tidak bisa restart job dengan status '${job.status}'`,
+        message: `Tidak bisa restart job dengan status '${job.status}'`
       });
     }
 
-    // Parse original config (no cookies stored — we reload fresh ones below)
     const originalConfig = job.config
       ? (typeof job.config === 'string' ? JSON.parse(job.config) : job.config)
       : {};
 
-    // Load fresh session cookies from DB
     let xCookies = null;
     try {
       const [creds] = await db.execute(
@@ -414,16 +423,14 @@ router.post('/resume/:jobId', async (req, res) => {
       minScrollDelay: 2000,
       maxScrollDelay: 4500,
       ...originalConfig,
-      xCookies, // always use freshest cookies
+      xCookies,
     };
 
-    // Mark original job as cancelled so it doesn't linger as 'queued'
     await db.execute(
       "UPDATE crawler_jobs SET status = 'cancelled', updated_at = NOW() WHERE job_id = ? AND user_id = ?",
       [jobId, userId]
     );
 
-    // Submit a brand-new job (fresh UUID, full target count)
     const result = await submitCrawlJob(userId, job.keyword, job.target_count, newConfig);
 
     const io = req.app.locals.io;
@@ -438,18 +445,28 @@ router.post('/resume/:jobId', async (req, res) => {
   } catch (error) {
     console.error('Error resuming job:', error);
 
-    if (error.message && error.message.includes('sedang berjalan atau menunggu')) {
-      return res.status(409).json({ error: error.message, code: 'JOB_ALREADY_RUNNING' });
+    const errMsg = error.message || '';
+    if (
+      errMsg.includes('sedang berjalan') || 
+      errMsg.includes('menunggu') || 
+      errMsg.includes('cooldown') ||
+      errMsg.includes('sudah ada')
+    ) {
+      return res.status(409).json({ 
+        success: false,
+        error: errMsg, 
+        message: errMsg,
+        code: 'JOB_ALREADY_RUNNING' 
+      });
     }
 
-    res.status(500).json({ error: 'Failed to resume job', details: error.message });
+    res.status(500).json({ error: 'Failed to resume job', message: errMsg, details: errMsg });
   }
 });
 
 /**
  * Export job tweets as Excel
  * GET /api/crawler/jobs/:jobId/export/excel
- * Works for both paths: crawler_tweets (with collection) and raw_twitter_data (fallback)
  */
 router.get('/jobs/:jobId/export/excel', async (req, res) => {
   try {
@@ -457,13 +474,12 @@ router.get('/jobs/:jobId/export/excel', async (req, res) => {
     const { jobId } = req.params;
     const db = getDb();
 
-    // Verify job ownership and get config
     const [jobs] = await db.execute(
       'SELECT job_id, keyword, config FROM crawler_jobs WHERE job_id = ? AND user_id = ?',
       [jobId, userId]
     );
     if (jobs.length === 0) {
-      return res.status(404).json({ error: 'Job not found' });
+      return res.status(404).json({ error: 'Job not found', message: 'Job not found' });
     }
 
     const job = jobs[0];
@@ -473,7 +489,6 @@ router.get('/jobs/:jobId/export/excel', async (req, res) => {
     let rows = [];
 
     if (collectionId) {
-      // Path 1: tweets stored in crawler_tweets via collection
       const [collections] = await db.execute(
         'SELECT id FROM crawler_collections WHERE collection_id = ? AND user_id = ?',
         [collectionId, userId]
@@ -502,7 +517,6 @@ router.get('/jobs/:jobId/export/excel', async (req, res) => {
       }
     }
 
-    // Path 2 (fallback): tweets stored in raw_twitter_data
     if (rows.length === 0) {
       const sessionId = `crawler_${jobId}`;
       const [items] = await db.execute(
@@ -530,7 +544,7 @@ router.get('/jobs/:jobId/export/excel', async (req, res) => {
     }
 
     if (rows.length === 0) {
-      return res.status(404).json({ error: 'Tidak ada tweet untuk job ini' });
+      return res.status(404).json({ error: 'Tidak ada tweet untuk job ini', message: 'Tidak ada tweet untuk job ini' });
     }
 
     const ws = XLSX.utils.json_to_sheet(rows);
@@ -546,7 +560,7 @@ router.get('/jobs/:jobId/export/excel', async (req, res) => {
     res.send(buf);
   } catch (error) {
     console.error('Error exporting job to Excel:', error);
-    res.status(500).json({ error: 'Failed to export job data' });
+    res.status(500).json({ error: 'Failed to export job data', details: error.message });
   }
 });
 
