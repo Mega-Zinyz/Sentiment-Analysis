@@ -97,9 +97,12 @@ services:
     container_name: sentiment-frontend
     ports:
       - "80:80"
+      - "443:443"
     volumes:
       # Mount repo nginx config so changes persist without rebuilding image
       - ./Frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      # Mount SSL certificate storage (self-signed certs generated at startup)
+      - ./Frontend/ssl:/etc/nginx/ssl
     depends_on:
       - backend
     networks:

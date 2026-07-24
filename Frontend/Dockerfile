@@ -44,8 +44,20 @@ RUN ls -la /tmp/dist && \
 # Copy custom nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port 80
-EXPOSE 80
+# Create a startup script to generate self-signed certificate if needed
+RUN mkdir -p /etc/nginx/ssl
+RUN echo '#!/bin/sh' > /docker-entrypoint.sh && \
+    echo 'if [ ! -f /etc/nginx/ssl/server.crt ] || [ ! -f /etc/nginx/ssl/server.key ]; then' >> /docker-entrypoint.sh && \
+    echo '  echo "Generating self-signed certificate..."' >> /docker-entrypoint.sh && \
+    echo '  openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/ssl/server.key -out /etc/nginx/ssl/server.crt -subj "/C=ID/ST=State/L=City/O=Organization/CN=*"' >> /docker-entrypoint.sh && \
+    echo 'fi' >> /docker-entrypoint.sh && \
+    echo 'exec "$@"' >> /docker-entrypoint.sh && \
+    chmod +x /docker-entrypoint.sh
 
-# Start nginx
+# Expose ports 80 and 443
+EXPOSE 80 443
+
+# Set entrypoint to generate cert before starting nginx
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["nginx", "-g", "daemon off;"]
 CMD ["nginx", "-g", "daemon off;"]
