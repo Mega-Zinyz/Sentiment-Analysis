@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "scripts": {
+"scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "setup-db": "node setup-database.js",
-    "db:setup": "node setup-database.js"
+    "setup-db": "node scripts/setup/setup-database.js",
+    "db:setup": "node scripts/setup/setup-database.js"
   },
   "keywords": [],
   "author": "",
