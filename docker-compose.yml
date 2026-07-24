@@ -62,7 +62,7 @@ services:
       PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH: /usr/bin/chromium
       CRAWLER_HEADLESS: "true"
       CRAWLER_TIMEOUT: "30000"
-      CRAWLER_RATE_LIMIT: "2000"
+      CRAWLER_RATE_LIMIT: "5000"
       CRAWLER_MAX_RETRIES: "3"
     ports:
       - "5000:5000"
