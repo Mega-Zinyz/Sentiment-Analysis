@@ -19,8 +19,10 @@ RUN npm run build -- --configuration production
 # Production stage - use nginx to serve the built files
 FROM nginx:alpine
 
+# 1. PERBAIKAN UTAMA: Install openssl agar script docker-entrypoint bisa berjalan
+RUN apk add --no-cache openssl
+
 # Copy built files from build stage
-# First, let's see what's in dist by listing it
 COPY --from=build /app/dist /tmp/dist
 RUN ls -la /tmp/dist && \
     if [ -d "/tmp/dist/browser" ]; then \
@@ -59,5 +61,6 @@ EXPOSE 80 443
 
 # Set entrypoint to generate cert before starting nginx
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["nginx", "-g", "daemon off;"]
+
+# 2. PERBAIKAN KECIL: Hapus duplicate CMD di bagian bawah
 CMD ["nginx", "-g", "daemon off;"]
