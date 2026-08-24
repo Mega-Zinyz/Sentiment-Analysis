@@ -12,6 +12,7 @@ Aplikasi web full-stack untuk analisis sentimen teks berbahasa Indonesia. Dibang
 | **ML / NLP** | Python 3, scikit-learn (Naïve Bayes), spaCy, Sastrawi |
 | **Crawler** | Playwright (headless Chromium) |
 | **DevOps** | Docker, Docker Compose, Nginx |
+| **Testing** | Playwright (E2E), Postman/Newman (API), Node.js Test Runner (unit), GitHub Actions (CI) |
 
 ---
 
@@ -129,13 +130,16 @@ sentimen_analisis/
 │   ├── index.js                  # Entry point server
 │   ├── routes.js                 # Aggregator semua route
 │   ├── routes/                   # Handler endpoint API
-│   ├── middleware/               # JWT auth & RBAC
+│   ├── middleware/                # JWT auth & RBAC
 │   ├── utils/                    # Worker pool, job queue, logger, enkripsi
 │   ├── python/                   # Script Python sentiment analysis
 │   ├── crawlers/                 # Playwright crawler
 │   ├── config/                   # Koneksi database
 │   ├── docs/                     # SQL schema
-│   └── scripts/                  # Setup & maintenance
+│   ├── scripts/                  # Setup & maintenance
+│   └── test/
+│       ├── *.test.js             # Unit test (Node.js Test Runner)
+│       └── postman/              # API test suite (Postman/Newman)
 ├── Frontend/
 │   └── src/app/
 │       ├── raw-data-analysis/    # Halaman analisis utama
@@ -146,6 +150,9 @@ sentimen_analisis/
 │       ├── admin/                # Dashboard admin
 │       ├── profile/              # Profil pengguna
 │       └── guards/               # Auth & admin route guard
+├── e2e/                           # E2E test suite (Playwright)
+│   └── tests/
+├── .github/workflows/test.yml    # CI: unit + API + E2E test pipeline
 ├── docker-compose.yml
 └── .env.example
 ```
@@ -203,6 +210,38 @@ Hasil disimpan → update live via Socket.io
        ↓
 Frontend menampilkan grafik & export CSV/JSON
 ```
+
+---
+
+## Testing & CI/CD
+
+Project ini memiliki tiga lapis automated testing yang berjalan otomatis di CI ([.github/workflows/test.yml](.github/workflows/test.yml)) setiap push/PR ke `main`:
+
+| Lapis | Tool | Lokasi | Menguji |
+|-------|------|--------|---------|
+| **Unit Test** | Node.js Test Runner (`node --test`) | `Backend/test/*.test.js` | Logic internal (mutex, retry, admission guard) |
+| **API Test** | Postman / Newman | `Backend/test/postman/` | Alur auth end-to-end: register, login, duplicate/invalid credential, akses ter-otentikasi, logout, revocation session |
+| **E2E Test** | Playwright | `e2e/tests/` | Alur pengguna nyata di browser: register → redirect, login sukses/gagal, proteksi route oleh `AuthGuard` |
+
+### Menjalankan test secara lokal
+
+```bash
+# Unit test backend
+cd Backend
+npm install
+npm test
+
+# API test (butuh backend + MySQL + Redis berjalan)
+npm run test:api
+
+# E2E test (butuh full stack berjalan, mis. lewat docker-compose)
+cd ../e2e
+npm install
+npx playwright install --with-deps chromium
+npm test
+```
+
+CI job `e2e-tests` membangun seluruh stack lewat `docker-compose.yml` + `docker-compose.local.yml`, menunggu frontend siap, lalu menjalankan Playwright terhadap instance yang benar-benar berjalan (bukan mock).
 
 ---
 

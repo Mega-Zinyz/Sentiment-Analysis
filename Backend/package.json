@@ -7,7 +7,9 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "setup-db": "node scripts/setup/setup-database.js",
-    "db:setup": "node scripts/setup/setup-database.js"
+    "db:setup": "node scripts/setup/setup-database.js",
+    "test": "node --test test/*.test.js",
+    "test:api": "newman run test/postman/sentiment-api.postman_collection.json -e test/postman/sentiment-api.postman_environment.json"
   },
   "keywords": [],
   "author": "",
@@ -36,6 +38,7 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.10",
+    "newman": "^6.2.1"
   }
 }

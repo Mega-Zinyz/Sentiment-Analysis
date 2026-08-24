@@ -312,12 +312,6 @@ def preprocess_text(text):
     processor = IndonesianTextProcessor()
     return processor.preprocess(text)
 
-# For Node.js import
-if __name__ != '__main__':
-    import builtins
-    builtins.predict_sentiment = predict_sentiment
-    builtins.preprocess_text = preprocess_text
-
 if __name__ == '__main__':
     # Support command line arguments
     if len(sys.argv) >= 3 and sys.argv[1] == '--preprocess':
@@ -335,6 +329,7 @@ if __name__ == '__main__':
         sys.exit(0)
     
     # Default: stdin for sentiment prediction
+    data = {}
     try:
         input_data = sys.stdin.read()
         data = json.loads(input_data)
@@ -354,7 +349,7 @@ if __name__ == '__main__':
             print("Training with default dataset", file=sys.stderr)
             analyzer.train()
         
-        prediction_result = analyzer.predict(text)
+        prediction_result = analyzer.predict_sentiment(text)
         
         # Handle both old format (string) and new format (dict with label and confidence)
         if isinstance(prediction_result, dict):
@@ -379,6 +374,6 @@ if __name__ == '__main__':
         error_result = {
             'error': str(e),
             'sentiment': 'neutral',
-            'text': data.get('text', '') if 'data' in locals() else ''
+            'text': data.get('text', '')
         }
         print(json.dumps(error_result))

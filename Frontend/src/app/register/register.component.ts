@@ -27,11 +27,11 @@ export class RegisterComponent {
   ) {
     // Redirect to home if already logged in
     if (this.authService.currentUserValue) {
-      this.router.navigate(['/home']);
+      this.router.navigate(['/analysis']);
     }
 
-    // Get return url from route parameters or default to '/home'
-    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/home';
+    // Get return url from route parameters or default to '/analysis'
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/analysis';
   }
 
   onSubmit() {

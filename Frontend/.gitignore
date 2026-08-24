@@ -37,6 +37,9 @@ yarn-error.log
 testem.log
 /typings
 
+# Auto-generated self-signed TLS cert (created by the container on first run)
+/ssl
+
 # System files
 .DS_Store
 Thumbs.db

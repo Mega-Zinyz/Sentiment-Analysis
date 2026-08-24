@@ -45,12 +45,37 @@ const registerHandler = async (req, res) => {
 
     const userId = result.insertId;
 
+    // Auto-login: issue a JWT + session immediately, matching what loginHandler
+    // returns, since the frontend stores response.token/response.user right
+    // after registration and relies on AuthGuard letting the user straight in.
+    const token = jwt.sign(
+      { userId, username, role: 'user' },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN }
+    );
+
+    const sessionId = uuidv4();
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+    await db.execute(
+      'INSERT INTO user_sessions (id, user_id, token, expires_at, created_at) VALUES (?, ?, ?, ?, NOW())',
+      [sessionId, userId, token, expiresAt]
+    );
+
     console.log('✅ User registered successfully:', username);
-    
-    res.status(201).json({ 
-      success: true, 
+    await AuditLogger.logAuthEvent(userId, 'AUTH_REGISTER_SUCCESS', req.ip, req.get('User-Agent'));
+
+    res.status(201).json({
+      success: true,
       message: 'User registered successfully',
-      userId: userId
+      userId,
+      token,
+      user: {
+        id: userId,
+        username,
+        email,
+        role: 'user'
+      }
     });
   } catch (error) {
     console.error('Registration error:', error);
